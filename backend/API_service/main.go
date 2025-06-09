@@ -1,4 +1,4 @@
-package API_service
+package main
 
 import (
 	"API_service/internal"
