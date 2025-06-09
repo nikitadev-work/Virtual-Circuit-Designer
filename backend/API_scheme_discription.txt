@@ -58,4 +58,7 @@ Body: JSON(result_data)
 
 ---------------------------------------------
 
-Possible improvements: JWT token update logic
+Possible improvements:
+
+- JWT token update logic
+- Log out logic
