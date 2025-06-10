@@ -6,6 +6,6 @@ var AuthServiceURL string
 var Client *http.Client
 
 func ConfigureServices() {
-	AuthServiceURL = "http://localhost:8081/auth-service/"
+	AuthServiceURL = "http://auth-service:8081"
 	Client = &http.Client{}
 }
