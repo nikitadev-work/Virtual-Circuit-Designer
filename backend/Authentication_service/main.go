@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/user/register", internal.RegistrationHandler)
-	http.HandleFunc("/user/login", internal.LoginHandler)
+	http.HandleFunc("/auth/check-token", internal.CheckJWTTokenHandler)
+	http.HandleFunc("/auth/generate-token", internal.GenerateJWTTokenHandler)
 
 	err := http.ListenAndServe(":8081", nil)
 	if err != nil {

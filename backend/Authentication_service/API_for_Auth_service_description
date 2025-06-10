@@ -1,22 +1,22 @@
 Authentication service
 (Bearer Token Authentication)
 
-1) Register new user:
+1) Check JWT Token
 Type: POST
-Path: /user/register
-Body: JSON(first_name, last_name, email, password)
+Path: /auth/check-token
+Headers: JWT Token
 
 Response:
-Status(201 - successful, 400 - invalid data or already exists)
+Status(200 - successful, 401 - Unauthorized)
 
 ---------------------------------------------
 
-2) Login user:
+2) Generate Token:
 Type: POST
-Path: /user/login
-Body: JSON(email, password)
+Path: /auth/generate-token
+Body: JSON(user_id)
 
 Response:
 Type: application/json
-Body: JWT Token
+Headers: JWT Token
 Status (200 - successful, 401 - invalid data)

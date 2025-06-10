@@ -1,17 +1,41 @@
 package internal
 
-import "net/http"
+import (
+	"encoding/json"
+	"github.com/golang-jwt/jwt/v5"
+	"net/http"
+)
 
-func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
-	_, write := w.Write([]byte("Registration"))
+var secret_key = "our-secret-key"
+
+func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
+	_, write := w.Write([]byte("Check JWT Token"))
 	if write != nil {
 		return
 	}
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	_, write := w.Write([]byte("Login"))
-	if write != nil {
+func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		UserID string `json:"user_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": req.UserID,
+	})
+
+	tokenString, err := token.SignedString([]byte(secret_key))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+
 }
