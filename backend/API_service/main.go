@@ -1,13 +1,16 @@
 package main
 
 import (
+	"API_service/config"
 	"API_service/internal"
 	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/user/register", internal.RegistrationHandler)
-	http.HandleFunc("/user/login", internal.LoginHandler)
+	config.ConfigureServices()
+
+	http.HandleFunc("/user/register", internal.ProxyAuthHandler)
+	http.HandleFunc("/user/login", internal.ProxyAuthHandler)
 	http.HandleFunc("/circuits", internal.CircuitsHandler)
 	http.HandleFunc("/circuits/simulate", internal.StartSimulationHandler)
 

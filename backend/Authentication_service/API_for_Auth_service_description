@@ -1,0 +1,22 @@
+Authentication service
+(Bearer Token Authentication)
+
+1) Register new user:
+Type: POST
+Path: /user/register
+Body: JSON(first_name, last_name, email, password)
+
+Response:
+Status(201 - successful, 400 - invalid data or already exists)
+
+---------------------------------------------
+
+2) Login user:
+Type: POST
+Path: /user/login
+Body: JSON(email, password)
+
+Response:
+Type: application/json
+Body: JWT Token
+Status (200 - successful, 401 - invalid data)

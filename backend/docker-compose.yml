@@ -1,8 +1,33 @@
 version: "3.8"
 
 services:
+#  database:
+#    image: postgres
+#    restart: always
+#    environment:
+#      POSTGRES_DB: vcddbname
+#      POSTGRES_USER: vcddbuser
+#      POSTGRES_PASSWORD: vcddbpassword
+#    healthcheck:
+#      test: [ "CMD-SHELL", "pg_isready -U vcddbuser -d vcddbname" ]
+#      interval: 3s
+#      timeout: 3s
+#      retries: 5
+
   api-service:
-    build: ./api_service
+    build: ./API_service
     ports:
       - "80:8080"
-    
+    depends_on:
+      auth-service:
+        condition: service_healthy
+#      database:
+#        condition: service_started
+
+  auth-service:
+    build: ./Authentication_service
+    ports:
+      - "8081:8081"
+#    depends_on:
+#      database:
+#        condition: service_started
