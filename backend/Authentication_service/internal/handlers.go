@@ -4,15 +4,24 @@ import (
 	"encoding/json"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
+	"strings"
 )
 
 var secret_key = "our-secret-key"
 
 func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
-	_, write := w.Write([]byte("Check JWT Token"))
-	if write != nil {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
 		return
 	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		http.Error(w, "Invalid Authorization header", http.StatusUnauthorized)
+		return
+	}
+
 }
 
 func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
