@@ -13,46 +13,37 @@ type User struct {
 	name     string
 	email    string
 	password string
-	circuits []string
 }
 
-type Database interface {
-	CreateUser(username, email, password string) error
-	GetUserByEmail(email string) (User, error)
-}
-
-type postgresDB struct {
+type PostgresDB struct {
 	conn *sql.DB
 }
 
 var id int
 
-func NewPostgresDB() *postgresDB {
+func NewPostgresDB() *PostgresDB {
 	connStr := "" // user, password, dbname etc.
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
 
-	return &postgresDB{conn: db}
+	return &PostgresDB{conn: db}
 }
 
-func (db *postgresDB) CreateUser(username, email, password string) error {
-	_, err := db.conn.Exec("insert into Users (id, name, email, password, circuits) values ($1, $2, $3, $4, $5)", id, username, email, password, []string{})
-	if err == nil {
-		id += 1
-	}
-	return err
+func (db *PostgresDB) CreateUser(username, email, password string) (int, error) {
+	id += 1
+	_, err := db.conn.Exec("insert into Users (id, name, email, password) values ($1, $2, $3, $4)", id, username, email, password)
+	return id, err
 }
 
-func (db *postgresDB) GetUserByEmail(email string) (User, error) {
+func (db *PostgresDB) GetUserByEmail(email string) (User, error) {
 	query := "Select id, name, email, password, circuits FROM Users WHERE email = $1"
 	row := db.conn.QueryRow(query, email)
 
 	var NotFoundUser User
 	var foundUser User
-	err := row.Scan(&foundUser.id, &foundUser.name, &foundUser.email, &foundUser.password, &foundUser.circuits)
+	err := row.Scan(&foundUser.id, &foundUser.name, &foundUser.email, &foundUser.password)
 
 	switch {
 	case err == sql.ErrNoRows:
