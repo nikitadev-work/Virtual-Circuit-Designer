@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"Database_service/internal/storage"
+	"encoding/json"
 	"net/http"
-	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -16,23 +16,28 @@ func NewDBHandler(db *storage.PostgresDB) *DBHandler {
 	return &DBHandler{db: db}
 }
 
+type RegistrationRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Request) {
-	name := req.URL.Query().Get("name")
-	email := req.URL.Query().Get("email")
-	password := req.URL.Query().Get("password")
-	id, err := h.db.CreateUser(name, email, password)
+	var regReq RegistrationRequest
+	err := json.NewDecoder(req.Body).Decode(&regReq)
+	if err != nil {
+		http.Error(resp, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	id, err := h.db.CreateUser(regReq.Name, regReq.Email, regReq.Password)
 	if err != nil {
 		http.Error(resp, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	idStr := strconv.Itoa(id)
-	resp.WriteHeader(http.StatusCreated)
-	_, err = resp.Write([]byte(idStr))
-	if err != nil {
-		http.Error(resp, "Failed to write response", http.StatusInternalServerError)
-		return
-	}
+	resp.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(resp).Encode(map[string]int{"id": id})
 }
 func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request)    {}
 func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request) {}

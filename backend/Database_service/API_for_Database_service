@@ -3,7 +3,7 @@ Type: POST
 Body: JSON(name, email, password)
 
 Response:
-Status(201/400)
+Status(201/400/500)
 Body: JSON(user_id)
 
 2) Login user
@@ -11,7 +11,7 @@ Type: POST
 Body: JSON(name, email, password)
 
 Response:
-Status(200/400)
+Status(200/400/500)
 Body: JSON(user_id)
 
 3) Get all circuits
