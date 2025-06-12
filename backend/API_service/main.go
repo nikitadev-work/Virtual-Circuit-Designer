@@ -8,6 +8,7 @@ import (
 
 func main() {
 	config.ConfigureServices()
+	config.APILogger.Println("API service started")
 
 	http.HandleFunc("/user/register", internal.ProxyAuthHandler)
 	http.HandleFunc("/user/login", internal.ProxyAuthHandler)

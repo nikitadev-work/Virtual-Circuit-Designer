@@ -4,7 +4,7 @@ API service
 1) Register new user:
 Type: POST
 Path: /user/register
-Body: JSON(first_name, last_name, email, password)
+Body: JSON(name, email, password)
 
 Response:
 Status(201 - successful, 400 - invalid data or already exists)

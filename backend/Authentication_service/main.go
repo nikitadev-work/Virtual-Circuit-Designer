@@ -1,15 +1,19 @@
 package main
 
 import (
+	"Authentication_service/config"
 	"Authentication_service/internal"
 	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/auth/check-token", internal.CheckJWTTokenHandler)
-	http.HandleFunc("/auth/generate-token", internal.GenerateJWTTokenHandler)
+	config.ConfigureLogger()
+	config.AuthLogger.Println("Authentication service started")
 
-	err := http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/check-token", internal.CheckJWTTokenHandler)
+	http.HandleFunc("/generate-token", internal.GenerateJWTTokenHandler)
+
+	err := http.ListenAndServe(":8081", nil)
 	if err != nil {
 		return
 	}
