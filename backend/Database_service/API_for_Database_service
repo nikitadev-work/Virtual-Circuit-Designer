@@ -24,7 +24,7 @@ Body: JSON(array of all circuits)
 
 4) Save new circuit
 Type: POST
-Body: JSON(user_id, circuit)
+Body: JSON(user_id, circuit_name, circuit)
 
 Response:
 Status(201/400)
