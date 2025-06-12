@@ -9,7 +9,7 @@ func main() {
 	http.HandleFunc("/auth/check-token", internal.CheckJWTTokenHandler)
 	http.HandleFunc("/auth/generate-token", internal.GenerateJWTTokenHandler)
 
-	err := http.ListenAndServe(":8081", nil)
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		return
 	}

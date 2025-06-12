@@ -61,7 +61,7 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -71,11 +71,10 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := token.SignedString([]byte(secret_key))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.WriteHeader(http.StatusOK)
-
 }
