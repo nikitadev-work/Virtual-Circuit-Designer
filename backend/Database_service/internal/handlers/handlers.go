@@ -28,18 +28,18 @@ type LoginRequest struct {
 }
 
 type CircuitPostRequest struct {
-	User_id      int    `json:"user_id"`
-	Circuit_name string `json:"circuit_name"`
-	Circuit      string `json:"circuit"`
+	UserId      int    `json:"user_id"`
+	CircuitName string `json:"circuit_name"`
+	Circuit     string `json:"circuit"`
 }
 
 type CircuitGetRequest struct {
-	User_id int `json:"user_id"`
+	UserId int `json:"user_id"`
 }
 
 type Pair struct {
-	Circuit_name string
-	Circuit      string
+	CircuitName string
+	Circuit     string
 }
 
 func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Request) {
@@ -58,7 +58,7 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 
 	resp.Header().Set("Content-Type", "application/json")
 	resp.WriteHeader(http.StatusCreated)
-	json.NewEncoder(resp).Encode(map[string]int{"id": id})
+	json.NewEncoder(resp).Encode(map[string]int{"user_id": id})
 }
 func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request) {
 	var logReq LoginRequest
@@ -75,7 +75,7 @@ func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	resp.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(resp).Encode(map[string]int{"id": id})
+	json.NewEncoder(resp).Encode(map[string]int{"user_id": id})
 }
 func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request) {
 	switch req.Method {
@@ -86,7 +86,7 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 			http.Error(resp, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = h.db.SaveCircuits(circuitPostReq.User_id, circuitPostReq.Circuit_name, circuitPostReq.Circuit)
+		err = h.db.SaveCircuits(circuitPostReq.UserId, circuitPostReq.CircuitName, circuitPostReq.Circuit)
 		if err != nil {
 			http.Error(resp, err.Error(), http.StatusBadRequest)
 			return
@@ -99,7 +99,7 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 			http.Error(resp, err.Error(), http.StatusBadRequest)
 		}
 
-		circuits, err := h.db.GetCircuit(circuitGetReq.User_id)
+		circuits, err := h.db.GetCircuit(circuitGetReq.UserId)
 
 		resp.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(resp).Encode(circuits)
