@@ -18,24 +18,28 @@ type GenerateTokenRequest struct {
 }
 
 func ProxyAuthHandler(w http.ResponseWriter, r *http.Request) {
+	var path string
+
 	switch r.URL.Path {
 	case "/user/register":
-		RegisterHandler(w, r)
+		path = "/register"
 	case "/user/login":
-		LoginHandler(w, r)
+		path = "/login"
 	}
+
+	AuthenticationHandler(w, r, path)
 }
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) {
 
-	//Creating new user in the database
+	//Approaching database to create new user or check if the user exists
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/register", bytes.NewReader(reqBody))
+	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+path, bytes.NewReader(reqBody))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -113,12 +117,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Authorization", token)
 	w.WriteHeader(http.StatusOK)
-}
-
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO: Connection to the database to check if the login data is correct and get user_id
-
-	//TODO: If the user exists, then generate JWT Token and send it to user
 }
 
 func CircuitsHandler(w http.ResponseWriter, r *http.Request) {
