@@ -2,12 +2,18 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strings"
 )
 
 var secret_key = "our-secret-key"
+
+type Claims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
+}
 
 func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
@@ -22,6 +28,31 @@ func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenString := parts[1]
+
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(secret_key), nil
+	})
+
+	if err != nil || !token.Valid {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	if claims.UserID == "" {
+		http.Error(w, "Invalid token: missing user_id", http.StatusUnauthorized)
+		return
+	}
+
+	resp := Claims{UserID: claims.UserID}
+
+	json.NewEncoder(w).Encode(resp)
 }
 
 func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +61,7 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -40,11 +71,10 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := token.SignedString([]byte(secret_key))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
-
 }
