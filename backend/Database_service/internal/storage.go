@@ -88,8 +88,15 @@ func (db *PostgresDB) CreateUser(username, email, password string) (int, error) 
 func (db *PostgresDB) GetUser(email, password string) (int, error) {
 	config.DbLogger.Println("Getting user")
 
-	query := "Select id, name, email, password FROM Users WHERE email = $1 AND password = $2"
-	row := db.conn.QueryRow(query, email, password)
+	query := "Select id, name, email, password FROM Users WHERE email = $1"
+	args := []interface{}{email}
+
+	if password != "" {
+		query += " AND password = &2"
+		args = append(args, password)
+	}
+
+	row := db.conn.QueryRow(query, args...)
 
 	var foundUser User
 	err := row.Scan(&foundUser.id, &foundUser.name, &foundUser.email, &foundUser.password)

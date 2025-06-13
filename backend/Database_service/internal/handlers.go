@@ -54,7 +54,14 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	id, err := h.db.CreateUser(regReq.Name, regReq.Email, regReq.Password)
+	id, err := h.db.GetUser(regReq.Email, "")
+	if id != 0 {
+		config.DbLogger.Println("User with current email already exists")
+		http.Error(resp, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err = h.db.CreateUser(regReq.Name, regReq.Email, regReq.Password)
 	if err != nil {
 		config.DbLogger.Println("User registration request: " + err.Error())
 		http.Error(resp, err.Error(), http.StatusInternalServerError)
