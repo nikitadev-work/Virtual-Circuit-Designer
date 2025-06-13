@@ -1,9 +1,17 @@
 import { Button } from "bim/components/ui/button"
 import Link from "next/link";
+import Head from "next/head";
 
 export default function MainPage() {
     return (
-        <html lang="en">
+        <>
+            <Head>
+                <meta charSet="UTF-8" />
+                <title>VCD | Playground</title>
+                {/* connection CSS file */}
+                <link rel="stylesheet" href="/styles/main.css" />
+            </Head>
+
             <body className="bg-black min-h-screen">
                 <div className="text-black font-black text-6xl flex items-center justify-center h-20 mt-100">
                     Visual Circuit Designer
@@ -14,6 +22,6 @@ export default function MainPage() {
                     </Link>
                 </div>
             </body>
-        </html>
+        </>
     );
 }
