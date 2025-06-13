@@ -1,18 +1,19 @@
 import { Button } from "bim/components/ui/button"
 import Link from "next/link";
-import '../styles/global.css';
 
 export default function MainPage() {
     return (
-        <>
-            <div className="">
-                Visual Circuit Designer
-            </div>
-            <div className="flex flex-wrap items-center gap-2 md:flex-row">
-                <Link href="/login" passHref>
-                    <Button>Login</Button>
-                </Link>
-            </div>
-        </>
-    )
+        <html lang="en">
+            <body className="bg-black min-h-screen">
+                <div className="text-black font-black text-6xl flex items-center justify-center h-20 mt-100">
+                    Visual Circuit Designer
+                </div>
+                <div className="flex items-center justify-center">
+                    <Link href="/login" passHref>
+                        <Button className="bg-blue-700 text-white text-2xl mt-5 hover:bg-blue-100 cursor-pointer">Login</Button>
+                    </Link>
+                </div>
+            </body>
+        </html>
+    );
 }

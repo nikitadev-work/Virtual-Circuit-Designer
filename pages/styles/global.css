@@ -1,10 +1,9 @@
 @import "tailwindcss";
+@import '../styles/style.css';
 
 html, body, #__next {
   height: 100%;
   margin: 0;
-  @apply bg-background text-foreground;
-  background: #000;
 }
 
 @theme inline {
