@@ -1,14 +1,15 @@
-@import "tailwindcss";
 @import "tw-animate-css";
 @import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+@tailwind utilities;
 
 html, body, #__next {
   height: 100%;
   margin: 0;
+  @apply bg-background text-foreground;
 }
 
 @custom-variant dark (&:is(.dark *));
-@tailwind utilities;
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
