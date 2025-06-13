@@ -1,13 +1,10 @@
-@import "tw-animate-css";
-@import "tailwindcss/preflight";
-@import "tailwindcss/utilities";
-@tailwind utilities;
-@custom-variant dark (&:is(.dark *));
+@import "tailwindcss";
 
 html, body, #__next {
   height: 100%;
   margin: 0;
   @apply bg-background text-foreground;
+  background: #000;
 }
 
 @theme inline {
