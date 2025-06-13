@@ -17,6 +17,11 @@ type GenerateTokenRequest struct {
 	UserID int `json:"user_id"`
 }
 
+type Circuit struct {
+	CircuitName string
+	Circuit     string
+}
+
 func ProxyAuthHandler(w http.ResponseWriter, r *http.Request) {
 	config.APILogger.Println("Request for authentication")
 	var path string
@@ -60,7 +65,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 
 	if resp.StatusCode != http.StatusOK {
 		config.APILogger.Println("Error while authenticating user with database")
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -135,36 +140,140 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 	w.WriteHeader(http.StatusOK)
 }
 
-func CircuitsHandler(w http.ResponseWriter, r *http.Request) {
-	config.APILogger.Println("Request for circuits")
+func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
+	config.APILogger.Println("Request with token")
+
+	//Token verification
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		config.APILogger.Println("Token is empty")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		config.APILogger.Println("Token is invalid")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	token := parts[1]
+
+	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/check-token", nil)
+	if err != nil {
+		config.APILogger.Println("Request with token: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Authorization", token)
+
+	resp, err := config.Client.Do(req)
+	if err != nil {
+		config.APILogger.Println("Request with token(error while checking token): " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		config.APILogger.Println("Error while checking token: Status " + resp.Status)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var response ResponseUserID
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		config.APILogger.Println("Error while reading the body of response: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		config.APILogger.Println("Error while unmarshalling: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	switch r.URL.Path {
+	case "/circuits":
+		CircuitsHandler(w, r, response.UserID)
+	case "/circuits/simulate":
+		StartSimulationHandler(w, r)
+	default:
+		config.APILogger.Println("Error while processing request: " + r.URL.Path)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+}
+
+func CircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
+	config.APILogger.Println("Redirected to CircuitsHandler")
 
 	switch {
 	case r.Method == http.MethodGet:
-		GetAllCircuitsHandler(w, r)
+		GetAllCircuitsHandler(w, r, userID)
 	case r.Method == http.MethodPost:
-		SaveNewCircuitHandler(w, r)
+		SaveNewCircuitHandler(w, r, userID)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
-func GetAllCircuitsHandler(w http.ResponseWriter, r *http.Request) {
-	_, write := w.Write([]byte("Get All Circuits"))
-	if write != nil {
-		return
-	}
+func GetAllCircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
+	config.APILogger.Println("Redirected to GetAllCircuitsHandler")
+
 }
 
-func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request) {
-	_, write := w.Write([]byte("Save New Circuit"))
-	if write != nil {
+func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
+	config.APILogger.Println("Redirected to SaveNewCircuitHandler")
+
+	var response Circuit
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		config.APILogger.Println("Error while reading the body of response: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		config.APILogger.Println("Error while unmarshalling: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/circuits", bytes.NewReader(body))
+	if err != nil {
+		config.APILogger.Println("Error while creating request: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := config.Client.Do(req)
+	if err != nil {
+		config.APILogger.Println("Error while sending request: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		config.APILogger.Println("Request on saving new circuit: Status " + resp.Status)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	config.APILogger.Println("Successfully saved new circuit")
+	w.WriteHeader(http.StatusCreated)
 }
 
 func StartSimulationHandler(w http.ResponseWriter, r *http.Request) {
-	_, write := w.Write([]byte("Start Simulation"))
-	if write != nil {
-		return
-	}
+	config.APILogger.Println("Redirected to StartSimulationHandler")
+
 }

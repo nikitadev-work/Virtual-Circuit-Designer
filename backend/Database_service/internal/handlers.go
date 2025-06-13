@@ -1,8 +1,7 @@
-package handlers
+package internal
 
 import (
 	"Database_service/config"
-	"Database_service/internal/storage"
 	"encoding/json"
 	"net/http"
 
@@ -10,10 +9,10 @@ import (
 )
 
 type DBHandler struct {
-	db *storage.PostgresDB
+	db *PostgresDB
 }
 
-func NewDBHandler(db *storage.PostgresDB) *DBHandler {
+func NewDBHandler(db *PostgresDB) *DBHandler {
 	config.DbLogger.Println("Creating DB handler")
 	return &DBHandler{db: db}
 }

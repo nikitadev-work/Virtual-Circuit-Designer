@@ -2,8 +2,7 @@ package main
 
 import (
 	"Database_service/config"
-	"Database_service/internal/handlers"
-	"Database_service/internal/storage"
+	"Database_service/internal"
 	"log"
 	"net/http"
 )
@@ -11,8 +10,8 @@ import (
 func main() {
 	config.ConfigureLogger()
 
-	db := storage.NewPostgresDB()
-	handler := handlers.NewDBHandler(db)
+	db := internal.NewPostgresDB()
+	handler := internal.NewDBHandler(db)
 	err := db.CreateTables()
 	if err != nil {
 		config.DbLogger.Println(err)

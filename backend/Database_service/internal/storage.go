@@ -1,4 +1,4 @@
-package storage
+package internal
 
 import (
 	"Database_service/config"
@@ -26,11 +26,6 @@ type Circuit struct {
 
 type PostgresDB struct {
 	conn *sql.DB
-}
-
-type Pair struct {
-	CircuitName string `json:"circuit_name"`
-	Circuit     string `json:"circuit"`
 }
 
 var userId int

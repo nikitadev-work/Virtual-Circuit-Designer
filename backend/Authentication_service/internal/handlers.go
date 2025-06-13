@@ -62,6 +62,7 @@ func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	resp := Claims{UserID: claims.UserID}
 
 	config.AuthLogger.Println("Token verification request: Request completed successfully")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
 

@@ -12,8 +12,8 @@ func main() {
 
 	http.HandleFunc("/user/register", internal.ProxyAuthHandler)
 	http.HandleFunc("/user/login", internal.ProxyAuthHandler)
-	http.HandleFunc("/circuits", internal.CircuitsHandler)
-	http.HandleFunc("/circuits/simulate", internal.StartSimulationHandler)
+	http.HandleFunc("/circuits", internal.RequestsWithTokenHandler)
+	http.HandleFunc("/circuits/simulate", internal.RequestsWithTokenHandler)
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
