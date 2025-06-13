@@ -66,7 +66,7 @@ func (db *PostgresDB) CreateTables() error {
 			"(id SERIAL PRIMARY KEY, " +
 			"user_id INTEGER NOT NULL, " +
 			"name VARCHAR(100) NOT NULL, " +
-			"circuits VARCHAR(100) NOT NULL)")
+			"circuit VARCHAR(100) NOT NULL)")
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (db *PostgresDB) CreateUser(username, email, password string) (int, error) 
 func (db *PostgresDB) GetUser(email, password string) (int, error) {
 	config.DbLogger.Println("Getting user")
 
-	query := "Select id, name, email, password, circuits FROM Users WHERE email = $1 AND password = $2"
+	query := "Select id, name, email, password FROM Users WHERE email = $1 AND password = $2"
 	row := db.conn.QueryRow(query, email, password)
 
 	var foundUser User

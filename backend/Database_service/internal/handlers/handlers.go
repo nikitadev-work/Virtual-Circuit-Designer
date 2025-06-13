@@ -64,7 +64,7 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 
 	config.DbLogger.Println("User registration request completed")
 	resp.Header().Set("Content-Type", "application/json")
-	resp.WriteHeader(http.StatusCreated)
+	resp.WriteHeader(http.StatusOK)
 	json.NewEncoder(resp).Encode(map[string]int{"user_id": id})
 }
 
@@ -88,6 +88,7 @@ func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request) {
 
 	config.DbLogger.Println("User login request completed")
 	resp.Header().Set("Content-Type", "application/json")
+	resp.WriteHeader(http.StatusOK)
 	json.NewEncoder(resp).Encode(map[string]int{"user_id": id})
 }
 

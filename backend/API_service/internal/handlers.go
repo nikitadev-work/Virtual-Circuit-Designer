@@ -58,7 +58,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK {
 		config.APILogger.Println("Error while authenticating user with database")
 		w.WriteHeader(http.StatusBadRequest)
 		return
