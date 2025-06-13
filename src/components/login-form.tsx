@@ -82,7 +82,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   />
                 </div>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full text-black bg-gray-600">
                   Login
                 </Button>
               </div>
