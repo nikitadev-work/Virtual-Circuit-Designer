@@ -79,7 +79,6 @@ export default function Page() {
 
             <footer className="footer"></footer>
 
-            <Script src="/js/dots-animation.js" strategy="afterInteractive"/>
             <Script src="/js/connections.js" strategy="afterInteractive"/>
         </>
     );
