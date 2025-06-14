@@ -1,14 +1,12 @@
-body {
+body.playground {
     margin: 0;
     font-family: Inter, sans-serif;
     font-weight: 400;
     background: #e8e8e8;
-
-
 }
 
 
-button {
+button.playground {
     cursor: pointer;
     border: none;
     font-size: 14px;
@@ -130,12 +128,16 @@ button {
 
 .settings-btn,
 .play-btn {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     display: flex;
     justify-content: center;
     background-color: #f3f3f3;
     transition: background-color 0.3s ease;
+    cursor: pointer;
+    border-radius: 6px;
+
+    align-items: center;
 }
 
 
@@ -153,12 +155,13 @@ button {
     justify-content: center;
     align-items: center;
     transition: background-color 0.3s ease;
+    cursor: pointer;
 
-
-    width: 58px;
+    width: 65px;
     height: 34px;
 
-
+    font-size: 15px;
+    border-radius: 6px;
     padding: 10px 8px;
 }
 

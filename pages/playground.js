@@ -1,8 +1,16 @@
 import Head from 'next/head';
 import Script from 'next/script';
+import { useEffect } from 'react'
 
+export default function PlaygroundPage() {
+    useEffect(() => {
+        document.body.classList.add('playground');
 
-export default function Page() {
+        return () => {
+            document.body.classList.remove('playground');
+        };
+    }, []);
+
     return (
         <>
             <Head>
@@ -40,10 +48,10 @@ export default function Page() {
                 <div className="right-controls">
                     <button className="user-logo">M</button>
                     <button className="settings-btn">
-                        <img src="/settings.svg" />
+                        <img src="/settings.svg" className="w-[20px] h-[20px] flex justify-center items-center "/>
                     </button>
                     <button className="play-btn">
-                        <img src="/play.svg" />
+                        <img src="/play.svg" className="w-[20px] h-[20px]"/>
                     </button>
                     <button className="export-btn">Export</button>
                     <button className="save-btn">Save</button>
