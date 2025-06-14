@@ -1,16 +1,8 @@
 import Head from 'next/head';
 import Script from 'next/script';
-import { useEffect } from 'react'
+import Image from 'next/image';
 
-export default function PlaygroundPage() {
-    useEffect(() => {
-        document.body.classList.add('playground');
-
-        return () => {
-            document.body.classList.remove('playground');
-        };
-    }, []);
-
+export default function Page() {
     return (
         <>
             <Head>
@@ -48,10 +40,10 @@ export default function PlaygroundPage() {
                 <div className="right-controls">
                     <button className="user-logo">M</button>
                     <button className="settings-btn">
-                        <img src="/settings.svg" className="w-[20px] h-[20px] flex justify-center items-center "/>
+                        <img src="/settings.svg" />
                     </button>
                     <button className="play-btn">
-                        <img src="/play.svg" className="w-[20px] h-[20px]"/>
+                        <img src="/play.svg" />
                     </button>
                     <button className="export-btn">Export</button>
                     <button className="save-btn">Save</button>
@@ -63,15 +55,20 @@ export default function PlaygroundPage() {
                 <div className="playground-left-bar">
                     <div className="logic-components">Logic Components</div>
 
-                    <div className="draggable-item" draggable="true" data-type="NOT" data-icon="./Icons/not.png">NOT
+                    <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">
+                        <Image src="/Icons/not.png" width={60} height={60} alt="NOT" className="component-icon" />
                     </div>
-                    <div className="draggable-item" draggable="true" data-type="AND" data-icon="./Icons/and.png">AND
+                    <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/and.png">
+                        <Image src="/Icons/and.png" width={60} height={60} alt="NOT" className="component-icon" />
                     </div>
-                    <div className="draggable-item" draggable="true" data-type="OR" data-icon="./Icons/or.png">OR</div>
-                    <div className="draggable-item" draggable="true" data-type="NAND"
-                         data-icon="./Icons/nand.png">NAND
+                    <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/or.png">
+                        <Image src="/Icons/or.png" width={60} height={60} alt="NOT" className="component-icon" />
                     </div>
-                    <div className="draggable-item" draggable="true" data-type="NOR" data-icon="./Icons/nor.png">NOR
+                    <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/nand.png">
+                        <Image src="/Icons/nand.png" width={60} height={60} alt="NOT" className="component-icon" />
+                    </div>
+                    <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/nor.png">
+                        <Image src="/Icons/nor.png" width={60} height={60} alt="NOT" className="component-icon" />
                     </div>
 
 
