@@ -1,9 +1,24 @@
+stages:
+  - build
+  - deploy
+
+build:
+  image: node:16
+  stage: build
+  script:
+    - npm install
+    - npm run build
+    - npm run export
+  artifacts:
+    paths:
+      - out
+
 pages:
   stage: deploy
-  image: alpine:latest
+  dependencies:
+    - build
   script:
-    - mkdir -p public
-    - find . -mindepth 1 -maxdepth 1 ! -name public -exec cp -r {} public/ \;
+    - mv out public
   artifacts:
     paths:
       - public

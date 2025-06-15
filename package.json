@@ -6,7 +6,8 @@
     "dev": "TAILWIND_CONFIG=tailwind.config.ts next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "exort": "next export"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.2",
