@@ -1,4 +1,4 @@
-
+import Link from 'next/link';
 
 export default function MainPage() {
     return (
@@ -10,7 +10,7 @@ export default function MainPage() {
                 Streamlined platform for designing and compiling digital circuits directly in the browser
             </p>
 
-            <a href="/login" className="inline-block">
+            <Link href="/login" className="inline-block">
                 <button
                     className="bg-gradient-to-r from-[#63CBFF] to-[#1C3BD5] text-white text-[26px] w-[242px] h-[57px]
                     font-bold rounded-2xl shadow-md absolute left-[839px] top-[605px]
@@ -18,7 +18,7 @@ export default function MainPage() {
                     transition-colors duration-500 ease-in-out">
                     Let’s design!
                 </button>
-            </a>
+            </Link>
 
         </>
     );

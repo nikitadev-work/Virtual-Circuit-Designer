@@ -22,15 +22,15 @@ export default function Page() {
             <header className="header">
                 <div className="left-controls">
                     <button className="icon-btn">
-                        <img src="/Logo.svg" className="btn-logo"/>
-                        <img src="/Vector.svg" className="arrow-vec" alt={""}/>
+                        <Image src="/Logo.svg" className="btn-logo" alt="logo"/>
+                        <Image src="/Vector.svg" className="arrow-vec" alt="arrow"/>
                     </button>
                     <button className="insert-btn">
-                        <img src="/insert-vec.svg" className="insert-vec" />
+                        <Image src="/insert-vec.svg" className="insert-vec"  alt="vector"/>
                         Insert
                     </button>
                     <button className="components-btn">
-                        <img src="/components-vec.svg" className="components-vec" />
+                        <Image src="/components-vec.svg" className="components-vec"  alt="component"/>
                         Components
                     </button>
                 </div>
@@ -40,10 +40,10 @@ export default function Page() {
                 <div className="right-controls">
                     <button className="user-logo">M</button>
                     <button className="settings-btn">
-                        <img src="/settings.svg" />
+                        <Image src="/settings.svg" alt="setting"/>
                     </button>
                     <button className="play-btn">
-                        <img src="/play.svg" />
+                        <Image src="/play.svg" alt="play"/>
                     </button>
                     <button className="export-btn">Export</button>
                     <button className="save-btn">Save</button>
