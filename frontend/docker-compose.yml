@@ -4,7 +4,7 @@ services:
   frontend:
     build:
       context: react
-      dockerfile: react/Dockerfile
+      dockerfile: Dockerfile
     restart: always
     networks:
       - app-network
