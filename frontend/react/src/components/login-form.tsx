@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { cn } from "bim/lib/utils";
-import { Button } from "bim/components/ui/button";
+import { cn } from "../lib/utils";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "bim/components/ui/card";
-import { Input } from "bim/components/ui/input";
-import { Label } from "bim/components/ui/label";
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const router = useRouter();
