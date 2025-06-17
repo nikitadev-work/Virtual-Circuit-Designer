@@ -1,12 +1,17 @@
 module.exports = {
     content: [
-        "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-        "./components/**/*.{js,ts,jsx,tsx,mdx}",
-        "./src/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/**/*.{js,ts,jsx,tsx,css}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                primary: 'var(--primary)',
+                'primary-foreground': 'var(--primary-foreground)',
+                muted: 'var(--muted)',
+                'muted-foreground': 'var(--muted-foreground)',
+            },
+        },
     },
     plugins: [],
 }

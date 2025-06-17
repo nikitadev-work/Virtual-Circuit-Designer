@@ -2,14 +2,14 @@ import Head from 'next/head';
 import Script from 'next/script';
 import Image from 'next/image';
 
+
 export default function Page() {
     return (
         <>
             <Head>
                 <meta charSet="UTF-8" />
                 <title>VCD | Playground</title>
-                {/* connection CSS file */}
-                <link rel="stylesheet" href="/styles/style.css" />
+
                 {/* Favicon */}
                 <link rel="shortcut icon" href="/favicon-black.png" type="image/png" />
                 {/* Fonts */}

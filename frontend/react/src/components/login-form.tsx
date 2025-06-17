@@ -39,7 +39,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     }
 
     // Если проверка прошла, переадресуем на другую страницу
-    router.push("/playground"); // замените на нужный путь
+    router.push("/playground");
   };
 
   return (

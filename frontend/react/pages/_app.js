@@ -1,5 +1,8 @@
-import './styles/global.css';
-import './styles/style.css';
+import '../src/styles/style.css';
+import '../src/styles/global.css';
+
+import * as React from 'react';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 

@@ -1,5 +1,8 @@
+@import "tw-animate-css";
+@import "tailwindcss/preflight";
 @import "tailwindcss";
-@import 'style.css';
+
+@tailwind utilities;
 
 html, body, #__next {
   height: 100%;
