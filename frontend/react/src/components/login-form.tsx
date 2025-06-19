@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -66,6 +67,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         setError("Invalid server response");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setError("Server error, please try again later")
     }
@@ -117,9 +119,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               </div>
               <div className="text-center text-sm mt-4">
                 Don&apos;t have an account?{" "}
-                <a href="/registration" className="underline underline-offset-4">
+                <Link href="/registration" className="underline underline-offset-4">
                   Sign up
-                </a>
+                </Link>
               </div>
             </form>
           </CardContent>

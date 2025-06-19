@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+import Link from 'next/link';
 import {
     Card,
     CardContent,
@@ -63,6 +64,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
 
             window.location.href = '/login';
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             setError("Server error, please try again later")
         }
@@ -138,9 +140,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                         </div>
                         <div className="text-center text-sm mt-4">
                             Already have an account?{" "}
-                            <a href="/login" className="underline underline-offset-4">
+                            <Link href="/login" className="underline underline-offset-4">
                                 Login
-                            </a>
+                            </Link>
                         </div>
                     </form>
                 </CardContent>
