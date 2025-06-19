@@ -15,6 +15,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [name, setName] = useState("");
 
     const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -26,7 +27,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         return /\S+@\S+\.\S+/.test(email);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
@@ -38,7 +39,29 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
             setError("Password should be longer, than 6 symbols");
             return;
         }
+        if (!passwordsMatch) {
+            setError("Passwords do not match");
+            return;
+        }
 
+        try {
+            const response = await fetch('http://10.91.54.59/user/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json'},
+                body: JSON.stringify({name, email, password}),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                setError(data.message || "Registration failed");
+                return;
+            }
+
+            window.location.href = '/playground';
+
+        } catch (error) {
+            setError("Server error, please try again later")
+        }
     };
 
     return (
@@ -51,6 +74,17 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 <CardContent>
                     <form onSubmit={handleSubmit}>
                         <div className="grid gap-6">
+                            <div className="grid gap-3">
+                                <Label>Name</Label>
+                                <Input
+                                    id="name"
+                                    type="name"
+                                    placeholder="Ivan"
+                                    required
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
                             <div className="grid gap-3">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
