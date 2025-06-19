@@ -40,6 +40,18 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 
 	config.APILogger.Println("Redirected to AuthenticationHandler")
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	if r.Method == "OPTIONS" {
+		config.APILogger.Println("Type of request: OPTIONS")
+		w.WriteHeader(http.StatusNoContent)
+		config.APILogger.Println("OPTIONS request completed")
+		return
+	}
+
 	//Approaching database to create new user or check if the user exists
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -47,6 +59,11 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	config.APILogger.Printf(
+		"Request Body: \n %s",
+		string(reqBody),
+	)
 
 	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+path, bytes.NewReader(reqBody))
 	if err != nil {
