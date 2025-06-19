@@ -15,7 +15,7 @@ func main() {
 	http.HandleFunc("/circuits", internal.RequestsWithTokenHandler)
 	http.HandleFunc("/circuits/simulate", internal.RequestsWithTokenHandler)
 
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8052", nil)
 	if err != nil {
 		return
 	}
