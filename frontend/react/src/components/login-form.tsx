@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import {
@@ -13,7 +12,6 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,21 +21,54 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     return /\S+@\S+\.\S+/.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!validateEmail(email)) {
-      setError("Введите корректный email");
+      setError("Please, enter the correct email");
       return;
     }
     if (password.length < 6) {
-      setError("Пароль должен быть не менее 6 символов");
+      setError("Password should be longer, than 6 symbols");
       return;
     }
 
-    // Если проверка прошла, переадресуем на другую страницу
-    router.push("/playground");
+    try {
+      const response = await fetch('http://10.240.23.147/user/login', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email, password}),
+      });
+
+      if (!response.ok) {
+        try {
+          const errorText = await response.text();
+          const errorData = errorText ? JSON.parse(errorText) : {};
+          setError(errorData.message || "Login failed");
+        } catch {
+          setError("Login failed");
+        }
+        return;
+      }
+
+      try {
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        window.location.href = '/playground';
+      } catch {
+        setError("Invalid server response");
+      }
+
+    } catch (error) {
+      setError("Server error, please try again later")
+    }
   };
 
   return (
@@ -48,7 +79,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             <CardDescription>Login with your Email</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleLogin}>
               <div className="grid gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>

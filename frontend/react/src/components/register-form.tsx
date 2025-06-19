@@ -30,6 +30,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        console.log(name, email, password);
 
         if (!validateEmail(email)) {
             setError("Please, enter the correct email");
@@ -45,9 +46,12 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         }
 
         try {
-            const response = await fetch('http://10.91.54.59/user/register', {
+            const response = await fetch('http://10.240.23.147/user/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json'},
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({name, email, password}),
             });
 
@@ -57,7 +61,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 return;
             }
 
-            window.location.href = '/playground';
+            window.location.href = '/login';
 
         } catch (error) {
             setError("Server error, please try again later")
@@ -78,7 +82,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                                 <Label>Name</Label>
                                 <Input
                                     id="name"
-                                    type="name"
+                                    type="text"
                                     placeholder="Ivan"
                                     required
                                     value={name}
