@@ -550,3 +550,10 @@ document.getElementById('leftbar-toggle')
             .querySelector('.playground-left-bar')
             .classList.toggle('is-collapsed');
     });
+
+document.getElementById('rightbar-toggle')
+    .addEventListener('click', () => {
+        document
+            .querySelector('.playground-right-bar')
+            .classList.toggle('is-collapsed');
+    });

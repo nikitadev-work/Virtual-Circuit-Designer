@@ -23,7 +23,7 @@ export default function Page() {
                 <div className="left-controls">
                     <button className="insert-btn">
                         <Image src="/insert-vec.svg" width={25} height={25} className="insert-vec"  alt="vector"/>
-                        Insert
+                        I/O
                     </button>
                     <button id="leftbar-toggle" button className="components-btn">
                         <Image src="/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
@@ -31,11 +31,13 @@ export default function Page() {
                     </button>
                 </div>
 
-                <button className="title-btn">Untitled</button>
+                <button className="title-btn">
+                    <Image src="/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
+                </button>
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
-                    <button className="settings-btn">
+                    <button id="rightbar-toggle" button className="settings-btn">
                         <Image width={20} height={20} src="/settings.svg" alt="setting"/>
                     </button>
                     <button className="play-btn">
@@ -49,27 +51,33 @@ export default function Page() {
             {/* Playground section */}
             <section className="playground">
                 <div className="playground-left-bar is-collapsed">
-                    <div className="logic-components">Logic Components</div>
-                    <div className="components-grid">
-                        <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">
-                            <Image src="/Icons/not.png" width={60} height={60} alt="NOT" className="component-icon"/>
-                        </div>
-                        <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/and.png">
-                            <Image src="/Icons/and.png" width={60} height={60} alt="NOT" className="component-icon"/>
-                        </div>
-                        <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/or.png">
-                            <Image src="/Icons/or.png" width={60} height={60} alt="NOT" className="component-icon"/>
-                        </div>
-                        <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/nand.png">
-                            <Image src="/Icons/nand.png" width={60} height={60} alt="NOT" className="component-icon"/>
-                        </div>
-                        <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/nor.png">
-                            <Image src="/Icons/nor.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                    {/* Ярлык, который всегда виден */}
+                    <div className="name-page">Name of the page</div>
+                    {/* Всё, что прячем */}
+                    <div className="sidebar-body">
+                        <div className="logic-components">Logic Components</div>
+                        <div className="components-grid">
+                            <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">
+                                <Image src="/Icons/not.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            </div>
+                            <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/and.png">
+                                <Image src="/Icons/and.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            </div>
+                            <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/or.png">
+                                <Image src="/Icons/or.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            </div>
+                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/nand.png">
+                                <Image src="/Icons/nand.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            </div>
+                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/nor.png">
+                                <Image src="/Icons/nor.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="playground-right-bar"></div>
+                <div className="playground-right-bar is-collapsed"></div>
+
 
                 <div className="canvas-container" id="workspace">
                     <div className="canvas-background"></div>
