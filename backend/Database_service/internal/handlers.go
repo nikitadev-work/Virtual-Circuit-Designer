@@ -57,7 +57,7 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 	id, err := h.db.GetUser(regReq.Email, "")
 	if id != 0 {
 		config.DbLogger.Println("User with current email already exists")
-		http.Error(resp, err.Error(), http.StatusBadRequest)
+		http.Error(resp, "User with current email already exists", http.StatusBadRequest)
 		return
 	}
 
