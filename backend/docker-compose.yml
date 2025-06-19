@@ -11,16 +11,20 @@ services:
       POSTGRES_USER: vcddbuser
       POSTGRES_PASSWORD: vcddbpassword
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U vcddbuser -d vcddbname" ]
+      test: ["CMD-SHELL", "pg_isready -U vcddbuser -d vcddbname"]
       interval: 3s
       timeout: 3s
       retries: 5
+    networks:
+      - app-network
 
   database-service:
     build: ./Database_service
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - app-network
 
   auth-service:
     build: ./Authentication_service
@@ -29,6 +33,8 @@ services:
         condition: service_healthy
       database-service:
         condition: service_started
+    networks:
+      - app-network
 
   api-service:
     build: ./API_service
@@ -41,3 +47,9 @@ services:
         condition: service_started
       database-service:
         condition: service_started
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
