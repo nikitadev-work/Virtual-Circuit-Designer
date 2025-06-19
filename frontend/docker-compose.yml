@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   frontend:
@@ -21,4 +21,5 @@ services:
 
 networks:
   app-network:
-    driver: bridge
+    external: true
+    name: backend_app-network
