@@ -365,11 +365,7 @@ button.playground {
 .draggable-item {
     padding: 10px;
     margin-bottom: 10px;
-<<<<<<< HEAD
-    background-color: #e0e0e0;
-=======
     background-color: #f6f6f6;
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     border: 1px solid #999;
     cursor: grab;
     user-select: none;
