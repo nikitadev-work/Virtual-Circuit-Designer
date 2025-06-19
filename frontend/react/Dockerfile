@@ -8,6 +8,7 @@ RUN npm run build
 RUN apk add --no-cache curl
 
 FROM node:18-alpine AS runner
+RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=builder /app/public ./public
