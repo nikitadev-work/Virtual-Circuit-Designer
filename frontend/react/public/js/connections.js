@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-// ---------- 1. Ссылки на DOM -------------------------------------------------
-const canvas    = document.querySelector('.canvas-container');
-const workspace = document.getElementById('workspace');
-const svg       = document.getElementById('connections');
-=======
 const canvas = document.querySelector('.canvas-container');
 const workspace = document.getElementById('workspace');
 const svg = document.getElementById('connections');
@@ -63,7 +57,6 @@ workspace.addEventListener('click', e => {
         select(el);
     }
 });
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 
 
 // ---------- 2. Панорамирование холста ---------------------------------------
@@ -73,10 +66,7 @@ let scale = 1
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
-<<<<<<< HEAD
-    // Проверяем, не над панелью ли происходит событие
-=======
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
+
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
 
     e.preventDefault();
@@ -87,10 +77,7 @@ canvas.parentElement.addEventListener('wheel', (e) => {
 });
 
 canvas.parentElement.addEventListener('mousedown', e => {
-<<<<<<< HEAD
-    // игнор боковых панелей
-=======
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
+
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
     isCanvasDrag = true;
     startX = e.clientX - posX;
@@ -103,13 +90,9 @@ window.addEventListener('mousemove', e => {
     if (!isCanvasDrag) return;
     posX = e.clientX - startX;
     posY = e.clientY - startY;
-<<<<<<< HEAD
-    canvas.style.transform = `translate(${posX}px,${posY}px)`;
-    updateConnections();                      // обновляем линии при панорамировании
-=======
+
     canvas.style.transform =
         `translate(${posX}px, ${posY}px) scale(${scale})`;
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 });
 
 
@@ -122,25 +105,15 @@ window.addEventListener('mouseup', () => {
 // ---------- 3. Drag-&-drop из левой панели ----------------------------------
 document.querySelectorAll('.draggable-item').forEach(item => {
     item.addEventListener('dragstart', e => {
-<<<<<<< HEAD
-        e.dataTransfer.setData('type',   e.target.dataset.type);
-        e.dataTransfer.setData('icon',   e.target.dataset.icon);
-=======
         e.dataTransfer.setData('type', e.target.dataset.type);
         e.dataTransfer.setData('icon', e.target.dataset.icon);
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
         e.dataTransfer.setData('source', 'sidebar');
     });
 });
 
 
-<<<<<<< HEAD
-workspace.addEventListener('dragover',  e => e.preventDefault());
-workspace.addEventListener('drop',      handleDrop);
-=======
 workspace.addEventListener('dragover', e => e.preventDefault());
 workspace.addEventListener('drop', handleDrop);
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 
 
 function handleDrop(e) {
@@ -152,11 +125,7 @@ function handleDrop(e) {
     const icon = e.dataTransfer.getData('icon');
 
 
-<<<<<<< HEAD
-    const el  = document.createElement('div');
-=======
     const el = document.createElement('div');
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     el.className = 'workspace-element';
 
 
@@ -171,11 +140,7 @@ function handleDrop(e) {
 
     const rect = workspace.getBoundingClientRect();
     el.style.left = e.clientX - rect.left + 'px';
-<<<<<<< HEAD
-    el.style.top  = e.clientY - rect.top  + 'px';
-=======
     el.style.top = e.clientY - rect.top + 'px';
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 
 
     enableElementDrag(el);
@@ -189,28 +154,13 @@ function addPorts(el, inputs) {
         const p = document.createElement('div');
         p.className = 'port input-port';
         p.style.top = pct;
-<<<<<<< HEAD
-        p.style.transform = 'translateY(-50%)'; // центрирование для точного расчёта
-        el.appendChild(p);
-    };
-    inputs === 1 ? makeInput('50%') : (makeInput('25%'), makeInput('75%'));
-=======
         p.style.transform = 'translateY(-50%)';
         el.appendChild(p);
     };
     inputs === 1 ? makeInput('50%') : (makeInput('33%'), makeInput('66%'));
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
-
 
     const out = document.createElement('div');
     out.className = 'port output-port';
-<<<<<<< HEAD
-    // для output-порта transform уже задан в CSS (.output-port)
-    el.appendChild(out);
-}
-
-=======
-
     el.appendChild(out);
 }
 
@@ -291,7 +241,6 @@ if (!ctxMenu.classList.contains('hidden')) {
     // return;
 }
 
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 
 // ---------- 5. Перемещение элементов внутри workspace -----------------------
 function enableElementDrag(el) {
@@ -306,17 +255,10 @@ function enableElementDrag(el) {
         drag = true;
         const rect = workspace.getBoundingClientRect();
         offX = e.clientX - rect.left - el.offsetLeft;
-<<<<<<< HEAD
-        offY = e.clientY - rect.top  - el.offsetTop;
-        el.style.zIndex = 1000;
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup',   onUp);
-=======
         offY = e.clientY - rect.top - el.offsetTop;
         el.style.zIndex = 1000;
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     });
 
 
@@ -324,37 +266,21 @@ function enableElementDrag(el) {
         if (!drag) return;
         const rect = workspace.getBoundingClientRect();
         let x = e.clientX - rect.left - offX;
-<<<<<<< HEAD
-        let y = e.clientY - rect.top  - offY;
-        x = Math.max(0, Math.min(x, rect.width  - el.offsetWidth));
-        y = Math.max(0, Math.min(y, rect.height - el.offsetHeight));
-        el.style.left = snap(x) + 'px';
-        el.style.top  = snap(y) + 'px';
-=======
         let y = e.clientY - rect.top - offY;
         x = Math.max(0, Math.min(x, rect.width - el.offsetWidth));
         y = Math.max(0, Math.min(y, rect.height - el.offsetHeight));
         el.style.left = snap(x) + 'px';
         el.style.top = snap(y) + 'px';
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
         updateConnections();
     }
 
 
     function onUp() {
-<<<<<<< HEAD
-        if (!drag) return;                                // страховка от «залипания»
-        drag = false;
-        el.style.zIndex = '';
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup',   onUp);
-=======
         if (!drag) return;
         drag = false;
         el.style.zIndex = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     }
 
 
@@ -374,15 +300,6 @@ function enableElementDrag(el) {
 
 // ---------- 6. Соединения (SVG line) ----------------------------------------
 let connections = [];
-<<<<<<< HEAD
-let currentLine = null,
-    startElement = null,
-    startPort    = null;
-
-
-workspace.addEventListener('mousedown', e => {
-    if (!e.target.classList.contains('port')) return; // теперь любой порт
-=======
 let snapPort = null;
 const SNAP_R = 20;
 let currentLine = null,
@@ -392,7 +309,6 @@ let currentLine = null,
 
 workspace.addEventListener('mousedown', e => {
     if (!e.target.classList.contains('port')) return;
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     e.stopPropagation();
     e.preventDefault();
 
@@ -403,11 +319,7 @@ workspace.addEventListener('mousedown', e => {
 
 
     startElement = e.target.parentElement;
-<<<<<<< HEAD
-    startPort    = e.target;
-=======
     startPort = e.target;
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 
 
     currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -421,11 +333,6 @@ workspace.addEventListener('mousedown', e => {
 
 
     document.addEventListener('mousemove', dragTempLine);
-<<<<<<< HEAD
-    document.addEventListener('mouseup',   finishLine);
-});
-
-=======
     document.addEventListener('mouseup', finishLine);
 });
 
@@ -449,15 +356,9 @@ function findClosestPort(xClient, yClient, radius) {
     return best;
 }
 
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
-
 function dragTempLine(e) {
     if (!currentLine) return;
     const rect = workspace.getBoundingClientRect();
-<<<<<<< HEAD
-    currentLine.setAttribute('x2', e.clientX - rect.left);
-    currentLine.setAttribute('y2', e.clientY - rect.top);
-=======
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
@@ -479,15 +380,10 @@ function dragTempLine(e) {
         currentLine.setAttribute('x2', x);
         currentLine.setAttribute('y2', y);
     }
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 }
 
 
 function finishLine(e) {
-<<<<<<< HEAD
-    const isPort = e.target.classList.contains('port');
-    const same   = e.target === startPort;
-=======
     if (!currentLine) return;
 
 
@@ -497,55 +393,26 @@ function finishLine(e) {
 
     snapPort?.classList.remove('highlight');
     snapPort = null;
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
-
 
     if (!currentLine) return;
 
 
-<<<<<<< HEAD
-    if (e.target.classList.contains('port')) {           // любой порт
-        const toElement = e.target.parentElement;
-        const toPort    = e.target;
-
-
-        connections.push({
-            from: { element: startElement, port: startPort },
-            to:   { element: toElement,   port: toPort   },
-=======
     if (targetPort && targetPort !== startPort) {
         const toElement = targetPort.parentElement;
 
         connections.push({
             from: {element: startElement, port: startPort},
             to: {element: toElement, port: targetPort},
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
             line: currentLine
         });
         updateConnections();
     } else {
-<<<<<<< HEAD
-        const near = document.elementFromPoint(e.clientX, e.clientY)
-            ?.closest('.port');
-        if (near && near !== startPort) {
-            connectTo(near);       // вынесено в функцию
-        } else {
-            currentLine.remove();
-        }                              // не попали в порт
-    }
-
-
-    currentLine = startElement = startPort = null;
-    document.removeEventListener('mousemove', dragTempLine);
-    document.removeEventListener('mouseup',   finishLine);
-=======
         currentLine.remove();
     }
 
     currentLine = startElement = startPort = null;
     document.removeEventListener('mousemove', dragTempLine);
     document.removeEventListener('mouseup', finishLine);
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 }
 
 
@@ -553,11 +420,7 @@ function finishLine(e) {
 function updateConnections() {
     connections.forEach(c => {
         const a = portCenter(c.from.port);
-<<<<<<< HEAD
-        const b = portCenter(c.to .port);
-=======
         const b = portCenter(c.to.port);
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
         c.line.setAttribute('x1', a.x);
         c.line.setAttribute('y1', a.y);
         c.line.setAttribute('x2', b.x);
@@ -568,25 +431,14 @@ function updateConnections() {
 
 function portCenter(port) {
     const wsRect = workspace.getBoundingClientRect();
-<<<<<<< HEAD
-    const pr     = port.getBoundingClientRect();
-    return {
-        x: pr.left - wsRect.left + pr.width  / 2,
-        y: pr.top  - wsRect.top  + pr.height / 2
-=======
     const pr = port.getBoundingClientRect();
     return {
         x: pr.left - wsRect.left + pr.width / 2,
         y: pr.top - wsRect.top + pr.height / 2
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     };
 }
 
 function updateTransform() {
-<<<<<<< HEAD
-    canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
-}
-=======
     canvas.style.transform =
         `translate(${posX}px, ${posY}px) scale(${scale})`;
 }
@@ -691,4 +543,3 @@ window.addEventListener('keydown', e => {
             break;
     }
 });
->>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
