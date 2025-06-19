@@ -50,24 +50,23 @@ export default function Page() {
             <section className="playground">
                 <div className="playground-left-bar">
                     <div className="logic-components">Logic Components</div>
-
-                    <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">
-                        <Image src="/Icons/not.png" width={60} height={60} alt="NOT" className="component-icon" />
+                    <div className="components-grid">
+                        <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">
+                            <Image src="/Icons/not.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                        </div>
+                        <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/and.png">
+                            <Image src="/Icons/and.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                        </div>
+                        <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/or.png">
+                            <Image src="/Icons/or.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                        </div>
+                        <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/nand.png">
+                            <Image src="/Icons/nand.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                        </div>
+                        <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/nor.png">
+                            <Image src="/Icons/nor.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                        </div>
                     </div>
-                    <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/and.png">
-                        <Image src="/Icons/and.png" width={60} height={60} alt="NOT" className="component-icon" />
-                    </div>
-                    <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/or.png">
-                        <Image src="/Icons/or.png" width={60} height={60} alt="NOT" className="component-icon" />
-                    </div>
-                    <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/nand.png">
-                        <Image src="/Icons/nand.png" width={60} height={60} alt="NOT" className="component-icon" />
-                    </div>
-                    <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/nor.png">
-                        <Image src="/Icons/nor.png" width={60} height={60} alt="NOT" className="component-icon" />
-                    </div>
-
-
                 </div>
 
                 <div className="playground-right-bar"></div>

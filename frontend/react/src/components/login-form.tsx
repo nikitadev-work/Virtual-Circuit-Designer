@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+"use client";
+
+>>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "../lib/utils";
@@ -86,7 +91,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               </div>
               <div className="text-center text-sm mt-4">
                 Don&apos;t have an account?{" "}
+<<<<<<< HEAD
                 <a href="/registration" className="underline underline-offset-4">
+=======
+                <a href="#" className="underline underline-offset-4">
+>>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
                   Sign up
                 </a>
               </div>

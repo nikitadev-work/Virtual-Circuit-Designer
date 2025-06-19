@@ -125,8 +125,6 @@ button.playground {
     padding-right: 6px;
 }
 
-
-
 .settings-btn,
 .play-btn {
     width: 34px;
@@ -199,9 +197,6 @@ button.playground {
     background: #58b7ff;
 }
 
-
-
-
 /* Playground section */
 .playground-left-bar {
     display: inline-block;
@@ -224,6 +219,57 @@ button.playground {
     z-index: 10;
 }
 
+.components-grid {
+    display: grid;
+    /* 110 px — минимальная ширина ячейки;
+       1fr   — растягиваемся, чтобы занять всю строку равномерно */
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    padding: 16px 12px;
+    place-items: center; /* горизонт + вертикаль */
+}
+
+/* базовый стиль */
+.draggable-item {
+    flex: 1 1 110px; /* из предыдущего ответа */
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    background: #2b2b34; /* спокойный фон внутри панели */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    user-select: none;
+    transition: background-color .25s ease,
+    transform .25s cubic-bezier(.2, 1, .3, 1),
+    box-shadow .25s ease;
+}
+
+/* «приятная» реакция на курсор */
+.draggable-item:hover {
+    background-color: #E0FFFF;
+    transform: translateY(-6px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+}
+
+/* небольшое «сжатие» при зажатой кнопке мыши */
+.draggable-item:active {
+    transform: translateY(-2px) scale(.97);
+}
+
+
+.draggable-item img {
+    width: 70%;
+    height: auto;
+    pointer-events: none;
+}
+
+
+/* чтобы панель прокручивалась, если элементов много */
+.playground-left-bar {
+    overflow-y: auto;
+}
 
 .playground-right-bar {
     display: inline-block;
@@ -319,7 +365,11 @@ button.playground {
 .draggable-item {
     padding: 10px;
     margin-bottom: 10px;
+<<<<<<< HEAD
     background-color: #e0e0e0;
+=======
+    background-color: #f6f6f6;
+>>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     border: 1px solid #999;
     cursor: grab;
     user-select: none;
@@ -345,7 +395,11 @@ button.playground {
 
 .workspace-element img {
     width: 60px;
+<<<<<<< HEAD
     height: 75px;
+=======
+    height: 90px;
+>>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
 }
 
 
@@ -374,13 +428,47 @@ button.playground {
 }
 
 .output-port {
-    right: -5px;
+    right: -17px;
     top: 50%;
     transform: translateY(-50%);
 }
 
 .input-port {
-    left: -5px;
-    top: 50%;
+    left: -20px;
+    top: -10%;
     transform: translateY(-50%);
+}
+
+.context-menu {
+    position: absolute;
+    z-index: 2000; /* выше элементов и линий */
+    min-width: 160px;
+    padding: 4px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+    font-family: Inter, sans-serif;
+}
+
+.context-menu.hidden {
+    display: none;
+}
+
+.context-menu button {
+    width: 100%;
+    padding: 6px 10px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.context-menu button:hover {
+    background: #e7f0ff;
+}
+
+.workspace-element.selected{
+    box-shadow:0 0 0 2px #4fa3ff;
 }

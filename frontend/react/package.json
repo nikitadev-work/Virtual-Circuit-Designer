@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+<<<<<<< HEAD
     "dev": "TAILWIND_CONFIG=tailwind.config.js next dev",
+=======
+    "dev": "cross-env TAILWIND_CONFIG=tailwind.config.ts next dev",
+>>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -39,6 +43,10 @@
     "@types/react-dom": "^19",
     "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.21",
+<<<<<<< HEAD
+=======
+    "cross-env": "^7.0.3",
+>>>>>>> 450acec34d5e2d158e143a9c0e4a49ce324aa5ed
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "postcss": "^8.5.6",
