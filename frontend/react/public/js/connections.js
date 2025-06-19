@@ -543,3 +543,10 @@ window.addEventListener('keydown', e => {
             break;
     }
 });
+
+document.getElementById('leftbar-toggle')
+    .addEventListener('click', () => {
+        document
+            .querySelector('.playground-left-bar')
+            .classList.toggle('is-collapsed');
+    });

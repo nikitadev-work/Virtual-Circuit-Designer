@@ -25,7 +25,7 @@ export default function Page() {
                         <Image src="/insert-vec.svg" width={25} height={25} className="insert-vec"  alt="vector"/>
                         Insert
                     </button>
-                    <button className="components-btn">
+                    <button id="leftbar-toggle" button className="components-btn">
                         <Image src="/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
                         Components
                     </button>
@@ -48,7 +48,7 @@ export default function Page() {
 
             {/* Playground section */}
             <section className="playground">
-                <div className="playground-left-bar">
+                <div className="playground-left-bar is-collapsed">
                     <div className="logic-components">Logic Components</div>
                     <div className="components-grid">
                         <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">

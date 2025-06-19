@@ -217,6 +217,18 @@ button.playground {
 
     position: absolute;
     z-index: 10;
+
+    transition: transform .3s ease;
+    transform: translateX(0); /* открыта */
+}
+
+.playground-left-bar.is-collapsed {
+    transform: translateX(-110%); /* скрыта */
+}
+
+/* обнуляем смещение при закрытой панели */
+.playground-left-bar.is-collapsed + .canvas-container {
+    margin-left: 0;
 }
 
 .components-grid {
@@ -461,6 +473,6 @@ button.playground {
     background: #e7f0ff;
 }
 
-.workspace-element.selected{
-    box-shadow:0 0 0 2px #4fa3ff;
+.workspace-element.selected {
+    box-shadow: 0 0 0 2px #4fa3ff;
 }
