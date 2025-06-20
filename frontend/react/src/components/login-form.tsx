@@ -62,7 +62,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         if (data.token) {
           localStorage.setItem('token', data.token);
         }
-        window.location.href = '/playground';
+        window.location.href = '/dashboard';
       } catch {
         setError("Invalid server response");
       }
