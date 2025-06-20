@@ -9,15 +9,15 @@ services:
     networks:
       - app-network
 
-  nginx:
-    build: nginx
-    restart: always
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-    networks:
-      - app-network
+  # nginx:
+  #   build: nginx
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - frontend
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:
