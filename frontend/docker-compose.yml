@@ -6,9 +6,10 @@ services:
       context: react
       dockerfile: Dockerfile
     restart: always
+    ports:
+      - "80:3000"
     networks:
-      - app-network
-
+      - backend_default
   # nginx:
   #   build: nginx
   #   restart: always
@@ -20,6 +21,5 @@ services:
   #     - app-network
 
 networks:
-  app-network:
+  backend_default:
     external: true
-    name: backend_app-network
