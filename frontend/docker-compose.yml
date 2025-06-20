@@ -9,7 +9,7 @@ services:
     ports:
       - "80:3000"
     networks:
-      - backend_default
+      - backend_my_shared_network 
   # nginx:
   #   build: nginx
   #   restart: always
@@ -21,5 +21,5 @@ services:
   #     - app-network
 
 networks:
-  backend_default:
-    external: true
+  backend_my_shared_network:
+    external: true 
