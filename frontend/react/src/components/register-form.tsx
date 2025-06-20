@@ -47,7 +47,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         }
 
         try {
-            const response = await fetch('http://api-service:8052/user/register', {
+            const response = await fetch('http://api-service:8080/user/register', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
