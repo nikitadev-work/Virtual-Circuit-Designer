@@ -47,7 +47,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         }
 
         try {
-            const response = await fetch('http://172.18.0.10:8080/user/register', {
+            const response = await fetch('http://85.198.81.168:8052/user/register', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
