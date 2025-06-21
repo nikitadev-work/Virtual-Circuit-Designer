@@ -2,9 +2,7 @@ version: "3.8"
 
 services:
   frontend:
-    build:
-      context: react
-      dockerfile: Dockerfile
+    image: nikitakhripunkov/frontend-vcd
     restart: always
     ports:
       - "80:3000"
