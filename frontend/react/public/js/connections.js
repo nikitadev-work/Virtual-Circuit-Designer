@@ -66,6 +66,7 @@ let scale = 1
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
+
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
 
     e.preventDefault();
@@ -76,6 +77,7 @@ canvas.parentElement.addEventListener('wheel', (e) => {
 });
 
 canvas.parentElement.addEventListener('mousedown', e => {
+
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
     isCanvasDrag = true;
     startX = e.clientX - posX;
@@ -88,6 +90,7 @@ window.addEventListener('mousemove', e => {
     if (!isCanvasDrag) return;
     posX = e.clientX - startX;
     posY = e.clientY - startY;
+
     canvas.style.transform =
         `translate(${posX}px, ${posY}px) scale(${scale})`;
 });
@@ -156,10 +159,8 @@ function addPorts(el, inputs) {
     };
     inputs === 1 ? makeInput('50%') : (makeInput('33%'), makeInput('66%'));
 
-
     const out = document.createElement('div');
     out.className = 'port output-port';
-
     el.appendChild(out);
 }
 
@@ -355,7 +356,6 @@ function findClosestPort(xClient, yClient, radius) {
     return best;
 }
 
-
 function dragTempLine(e) {
     if (!currentLine) return;
     const rect = workspace.getBoundingClientRect();
@@ -393,7 +393,6 @@ function finishLine(e) {
 
     snapPort?.classList.remove('highlight');
     snapPort = null;
-
 
     if (!currentLine) return;
 
@@ -544,3 +543,17 @@ window.addEventListener('keydown', e => {
             break;
     }
 });
+
+document.getElementById('leftbar-toggle')
+    .addEventListener('click', () => {
+        document
+            .querySelector('.playground-left-bar')
+            .classList.toggle('is-collapsed');
+    });
+
+document.getElementById('rightbar-toggle')
+    .addEventListener('click', () => {
+        document
+            .querySelector('.playground-right-bar')
+            .classList.toggle('is-collapsed');
+    });

@@ -1,8 +1,8 @@
-@import "tw-animate-css";
-@import "tailwindcss/preflight";
-@import "tailwindcss";
 
-@tailwind utilities;
+@import "tailwindcss";
+@import '../styles/style.css';
+
+@custom-variant dark (&:is(.dark *));
 
 html, body, #__next {
   height: 100%;

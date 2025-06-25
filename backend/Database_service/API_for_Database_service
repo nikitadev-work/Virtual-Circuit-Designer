@@ -1,0 +1,30 @@
+1) Register new user
+Type: POST
+Body: JSON(name, email, password)
+
+Response:
+Status(201/400/500)
+Body: JSON(user_id)
+
+2) Login user
+Type: POST
+Body: JSON(name, email, password)
+
+Response:
+Status(200/400/500)
+Body: JSON(user_id)
+
+3) Get all circuits
+Type: GET
+Body: JSON(user_id)
+
+Response:
+Status(200/400)
+Body: JSON(array of all circuits)
+
+4) Save new circuit
+Type: POST
+Body: JSON(user_id, circuit_name, circuit)
+
+Response:
+Status(201/400)
