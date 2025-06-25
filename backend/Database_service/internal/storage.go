@@ -92,7 +92,7 @@ func (db *PostgresDB) GetUser(email, password string) (int, error) {
 	args := []interface{}{email}
 
 	if password != "" {
-		query += " AND password = &2"
+		query += " AND password = $2"
 		args = append(args, password)
 	}
 
@@ -109,7 +109,7 @@ func (db *PostgresDB) GetUser(email, password string) (int, error) {
 		config.DbLogger.Println("Error getting user")
 		return 0, fmt.Errorf("Database error: '%v'", err)
 	default:
-		config.DbLogger.Println("User found")
+		config.DbLogger.Printf("User found")
 		return foundUser.id, nil
 	}
 }

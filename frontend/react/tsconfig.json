@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": "../..",
+    "baseUrl": ".",
     "paths": {
-      "@components/*": ["components/*"]
+      "@components/*": ["src/components/ui/*"],
     },
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -22,9 +22,6 @@
         "name": "next"
       }
     ],
-    "paths": {
-      "/*": ["./src/*"]
-    }
   },
   "include": [
     "next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

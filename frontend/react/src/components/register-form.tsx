@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+import Link from 'next/link';
 import {
     Card,
     CardContent,
@@ -30,6 +31,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        console.log(name, email, password);
 
         if (!validateEmail(email)) {
             setError("Please, enter the correct email");
@@ -45,9 +47,12 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         }
 
         try {
-            const response = await fetch('http://10.91.54.59/user/register', {
+            const response = await fetch('http://85.198.81.168:8052/user/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json'},
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({name, email, password}),
             });
 
@@ -57,8 +62,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 return;
             }
 
-            window.location.href = '/playground';
+            window.location.href = '/login';
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             setError("Server error, please try again later")
         }
@@ -78,7 +84,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                                 <Label>Name</Label>
                                 <Input
                                     id="name"
-                                    type="name"
+                                    type="text"
                                     placeholder="Ivan"
                                     required
                                     value={name}
@@ -134,9 +140,9 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                         </div>
                         <div className="text-center text-sm mt-4">
                             Already have an account?{" "}
-                            <a href="/login" className="underline underline-offset-4">
+                            <Link href="/login" className="underline underline-offset-4">
                                 Login
-                            </a>
+                            </Link>
                         </div>
                     </form>
                 </CardContent>

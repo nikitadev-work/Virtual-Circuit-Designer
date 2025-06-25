@@ -3,11 +3,13 @@ package internal
 import (
 	"Authentication_service/config"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var secret_key = "our-secret-key"
@@ -47,7 +49,18 @@ func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return []byte(secret_key), nil
 	})
 
-	if err != nil || !token.Valid {
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			config.AuthLogger.Println("Token verification request: Token expired")
+			http.Error(w, "Token expired", http.StatusUnauthorized)
+			return
+		}
+		config.AuthLogger.Println("Token verification request: Invalid token")
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	if !token.Valid {
 		config.AuthLogger.Println("Token verification request: Invalid token")
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
@@ -81,6 +94,7 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": strconv.Itoa(req.UserID),
+		"exp":     time.Now().Add(168 * time.Hour).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(secret_key))
