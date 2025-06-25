@@ -1,7 +1,12 @@
 const canvas = document.querySelector('.canvas-container');
 const workspace = document.getElementById('workspace');
 const svg = document.getElementById('connections');
-
+function screenToSvg(xClient, yClient) {
+    const pt = svg.createSVGPoint();
+    pt.x = xClient;
+    pt.y = yClient;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
 // ---------- 0. Контекстное меню ---------------------------------------------
 const ctxMenu = document.createElement('div');
 ctxMenu.className = 'context-menu hidden';
@@ -245,32 +250,28 @@ if (!ctxMenu.classList.contains('hidden')) {
 // ---------- 5. Перемещение элементов внутри workspace -----------------------
 function enableElementDrag(el) {
     let drag = false, offX, offY;
-    const grid = 20;
-    const snap = v => Math.round(v / grid) * grid;
-
 
     el.addEventListener('mousedown', e => {
         if (e.target.classList.contains('port')) return;
         e.stopPropagation();
         drag = true;
-        const rect = workspace.getBoundingClientRect();
-        offX = e.clientX - rect.left - el.offsetLeft;
-        offY = e.clientY - rect.top - el.offsetTop;
+
+        // курсор «в центре» элемента
+        offX = el.offsetWidth  / 2;
+        offY = el.offsetHeight / 2;
+
         el.style.zIndex = 1000;
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     });
 
-
     function onMove(e) {
         if (!drag) return;
         const rect = workspace.getBoundingClientRect();
-        let x = e.clientX - rect.left - offX;
-        let y = e.clientY - rect.top - offY;
-        x = Math.max(0, Math.min(x, rect.width - el.offsetWidth));
-        y = Math.max(0, Math.min(y, rect.height - el.offsetHeight));
-        el.style.left = snap(x) + 'px';
-        el.style.top = snap(y) + 'px';
+        const x = e.clientX - rect.left - offX;
+        const y = e.clientY - rect.top  - offY;
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
         updateConnections();
     }
 
@@ -312,29 +313,27 @@ workspace.addEventListener('mousedown', e => {
     e.stopPropagation();
     e.preventDefault();
 
-
-    const rect = workspace.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-
+    // вместо вычислений через getBoundingClientRect() —
+    // сразу берём координаты в системе SVG
+    const start = screenToSvg(e.clientX, e.clientY);
     startElement = e.target.parentElement;
-    startPort = e.target;
+    startPort    = e.target;
 
-
-    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    currentLine.setAttribute('x1', x);
-    currentLine.setAttribute('y1', y);
-    currentLine.setAttribute('x2', x);
-    currentLine.setAttribute('y2', y);
+    currentLine = document.createElementNS(
+        'http://www.w3.org/2000/svg', 'line'
+    );
+    currentLine.setAttribute('x1', start.x);
+    currentLine.setAttribute('y1', start.y);
+    currentLine.setAttribute('x2', start.x);
+    currentLine.setAttribute('y2', start.y);
     currentLine.setAttribute('stroke', 'black');
     currentLine.setAttribute('stroke-width', '2');
     svg.appendChild(currentLine);
 
-
     document.addEventListener('mousemove', dragTempLine);
-    document.addEventListener('mouseup', finishLine);
+    document.addEventListener('mouseup',   finishLine);
 });
+
 
 function findClosestPort(xClient, yClient, radius) {
     const wsRect = workspace.getBoundingClientRect();
@@ -358,30 +357,20 @@ function findClosestPort(xClient, yClient, radius) {
 
 function dragTempLine(e) {
     if (!currentLine) return;
-    const rect = workspace.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-
-    const near = findClosestPort(e.clientX, e.clientY, SNAP_R);
-
-
-    if (near !== snapPort) {
-        snapPort?.classList.remove('highlight');
-        near?.classList.add('highlight');
-        snapPort = near;
-    }
+    // получаем координаты курсора в SVG
+    const pos = screenToSvg(e.clientX, e.clientY);
 
     if (snapPort) {
-        const c = portCenter(snapPort);
+        const c = portCenter(snapPort);  // уже возвращает SVG-координаты
         currentLine.setAttribute('x2', c.x);
         currentLine.setAttribute('y2', c.y);
     } else {
-        currentLine.setAttribute('x2', x);
-        currentLine.setAttribute('y2', y);
+        currentLine.setAttribute('x2', pos.x);
+        currentLine.setAttribute('y2', pos.y);
     }
 }
 
+svg.style.overflow = 'visible';
 
 function finishLine(e) {
     if (!currentLine) return;
@@ -431,12 +420,21 @@ function updateConnections() {
 
 function portCenter(port) {
     const wsRect = workspace.getBoundingClientRect();
-    const pr = port.getBoundingClientRect();
-    return {
-        x: pr.left - wsRect.left + pr.width / 2,
-        y: pr.top - wsRect.top + pr.height / 2
-    };
+    const pr     = port.getBoundingClientRect();
+    // координаты центра порта на экране (после CSS-scale/translate):
+    const screenX = pr.left + pr.width  / 2;
+    const screenY = pr.top  + pr.height / 2;
+
+    // получаем инвертированную матрицу экрана→SVG
+        const ctmInv = svg.getScreenCTM().inverse();
+    const pt     = svg.createSVGPoint();
+    pt.x = screenX; pt.y = screenY;
+
+    // преобразуем в локальные SVG-координаты
+    const svgP = pt.matrixTransform(ctmInv);
+    return { x: svgP.x, y: svgP.y };
 }
+
 
 function updateTransform() {
     canvas.style.transform =
