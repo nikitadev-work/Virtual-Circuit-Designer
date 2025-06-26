@@ -11,7 +11,7 @@ export default function Page() {
                 <title>VCD | Playground</title>
 
                 {/* Favicon */}
-                <link rel="shortcut icon" href="/favicon-black.png" type="image/png" />
+                <link rel="shortcut icon" href="/Icons/favicon-black.png" type="image/png" />
                 {/* Fonts */}
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"

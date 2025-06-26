@@ -36,7 +36,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     }
 
     try {
-      const response = await fetch('http:
+      const response = await fetch('http://85.198.81.168:8052/user/login', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
