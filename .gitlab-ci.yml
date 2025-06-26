@@ -3,8 +3,10 @@ stages:
   - test
   - deploy
 
-build-job:
-  stage: build
+test_ssh:
+  stage: deploy
   script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/test_key
+    - chmod 600 ~/.ssh/test_key
+    - ssh -i ~/.ssh/test_key root@85.198.81.168 "echo 'SSH success!'"
