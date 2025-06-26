@@ -1,12 +1,12 @@
 import * as React from "react"
 import {
-  // AudioWaveform,
-  // BookOpen,
-  // Bot,
-  // Command,
+  
+  
+  
+  
   Frame,
   GalleryVerticalEnd,
-  // Map,
+  
   PieChart,
   Settings2,
   SquareTerminal,
@@ -24,7 +24,7 @@ import {
   SidebarRail,
 } from "@components/sidebar"
 
-// This is sample data.
+
 const data = {
   user: {
     name: "User",

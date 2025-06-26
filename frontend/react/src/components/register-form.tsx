@@ -20,11 +20,11 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
 
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    // Проверка совпадения паролей
+    
     const passwordsMatch = password === confirmPassword;
 
     const validateEmail = (email: string) => {
-        // Простая проверка email
+        
         return /\S+@\S+\.\S+/.test(email);
     };
 
@@ -47,7 +47,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         }
 
         try {
-            const response = await fetch('http://85.198.81.168:8052/user/register', {
+            const response = await fetch('http:
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -64,7 +64,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
 
             window.location.href = '/login';
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            
         } catch (error) {
             setError("Server error, please try again later")
         }

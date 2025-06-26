@@ -1,6 +1,19 @@
 const canvas = document.querySelector('.canvas-container');
 const workspace = document.getElementById('workspace');
 const svg = document.getElementById('connections');
+const GRID = 25;
+const snap = (v) => {
+    const step = GRID * scale;
+    return Math.round(v / step) * step;
+};
+
+
+function screenToSvg(xClient, yClient) {
+    const pt = svg.createSVGPoint();
+    pt.x = xClient;
+    pt.y = yClient;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
 
 // ---------- 0. Контекстное меню ---------------------------------------------
 const ctxMenu = document.createElement('div');
@@ -101,13 +114,16 @@ window.addEventListener('mouseup', () => {
     canvas.style.cursor = 'grab';
 });
 
-
-// ---------- 3. Drag-&-drop из левой панели ----------------------------------
 document.querySelectorAll('.draggable-item').forEach(item => {
     item.addEventListener('dragstart', e => {
         e.dataTransfer.setData('type', e.target.dataset.type);
         e.dataTransfer.setData('icon', e.target.dataset.icon);
         e.dataTransfer.setData('source', 'sidebar');
+
+        const img = new Image();
+        img.src = e.target.querySelector('img').src;
+        img.style.width = '10px';
+        e.dataTransfer.setDragImage(img, 10, 10);
     });
 });
 
@@ -115,18 +131,15 @@ document.querySelectorAll('.draggable-item').forEach(item => {
 workspace.addEventListener('dragover', e => e.preventDefault());
 workspace.addEventListener('drop', handleDrop);
 
-
 function handleDrop(e) {
     e.preventDefault();
     if (e.dataTransfer.getData('source') !== 'sidebar') return;
 
-
     const type = e.dataTransfer.getData('type');
     const icon = e.dataTransfer.getData('icon');
-
-
     const el = document.createElement('div');
     el.className = 'workspace-element';
+    el.dataset.type = type;
 
 
     const img = document.createElement('img');
@@ -135,36 +148,118 @@ function handleDrop(e) {
     el.appendChild(img);
 
 
-    addPorts(el, type === 'NOT' ? 1 : 2);
+    addPorts(el);
 
 
     const rect = workspace.getBoundingClientRect();
-    el.style.left = e.clientX - rect.left + 'px';
-    el.style.top = e.clientY - rect.top + 'px';
+    el.style.left = snap(e.clientX - rect.left) + 'px';
+    el.style.top = snap(e.clientY - rect.top) + 'px';
 
 
     enableElementDrag(el);
     workspace.appendChild(el);
 }
 
+function exportSchemeAsList() {
+    const nodes = Array.from(document.querySeelctorAll('.workspace-element'));
+    const nodeIndex = new Map(nodes.map((el, i) => [el, i]));
 
-// ---------- 4. Создание портов ----------------------------------------------
-function addPorts(el, inputs) {
-    const makeInput = pct => {
-        const p = document.createElement('div');
-        p.className = 'port input-port';
-        p.style.top = pct;
-        p.style.transform = 'translateY(-50%)';
-        el.appendChild(p);
+    const typeMap = {
+        INPUT: 0,
+        OUTPUT: 1,
+        NOT: 2,
+        AND: 3,
+        OR: 4,
+        XOR: 5,
+        NAND: 6,
+        NOR: 7,
+        XNOR: 8
     };
-    inputs === 1 ? makeInput('50%') : (makeInput('33%'), makeInput('66%'));
 
-    const out = document.createElement('div');
-    out.className = 'port output-port';
-    el.appendChild(out);
+    const gates = nodes.map(el => {
+        const t = el.dataset.type;
+        const code = typeMap[t] != null ? typeMap[t] : 0;
+        return [code, /* inputs */ [], /* outputs */ []];
+    });
+
+    connections.forEach(conn => {
+        const fromEl = conn.from.element;
+        const toEl = conn.to.element;
+        const iFrom = nodeIndex.get(fromEl);
+        const iTo = nodeIndex.get(toEl);
+
+        if (iFrom == null || iTo == null) return;
+        gates[iFrom][2].push(iTo);
+        gates[iTo][1].push(iFrom);
+    });
+    return gates;
 }
 
-// ---------- контекст-меню для workspace ------------------------------------
+document.getElementById('export-btn').addEventListener('click', () => {
+    const payload = exportSchemeAsList();
+    fetch('/api/upload-scheme', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(data => console.log('Сервер ответил', data))
+        .catch(err => console.error('Ошибка при отправке схемы', err));
+})
+
+function addPorts(el) {
+    const type = el.dataset.type;
+
+    const cfg = {
+        INPUT: {ins: 0, outs: 1},
+        OUTPUT: {ins: 1, outs: 0},
+        NOT: {ins: 1, outs: 1},
+        AND: {ins: 2, outs: 1},
+        OR: {ins: 2, outs: 1},
+        XOR: {ins: 2, outs: 1},
+        NAND: {ins: 2, outs: 1},
+        NOR: {ins: 2, outs: 1},
+        XNOR: {ins: 2, outs: 1},
+    }[type] || {ins: 2, outs: 1};
+
+    for (let i = 0; i < cfg.ins; i++) {
+        const p = document.createElement('div');
+        p.className = 'port input-port';
+
+        if (type === 'OUTPUT') {
+            p.style.left = '-12px';
+            p.style.top = '50%';
+            p.style.transform = 'translateY(-50%)';
+        } else {
+            p.style.left = '-20px';
+            p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '33%' : '66%');
+            p.style.transform = 'translateY(-50%)';
+        }
+
+        el.appendChild(p);
+    }
+
+    for (let i = 0; i < cfg.outs; i++) {
+        const p = document.createElement('div');
+        p.className = 'port output-port';
+
+        if (type === 'INPUT') {
+            p.style.right = '-12px';
+            p.style.top = '50%';
+            p.style.transform = 'translateY(-50%)';
+        } else {
+            p.style.right = '-17px';
+            p.style.top = '50%';
+            p.style.transform = 'translateY(-50%)';
+        }
+
+        el.appendChild(p);
+    }
+}
+
 workspace.addEventListener('contextmenu', e => {
     e.preventDefault();
 
@@ -238,24 +333,25 @@ function applyTransform(el, action) {
 
 if (!ctxMenu.classList.contains('hidden')) {
     hideCtxMenu();
-    // return;
 }
 
 
-// ---------- 5. Перемещение элементов внутри workspace -----------------------
 function enableElementDrag(el) {
     let drag = false, offX, offY;
-    const grid = 20;
-    const snap = v => Math.round(v / grid) * grid;
-
 
     el.addEventListener('mousedown', e => {
         if (e.target.classList.contains('port')) return;
         e.stopPropagation();
         drag = true;
+
         const rect = workspace.getBoundingClientRect();
-        offX = e.clientX - rect.left - el.offsetLeft;
-        offY = e.clientY - rect.top - el.offsetTop;
+
+        const mouseX = (e.clientX - rect.left - posX) / scale;
+        const mouseY = (e.clientY - rect.top - posY) / scale;
+
+        offX = mouseX - parseFloat(el.style.left);
+        offY = mouseY - parseFloat(el.style.top);
+
         el.style.zIndex = 1000;
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
@@ -264,13 +360,18 @@ function enableElementDrag(el) {
 
     function onMove(e) {
         if (!drag) return;
+
         const rect = workspace.getBoundingClientRect();
-        let x = e.clientX - rect.left - offX;
-        let y = e.clientY - rect.top - offY;
-        x = Math.max(0, Math.min(x, rect.width - el.offsetWidth));
-        y = Math.max(0, Math.min(y, rect.height - el.offsetHeight));
-        el.style.left = snap(x) + 'px';
-        el.style.top = snap(y) + 'px';
+
+        const mouseX = (e.clientX - rect.left - posX) / scale;
+        const mouseY = (e.clientY - rect.top - posY) / scale;
+
+        const x = snap(mouseX - offX);
+        const y = snap(mouseY - offY);
+
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+
         updateConnections();
     }
 
@@ -284,7 +385,6 @@ function enableElementDrag(el) {
     }
 
 
-    // dblclick — удалить элемент и его соединения
     el.addEventListener('dblclick', () => {
         connections = connections.filter(c => {
             if (c.from.element === el || c.to.element === el) {
@@ -298,7 +398,6 @@ function enableElementDrag(el) {
 }
 
 
-// ---------- 6. Соединения (SVG line) ----------------------------------------
 let connections = [];
 let snapPort = null;
 const SNAP_R = 20;
@@ -312,29 +411,25 @@ workspace.addEventListener('mousedown', e => {
     e.stopPropagation();
     e.preventDefault();
 
-
-    const rect = workspace.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-
+    const start = screenToSvg(e.clientX, e.clientY);
     startElement = e.target.parentElement;
     startPort = e.target;
 
-
-    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    currentLine.setAttribute('x1', x);
-    currentLine.setAttribute('y1', y);
-    currentLine.setAttribute('x2', x);
-    currentLine.setAttribute('y2', y);
+    currentLine = document.createElementNS(
+        'http://www.w3.org/2000/svg', 'line'
+    );
+    currentLine.setAttribute('x1', start.x);
+    currentLine.setAttribute('y1', start.y);
+    currentLine.setAttribute('x2', start.x);
+    currentLine.setAttribute('y2', start.y);
     currentLine.setAttribute('stroke', 'black');
     currentLine.setAttribute('stroke-width', '2');
     svg.appendChild(currentLine);
 
-
     document.addEventListener('mousemove', dragTempLine);
     document.addEventListener('mouseup', finishLine);
 });
+
 
 function findClosestPort(xClient, yClient, radius) {
     const wsRect = workspace.getBoundingClientRect();
@@ -358,30 +453,22 @@ function findClosestPort(xClient, yClient, radius) {
 
 function dragTempLine(e) {
     if (!currentLine) return;
-    const rect = workspace.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-
-    const near = findClosestPort(e.clientX, e.clientY, SNAP_R);
-
-
-    if (near !== snapPort) {
-        snapPort?.classList.remove('highlight');
-        near?.classList.add('highlight');
-        snapPort = near;
-    }
+    const pos = screenToSvg(e.clientX, e.clientY);
+    snapPort = findClosestPort(e.clientX, e.clientY, SNAP_R);
+    document.querySelectorAll('.port.highlight').forEach(p => p.classList.remove('highlight'));
+    if (snapPort) snapPort.classList.add('highlight');
 
     if (snapPort) {
         const c = portCenter(snapPort);
         currentLine.setAttribute('x2', c.x);
         currentLine.setAttribute('y2', c.y);
     } else {
-        currentLine.setAttribute('x2', x);
-        currentLine.setAttribute('y2', y);
+        currentLine.setAttribute('x2', pos.x);
+        currentLine.setAttribute('y2', pos.y);
     }
 }
 
+svg.style.overflow = 'visible';
 
 function finishLine(e) {
     if (!currentLine) return;
@@ -416,7 +503,6 @@ function finishLine(e) {
 }
 
 
-// ---------- 7. Обновление всех линий ----------------------------------------
 function updateConnections() {
     connections.forEach(c => {
         const a = portCenter(c.from.port);
@@ -432,18 +518,24 @@ function updateConnections() {
 function portCenter(port) {
     const wsRect = workspace.getBoundingClientRect();
     const pr = port.getBoundingClientRect();
-    return {
-        x: pr.left - wsRect.left + pr.width / 2,
-        y: pr.top - wsRect.top + pr.height / 2
-    };
+    const screenX = pr.left + pr.width / 2;
+    const screenY = pr.top + pr.height / 2;
+
+    const ctmInv = svg.getScreenCTM().inverse();
+    const pt = svg.createSVGPoint();
+    pt.x = screenX;
+    pt.y = screenY;
+
+    const svgP = pt.matrixTransform(ctmInv);
+    return {x: svgP.x, y: svgP.y};
 }
+
 
 function updateTransform() {
     canvas.style.transform =
         `translate(${posX}px, ${posY}px) scale(${scale})`;
 }
 
-// ---------- 8.  Буфер обмена -------------------------------------------------
 let clipboard = null;
 
 function copy(src = null) {
@@ -491,7 +583,6 @@ function deleteElement(el) {
     el.remove();
 }
 
-// ---------- 9.  Действия из контекст-меню -----------------------------------
 ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
     const act = e.target.dataset.action;
@@ -512,7 +603,6 @@ ctxMenu.addEventListener('click', e => {
     hideCtxMenu();
 });
 
-// ---------- координаты последнего курсора внутри workspace -----------------
 const cursorPos = {x: 0, y: 0};
 workspace.addEventListener('mousemove', e => {
     const rect = workspace.getBoundingClientRect();
@@ -521,7 +611,6 @@ workspace.addEventListener('mousemove', e => {
 });
 
 
-// ---------- 10.  Горячие клавиши --------------------------------------------
 window.addEventListener('keydown', e => {
     // нужна Ctrl или ⌘ и курсор НЕ в поле ввода
     if (!(e.ctrlKey || e.metaKey) || ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
