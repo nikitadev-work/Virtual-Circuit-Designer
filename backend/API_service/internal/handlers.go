@@ -22,6 +22,7 @@ type GenerateTokenRequest struct {
 }
 
 type Circuit struct {
+	UserID             int      `json:"user_id"`
 	Name               string   `json:"circuit_name"`
 	CircuitDescription [][3]any `json:"circuit_description"`
 }
@@ -270,6 +271,8 @@ func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	response.UserID = userID
 
 	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/circuits", bytes.NewReader(body))
 	if err != nil {
