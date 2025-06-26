@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <svg width="169" height="288" viewBox="0 0 169 288" fill="none" xmlns="http:
+=======
+<svg width="169" height="288" viewBox="0 0 169 288" fill="none" xmlns="http://www.w3.org/2000/svg">
+>>>>>>> da53e819 (playground edited)
 <path d="M129 229L129 284" stroke="#0099FF" stroke-width="8" stroke-linecap="round"/>
 <path d="M86.1211 4.84852L86.1211 80.5758" stroke="#0099FF" stroke-width="8" stroke-linecap="round"/>
 <path d="M39 229L39 284" stroke="#0099FF" stroke-width="8" stroke-linecap="round"/>
