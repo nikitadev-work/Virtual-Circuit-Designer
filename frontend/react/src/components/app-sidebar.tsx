@@ -1,17 +1,6 @@
 import * as React from "react"
 import {
-  
-  
-  
-  
   Frame,
-<<<<<<< HEAD
-  GalleryVerticalEnd,
-  
-  PieChart,
-=======
-  // Map,
->>>>>>> 0394ec58 (Dashboard editing)
   Settings2,
   SquareTerminal,
 } from "lucide-react"
@@ -19,28 +8,21 @@ import {
 import { NavMain } from "./nav-main"
 import { NavProjects } from "./nav-projects"
 import { NavUser } from "./nav-user"
-import { TeamSwitcher } from "./team-switcher"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
 } from "@components/sidebar"
 
 
+// This is sample data.
 const data = {
   user: {
     name: "User",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
-    {
-      name: "VCD",
-      logo: ".../public/Logo.svg",
-    }
-  ],
   navMain: [
     {
       title: "Playground",
@@ -111,15 +93,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
+
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        {user ? <NavUser user={user} /> : <div className="px-4 py-2 text-xs text-muted-foreground">Loading user...</div>}
+        {user ? <NavUser user={data.user} /> : <div className="px-4 py-2 text-xs text-muted-foreground">Loading user...</div>}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+<<<<<<< HEAD
     "dev": "cross-env TAILWIND_CONFIG=tailwind.config.ts next dev",
+=======
+    "dev": "TAILWIND_CONFIG=tailwind.config.js next dev",
+>>>>>>> a1b4f6c6 (dashboard left side-bar)
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

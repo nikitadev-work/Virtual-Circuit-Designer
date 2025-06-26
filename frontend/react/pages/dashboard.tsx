@@ -4,8 +4,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
 } from "@components/breadcrumb"
 import { Separator } from "@components/separator"
 import {
