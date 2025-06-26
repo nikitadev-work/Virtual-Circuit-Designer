@@ -21,7 +21,7 @@ type Circuit struct {
 	id          int
 	userId      int
 	circuitName string
-	circuit     string
+	circuit     [][3]any
 }
 
 type PostgresDB struct {
@@ -61,7 +61,7 @@ func (db *PostgresDB) CreateTables() error {
 			"(id SERIAL PRIMARY KEY, " +
 			"user_id INTEGER NOT NULL, " +
 			"name VARCHAR(100) NOT NULL, " +
-			"circuit VARCHAR(100) NOT NULL)")
+			"circuit JSONB NOT NULL)")
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (db *PostgresDB) CreateUser(username, email, password string) (int, error) 
 	return userId, nil
 }
 
-func (db *PostgresDB) GetUser(email, password string) (int, error) {
+func (db *PostgresDB) GetUser(email, password string) (int, string, error) {
 	config.DbLogger.Println("Getting user")
 
 	query := "Select id, name, email, password FROM Users WHERE email = $1"
@@ -104,17 +104,17 @@ func (db *PostgresDB) GetUser(email, password string) (int, error) {
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
 		config.DbLogger.Println("User not found")
-		return 0, fmt.Errorf("User with email '%s' not found", email)
+		return 0, "", fmt.Errorf("User with email '%s' not found", email)
 	case err != nil:
 		config.DbLogger.Println("Error getting user")
-		return 0, fmt.Errorf("Database error: '%v'", err)
+		return 0, "", fmt.Errorf("Database error: '%v'", err)
 	default:
 		config.DbLogger.Printf("User found")
-		return foundUser.id, nil
+		return foundUser.id, foundUser.name, nil
 	}
 }
 
-func (db *PostgresDB) SaveCircuits(userId int, circuitName, circuit string) error {
+func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any) error {
 	config.DbLogger.Println("Saving circuits")
 	circuitID += 1
 	_, err := db.conn.Exec(
@@ -127,28 +127,25 @@ func (db *PostgresDB) SaveCircuits(userId int, circuitName, circuit string) erro
 	return nil
 }
 
-func (db *PostgresDB) GetCircuit(userId int) ([]Pair, error) {
+func (db *PostgresDB) GetCircuit(userId int) ([]Circuit, error) {
 	config.DbLogger.Println("Getting circuits")
 
 	query := "Select * FROM Circuits WHERE user_id = $1"
 	rows, err := db.conn.Query(query, userId)
 	if err != nil {
 		config.DbLogger.Println("Error getting circuits")
-		return []Pair{}, err
+		return []Circuit{}, err
 	}
 
-	var circuitsFound []Pair
+	var circuitsFound []Circuit
 	for rows.Next() {
 		var c Circuit
-		var temp Pair
 		err := rows.Scan(&c.id, &c.userId, &c.circuitName, &c.circuit)
 		if err != nil {
 			config.DbLogger.Println("Error getting circuits")
-			return []Pair{}, err
+			return []Circuit{}, err
 		}
-		temp.CircuitName = c.circuitName
-		temp.Circuit = c.circuit
-		circuitsFound = append(circuitsFound, temp)
+		circuitsFound = append(circuitsFound, c)
 	}
 
 	config.DbLogger.Println("Got circuits")

@@ -29,18 +29,19 @@ type LoginRequest struct {
 }
 
 type CircuitPostRequest struct {
-	UserId      int    `json:"user_id"`
-	CircuitName string `json:"circuit_name"`
-	Circuit     string `json:"circuit"`
+	UserId      int      `json:"user_id"`
+	CircuitName string   `json:"circuit_name"`
+	Circuit     [][3]any `json:"circuit_description"`
 }
 
 type CircuitGetRequest struct {
 	UserId int `json:"user_id"`
 }
 
-type Pair struct {
-	CircuitName string
-	Circuit     string
+type LogRegResponse struct {
+	Id    int    `json:"user_id"`
+	Name  string `json:"user_name"`
+	Email string `json:"user_email"`
 }
 
 func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Request) {
@@ -59,7 +60,7 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 		regReq.Name, regReq.Email, regReq.Password,
 	)
 
-	id, err := h.db.GetUser(regReq.Email, "")
+	id, _, err := h.db.GetUser(regReq.Email, "")
 	if id != 0 {
 		config.DbLogger.Println("User with current email already exists")
 		http.Error(resp, "User with current email already exists", http.StatusBadRequest)
@@ -73,10 +74,15 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
+	var regResponse LogRegResponse
+	regResponse.Id = id
+	regResponse.Name = regReq.Name
+	regResponse.Email = regReq.Email
+
 	config.DbLogger.Println("User registration request completed")
 	resp.Header().Set("Content-Type", "application/json")
 	resp.WriteHeader(http.StatusOK)
-	json.NewEncoder(resp).Encode(map[string]int{"user_id": id})
+	json.NewEncoder(resp).Encode(regResponse)
 }
 
 func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request) {
@@ -90,17 +96,22 @@ func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	id, err := h.db.GetUser(logReq.Email, logReq.Password)
+	id, name, err := h.db.GetUser(logReq.Email, logReq.Password)
 	if err != nil {
 		config.DbLogger.Println("User login request: " + err.Error())
 		http.Error(resp, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	var logResponse LogRegResponse
+	logResponse.Id = id
+	logResponse.Name = name
+	logResponse.Email = logReq.Email
+
 	config.DbLogger.Println("User login request completed")
 	resp.Header().Set("Content-Type", "application/json")
 	resp.WriteHeader(http.StatusOK)
-	json.NewEncoder(resp).Encode(map[string]int{"user_id": id})
+	json.NewEncoder(resp).Encode(logResponse)
 }
 
 func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request) {
