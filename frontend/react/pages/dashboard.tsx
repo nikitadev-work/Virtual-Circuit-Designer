@@ -35,14 +35,61 @@ export default function Page() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
+
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-lg font-black">All projects</h1>
+            <div className="flex items-center gap-2">
+              <button className="rounded-md p-2 hover:bg-muted">
+                <span className="sr-only">Grid view</span>
+                {/* иконка grid */}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
+                </svg>
+              </button>
+              <button className="rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-blue-700">
+                + New
+              </button>
+            </div>
           </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+
+          <div className="relative mb-6">
+            <input
+                type="text"
+                placeholder="Search 2 projects..."
+                className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-500"
+            />
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Card 1 - Untitled */}
+            <div className="border rounded-lg p-4 hover:shadow transition">
+              <div className="aspect-[4/3] bg-muted rounded-md flex items-center justify-center">
+                <span className="text-sm text-gray-400">Empty</span>
+              </div>
+              <div className="mt-2">
+                <p className="font-medium text-sm">Untitled</p>
+                <p className="text-xs text-gray-500">Created 3 minutes ago · Edited 4 minutes ago</p>
+              </div>
+            </div>
+
+            {/* Card 2 - Circuit #2 */}
+            <div className="border rounded-lg p-4 hover:shadow transition">
+              <div className="aspect-[4/3] bg-gradient-to-r from-cyan-400 to-purple-400 rounded-md flex items-center justify-center overflow-hidden">
+                <img
+                    src="/path/to/your/phone-ui.png" // замените на актуальный путь
+                    alt="Circuit preview"
+                    className="h-3/4"
+                />
+              </div>
+              <div className="mt-2">
+                <p className="font-medium text-sm">Circuit #2</p>
+                <p className="text-xs text-gray-500">Created 4 months ago · Edited 4 months ago</p>
+              </div>
+            </div>
+          </div>
         </div>
+
       </SidebarInset>
     </SidebarProvider>
   )
