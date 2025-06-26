@@ -124,3 +124,46 @@ html, body, #__next {
     @apply bg-background text-foreground;
   }
 }
+@keyframes fade-in-slide {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-fade-in-slide {
+  animation: fade-in-slide 1s ease-out forwards;
+}
+
+.animate-pulse-gradient {
+  background-size: 200% 200%;
+  animation: pulse-gradient 4s ease infinite;
+}
+.fade-container {
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 2;
+  }
+}
+
+

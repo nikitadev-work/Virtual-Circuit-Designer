@@ -1,12 +1,6 @@
 const canvas = document.querySelector('.canvas-container');
 const workspace = document.getElementById('workspace');
 const svg = document.getElementById('connections');
-const GRID = 25;
-const snap = (v) => {
-    const step = GRID * scale;
-    return Math.round(v / step) * step;
-};
-
 
 function screenToSvg(xClient, yClient) {
     const pt = svg.createSVGPoint();
@@ -344,34 +338,25 @@ function enableElementDrag(el) {
         e.stopPropagation();
         drag = true;
 
-        const rect = workspace.getBoundingClientRect();
 
-        const mouseX = (e.clientX - rect.left - posX) / scale;
-        const mouseY = (e.clientY - rect.top - posY) / scale;
-
-        offX = mouseX - parseFloat(el.style.left);
-        offY = mouseY - parseFloat(el.style.top);
+        // курсор «в центре» элемента
+        offX = el.offsetWidth  / 2;
+        offY = el.offsetHeight / 2;
 
         el.style.zIndex = 1000;
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     });
 
-
     function onMove(e) {
         if (!drag) return;
 
         const rect = workspace.getBoundingClientRect();
 
-        const mouseX = (e.clientX - rect.left - posX) / scale;
-        const mouseY = (e.clientY - rect.top - posY) / scale;
-
-        const x = snap(mouseX - offX);
-        const y = snap(mouseY - offY);
-
+        const x = e.clientX - rect.left - offX;
+        const y = e.clientY - rect.top  - offY;
         el.style.left = x + 'px';
-        el.style.top = y + 'px';
-
+        el.style.top  = y + 'px';
         updateConnections();
     }
 
@@ -400,7 +385,6 @@ function enableElementDrag(el) {
 
 let connections = [];
 let snapPort = null;
-const SNAP_R = 20;
 let currentLine = null,
     startElement = null,
     startPort = null;
@@ -411,9 +395,12 @@ workspace.addEventListener('mousedown', e => {
     e.stopPropagation();
     e.preventDefault();
 
+
+    // вместо вычислений через getBoundingClientRect() —
+    // сразу берём координаты в системе SVG
     const start = screenToSvg(e.clientX, e.clientY);
     startElement = e.target.parentElement;
-    startPort = e.target;
+    startPort    = e.target;
 
     currentLine = document.createElementNS(
         'http://www.w3.org/2000/svg', 'line'
@@ -427,39 +414,19 @@ workspace.addEventListener('mousedown', e => {
     svg.appendChild(currentLine);
 
     document.addEventListener('mousemove', dragTempLine);
-    document.addEventListener('mouseup', finishLine);
+    document.addEventListener('mouseup',   finishLine);
 });
 
 
-function findClosestPort(xClient, yClient, radius) {
-    const wsRect = workspace.getBoundingClientRect();
-    let best = null, bestD2 = radius * radius;
 
-    document.querySelectorAll('.port').forEach(p => {
-        if (p === startPort) return;
-        const pr = p.getBoundingClientRect();
-        const cx = pr.left - wsRect.left + pr.width / 2;
-        const cy = pr.top - wsRect.top + pr.height / 2;
-        const dx = cx - (xClient - wsRect.left);
-        const dy = cy - (yClient - wsRect.top);
-        const d2 = dx * dx + dy * dy;
-        if (d2 < bestD2) {
-            best = p;
-            bestD2 = d2;
-        }
-    });
-    return best;
-}
 
 function dragTempLine(e) {
     if (!currentLine) return;
+    // получаем координаты курсора в SVG
     const pos = screenToSvg(e.clientX, e.clientY);
-    snapPort = findClosestPort(e.clientX, e.clientY, SNAP_R);
-    document.querySelectorAll('.port.highlight').forEach(p => p.classList.remove('highlight'));
-    if (snapPort) snapPort.classList.add('highlight');
 
     if (snapPort) {
-        const c = portCenter(snapPort);
+        const c = portCenter(snapPort);  // уже возвращает SVG-координаты
         currentLine.setAttribute('x2', c.x);
         currentLine.setAttribute('y2', c.y);
     } else {
@@ -516,18 +483,21 @@ function updateConnections() {
 
 
 function portCenter(port) {
-    const wsRect = workspace.getBoundingClientRect();
-    const pr = port.getBoundingClientRect();
-    const screenX = pr.left + pr.width / 2;
-    const screenY = pr.top + pr.height / 2;
+    // const wsRect = workspace.getBoundingClientRect();
 
-    const ctmInv = svg.getScreenCTM().inverse();
-    const pt = svg.createSVGPoint();
-    pt.x = screenX;
-    pt.y = screenY;
+    const pr     = port.getBoundingClientRect();
+    // координаты центра порта на экране (после CSS-scale/translate):
+    const screenX = pr.left + pr.width  / 2;
+    const screenY = pr.top  + pr.height / 2;
 
+    // получаем инвертированную матрицу экрана→SVG
+        const ctmInv = svg.getScreenCTM().inverse();
+    const pt     = svg.createSVGPoint();
+    pt.x = screenX; pt.y = screenY;
+
+    // преобразуем в локальные SVG-координаты
     const svgP = pt.matrixTransform(ctmInv);
-    return {x: svgP.x, y: svgP.y};
+    return { x: svgP.x, y: svgP.y };
 }
 
 

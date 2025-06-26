@@ -1,4 +1,5 @@
-'use client';  
+'use client';
+
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -20,7 +21,8 @@ export default function MainPage() {
         return () => clearInterval(typingInterval);
     }, []);
 
-    
+
+    // Анимация точек/линий (эффект "электрической цепи")
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
