@@ -22,22 +22,22 @@ export default function Page() {
             <header className="header">
                 <div className="left-controls">
                     <button id="leftbar-toggle" button className="components-btn">
-                        <Image src="/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
+                        <Image src="Icons/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
                         Components
                     </button>
                 </div>
 
                 <button className="title-btn">
-                    <Image src="/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
+                    <Image src="/Icons/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
                 </button>
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
                     <button id="rightbar-toggle" className="settings-btn">
-                        <Image width={20} height={20} src="/settings.svg" alt="setting"/>
+                        <Image width={20} height={20} src="Icons/settings.svg" alt="setting"/>
                     </button>
                     <button className="play-btn">
-                        <Image width={20} height={20} src="/play.svg" alt="play"/>
+                        <Image width={20} height={20} src="/Icons/play.svg" alt="play"/>
                     </button>
 
                     <button id="export-btn" className="export-btn">Export</button>
