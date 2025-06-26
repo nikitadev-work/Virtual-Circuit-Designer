@@ -22,8 +22,8 @@ type GenerateTokenRequest struct {
 }
 
 type Circuit struct {
-	CircuitName string
-	Circuit     string
+	Name               string   `json:"circuit_name"`
+	CircuitDescription [][3]any `json:"circuit_description"`
 }
 
 func ProxyAuthHandler(w http.ResponseWriter, r *http.Request) {
