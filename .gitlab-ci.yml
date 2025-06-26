@@ -5,6 +5,12 @@ stages:
 
 test_ssh:
   stage: deploy
+  before_script:
+    - apk update && apk add --no-cache openssh-client  # Устанавливаем SSH
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null" > ~/.ssh/config
   script:
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/test_key
