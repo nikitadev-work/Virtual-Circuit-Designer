@@ -15,7 +15,9 @@ import (
 var secret_key = "our-secret-key"
 
 type Claims struct {
-	UserID string `json:"user_id"`
+	UserID    string `json:"user_id"`
+	UserName  string `json:"user_name"`
+	UserEmail string `json:"user_email"`
 	jwt.RegisteredClaims
 }
 
@@ -72,7 +74,23 @@ func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := Claims{UserID: claims.UserID}
+	if claims.UserName == "" {
+		config.AuthLogger.Println("Token verification request: Empty user Name")
+		http.Error(w, "Invalid token: missing user_email", http.StatusUnauthorized)
+		return
+	}
+
+	if claims.UserEmail == "" {
+		config.AuthLogger.Println("Token verification request: Empty user Email")
+		http.Error(w, "Invalid token: missing user_email", http.StatusUnauthorized)
+		return
+	}
+
+	resp := Claims{
+		UserID:    claims.UserID,
+		UserName:  claims.UserName,
+		UserEmail: claims.UserEmail,
+	}
 
 	config.AuthLogger.Println("Token verification request: Request completed successfully")
 	w.WriteHeader(http.StatusOK)
@@ -83,7 +101,9 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	config.AuthLogger.Println("Token generation request")
 
 	var req struct {
-		UserID int `json:"user_id"`
+		UserID    int    `json:"user_id"`
+		UserName  string `json:"user_name"`
+		UserEmail string `json:"user_email"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -93,8 +113,10 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": strconv.Itoa(req.UserID),
-		"exp":     time.Now().Add(168 * time.Hour).Unix(),
+		"user_id":    strconv.Itoa(req.UserID),
+		"user_name":  req.UserName,
+		"user_email": req.UserEmail,
+		"exp":        time.Now().Add(168 * time.Hour).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(secret_key))

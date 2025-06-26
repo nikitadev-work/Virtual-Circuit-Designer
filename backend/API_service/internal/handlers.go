@@ -9,12 +9,16 @@ import (
 	"strings"
 )
 
-type ResponseUserID struct {
-	UserID int `json:"user_id"`
+type ResponseUser struct {
+	UserID    int    `json:"user_id"`
+	UserName  string `json:"user_name"`
+	UserEmail string `json:"user_email"`
 }
 
 type GenerateTokenRequest struct {
-	UserID int `json:"user_id"`
+	UserID    int    `json:"user_id"`
+	UserName  string `json:"user_name"`
+	UserEmail string `json:"user_email"`
 }
 
 type Circuit struct {
@@ -86,7 +90,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 		return
 	}
 
-	var response ResponseUserID
+	var response ResponseUser
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -103,10 +107,12 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 	}
 
 	//Generating new token for new user
-	var requestID ResponseUserID
-	requestID.UserID = response.UserID
+	var request ResponseUser
+	request.UserID = response.UserID
+	request.UserName = response.UserName
+	request.UserEmail = response.UserEmail
 
-	jsonReq, err := json.Marshal(requestID)
+	jsonReq, err := json.Marshal(request)
 	if err != nil {
 		config.APILogger.Println("Error while marshalling: " + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -200,7 +206,7 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response ResponseUserID
+	var response ResponseUser
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
