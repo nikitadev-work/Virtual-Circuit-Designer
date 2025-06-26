@@ -12,8 +12,8 @@ var Client *http.Client
 var APILogger *log.Logger
 
 func ConfigureServices() {
-	AuthServiceURL = "http://auth-service:8081"
-	DatabaseServiceURL = "http://database-service:8082"
+	AuthServiceURL = "http:
+	DatabaseServiceURL = "http:
 	Client = &http.Client{}
 	APILogger = log.New(os.Stdout, "LOGGER: ", log.LstdFlags)
 }

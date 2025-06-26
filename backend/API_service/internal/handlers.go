@@ -52,7 +52,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 		return
 	}
 
-	//Approaching database to create new user or check if the user exists
+
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		config.APILogger.Println(err.Error())
@@ -102,7 +102,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 		return
 	}
 
-	//Generating new token for new user
+
 	var requestID ResponseUserID
 	requestID.UserID = response.UserID
 
@@ -160,7 +160,7 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 	config.APILogger.Println("Request with token")
 
-	//Token verification
+
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		config.APILogger.Println("Token is empty")

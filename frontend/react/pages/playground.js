@@ -21,10 +21,6 @@ export default function Page() {
 
             <header className="header">
                 <div className="left-controls">
-                    <button className="insert-btn">
-                        <Image src="/insert-vec.svg" width={25} height={25} className="insert-vec"  alt="vector"/>
-                        I/O
-                    </button>
                     <button id="leftbar-toggle" button className="components-btn">
                         <Image src="/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
                         Components
@@ -43,7 +39,7 @@ export default function Page() {
                     <button className="play-btn">
                         <Image width={20} height={20} src="/play.svg" alt="play"/>
                     </button>
-                    <button className="export-btn">Export</button>
+                    <button id="export-btn" button className="export-btn">Export</button>
                     <button className="save-btn">Save</button>
                 </div>
             </header>
@@ -57,22 +53,50 @@ export default function Page() {
                     <div className="sidebar-body">
                         <div className="logic-components">Logic Components</div>
                         <div className="components-grid">
-                            <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/not.png">
-                                <Image src="/Icons/not.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/LogicBlocks/not.svg">
+                                <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/and.png">
-                                <Image src="/Icons/and.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/LogicBlocks/and.svg">
+                                <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/or.png">
-                                <Image src="/Icons/or.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/LogicBlocks/or.svg">
+                                <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/nand.png">
-                                <Image src="/Icons/nand.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
+                                <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/nor.png">
-                                <Image src="/Icons/nor.png" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
+                                <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                            </div>
+                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/xnor.svg">
+                                <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor" className="component-icon"/>
+                            </div>
+                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/xor.svg">
+                                <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
                         </div>
+                        {/* --- I/O -------------------------------------------------------------- */}
+                        <div className="In-Out">I/O</div>
+                        <div className="components-grid">
+                            <div
+                                className="draggable-item"
+                                draggable="true"
+                                data-type="INPUT"
+                                data-icon="/Icons/Inputs&Outputs/Input-0.svg"
+                            >
+                                <Image src="/Icons/Inputs&Outputs/Input-0.svg" width={60} height={60} alt="Input" className="component-icon"/>
+                            </div>
+
+                            <div
+                                className="draggable-item"
+                                draggable="true"
+                                data-type="OUTPUT"
+                                data-icon="/Icons/Inputs&Outputs/Output-0.svg"
+                            >
+                                <Image src="/Icons/Inputs&Outputs/Output-0.svg" width={60} height={60} alt="Output" className="component-icon"/>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -80,7 +104,6 @@ export default function Page() {
 
 
                 <div className="canvas-container" id="workspace">
-                    <div className="canvas-background"></div>
                     <svg id="connections"></svg>
                 </div>
             </section>

@@ -54,7 +54,7 @@ func SimulateHandler(resp http.ResponseWriter, req *http.Request) {
 
 	defer respVerilog.Body.Close()
 
-	// We get result as JSON("simulation_resuilt": result)
+
 	bodyVerilog, err := io.ReadAll(respVerilog.Body)
 	if err != nil {
 		config.RNLogger.Println("Body getting of verilog error: ", err.Error())

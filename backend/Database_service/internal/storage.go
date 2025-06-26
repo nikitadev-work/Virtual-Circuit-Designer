@@ -9,7 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Example of user data
+
 type User struct {
 	id       int
 	name     string

@@ -1,12 +1,20 @@
 const canvas = document.querySelector('.canvas-container');
 const workspace = document.getElementById('workspace');
 const svg = document.getElementById('connections');
+const GRID = 25;
+const snap = (v) => {
+    const step = GRID * scale;
+    return Math.round(v / step) * step;
+};
+
+
 function screenToSvg(xClient, yClient) {
     const pt = svg.createSVGPoint();
     pt.x = xClient;
     pt.y = yClient;
     return pt.matrixTransform(svg.getScreenCTM().inverse());
 }
+
 // ---------- 0. Контекстное меню ---------------------------------------------
 const ctxMenu = document.createElement('div');
 ctxMenu.className = 'context-menu hidden';
@@ -113,6 +121,11 @@ document.querySelectorAll('.draggable-item').forEach(item => {
         e.dataTransfer.setData('type', e.target.dataset.type);
         e.dataTransfer.setData('icon', e.target.dataset.icon);
         e.dataTransfer.setData('source', 'sidebar');
+
+        const img = new Image();
+        img.src = e.target.querySelector('img').src;
+        img.style.width = '10px';
+        e.dataTransfer.setDragImage(img, 10, 10);
     });
 });
 
@@ -120,18 +133,15 @@ document.querySelectorAll('.draggable-item').forEach(item => {
 workspace.addEventListener('dragover', e => e.preventDefault());
 workspace.addEventListener('drop', handleDrop);
 
-
 function handleDrop(e) {
     e.preventDefault();
     if (e.dataTransfer.getData('source') !== 'sidebar') return;
 
-
     const type = e.dataTransfer.getData('type');
     const icon = e.dataTransfer.getData('icon');
-
-
     const el = document.createElement('div');
     el.className = 'workspace-element';
+    el.dataset.type = type;
 
 
     const img = document.createElement('img');
@@ -140,33 +150,119 @@ function handleDrop(e) {
     el.appendChild(img);
 
 
-    addPorts(el, type === 'NOT' ? 1 : 2);
+    addPorts(el);
 
 
     const rect = workspace.getBoundingClientRect();
-    el.style.left = e.clientX - rect.left + 'px';
-    el.style.top = e.clientY - rect.top + 'px';
+    el.style.left = snap(e.clientX - rect.left) + 'px';
+    el.style.top = snap(e.clientY - rect.top) + 'px';
 
 
     enableElementDrag(el);
     workspace.appendChild(el);
 }
 
+function exportSchemeAsList() {
+    const nodes = Array.from(document.querySeelctorAll('.workspace-element'));
+    const nodeIndex = new Map(nodes.map((el, i) => [el, i]));
+
+    const typeMap = {
+        INPUT: 0,
+        OUTPUT: 1,
+        NOT: 2,
+        AND: 3,
+        OR: 4,
+        XOR: 5,
+        NAND: 6,
+        NOR: 7,
+        XNOR: 8
+    };
+
+    const gates = nodes.map(el => {
+        const t = el.dataset.type;
+        const code = typeMap[t] != null ? typeMap[t] : 0;
+        return [code, /* inputs */ [], /* outputs */ []];
+    });
+
+    connections.forEach(conn => {
+        const fromEl = conn.from.element;
+        const toEl = conn.to.element;
+        const iFrom = nodeIndex.get(fromEl);
+        const iTo = nodeIndex.get(toEl);
+
+        if (iFrom == null || iTo == null) return;
+        gates[iFrom][2].push(iTo);
+        gates[iTo][1].push(iFrom);
+    });
+    return gates;
+}
+
+document.getElementById('export-btn').addEventListener('click', () => {
+    const payload = exportSchemeAsList();
+    fetch('/api/upload-scheme', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(data => console.log('Сервер ответил', data))
+        .catch(err => console.error('Ошибка при отправке схемы', err));
+})
 
 // ---------- 4. Создание портов ----------------------------------------------
-function addPorts(el, inputs) {
-    const makeInput = pct => {
+function addPorts(el) {
+    const type = el.dataset.type;
+
+    const cfg = {
+        INPUT: {ins: 0, outs: 1},
+        OUTPUT: {ins: 1, outs: 0},
+        NOT: {ins: 1, outs: 1},
+        AND: {ins: 2, outs: 1},
+        OR: {ins: 2, outs: 1},
+        XOR: {ins: 2, outs: 1},
+        NAND: {ins: 2, outs: 1},
+        NOR: {ins: 2, outs: 1},
+        XNOR: {ins: 2, outs: 1},
+    }[type] || {ins: 2, outs: 1};
+
+    // === Входы ===
+    for (let i = 0; i < cfg.ins; i++) {
         const p = document.createElement('div');
         p.className = 'port input-port';
-        p.style.top = pct;
-        p.style.transform = 'translateY(-50%)';
-        el.appendChild(p);
-    };
-    inputs === 1 ? makeInput('50%') : (makeInput('33%'), makeInput('66%'));
 
-    const out = document.createElement('div');
-    out.className = 'port output-port';
-    el.appendChild(out);
+        if (type === 'OUTPUT') {
+            p.style.left = '-12px';
+            p.style.top = '50%';
+            p.style.transform = 'translateY(-50%)';
+        } else {
+            p.style.left = '-20px';
+            p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '33%' : '66%');
+            p.style.transform = 'translateY(-50%)';
+        }
+
+        el.appendChild(p);
+    }
+
+    // === Выходы ===
+    for (let i = 0; i < cfg.outs; i++) {
+        const p = document.createElement('div');
+        p.className = 'port output-port';
+
+        if (type === 'INPUT') {
+            p.style.right = '-12px';
+            p.style.top = '50%';
+            p.style.transform = 'translateY(-50%)';
+        } else {
+            p.style.right = '-17px';
+            p.style.top = '50%';
+            p.style.transform = 'translateY(-50%)';
+        }
+
+        el.appendChild(p);
+    }
 }
 
 // ---------- контекст-меню для workspace ------------------------------------
@@ -256,22 +352,34 @@ function enableElementDrag(el) {
         e.stopPropagation();
         drag = true;
 
-        // курсор «в центре» элемента
-        offX = el.offsetWidth  / 2;
-        offY = el.offsetHeight / 2;
+        const rect = workspace.getBoundingClientRect();
+
+        const mouseX = (e.clientX - rect.left - posX) / scale;
+        const mouseY = (e.clientY - rect.top - posY) / scale;
+
+        offX = mouseX - parseFloat(el.style.left);
+        offY = mouseY - parseFloat(el.style.top);
 
         el.style.zIndex = 1000;
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     });
 
+
     function onMove(e) {
         if (!drag) return;
+
         const rect = workspace.getBoundingClientRect();
-        const x = e.clientX - rect.left - offX;
-        const y = e.clientY - rect.top  - offY;
+
+        const mouseX = (e.clientX - rect.left - posX) / scale;
+        const mouseY = (e.clientY - rect.top - posY) / scale;
+
+        const x = snap(mouseX - offX);
+        const y = snap(mouseY - offY);
+
         el.style.left = x + 'px';
-        el.style.top  = y + 'px';
+        el.style.top = y + 'px';
+
         updateConnections();
     }
 
@@ -317,7 +425,7 @@ workspace.addEventListener('mousedown', e => {
     // сразу берём координаты в системе SVG
     const start = screenToSvg(e.clientX, e.clientY);
     startElement = e.target.parentElement;
-    startPort    = e.target;
+    startPort = e.target;
 
     currentLine = document.createElementNS(
         'http://www.w3.org/2000/svg', 'line'
@@ -331,7 +439,7 @@ workspace.addEventListener('mousedown', e => {
     svg.appendChild(currentLine);
 
     document.addEventListener('mousemove', dragTempLine);
-    document.addEventListener('mouseup',   finishLine);
+    document.addEventListener('mouseup', finishLine);
 });
 
 
@@ -359,6 +467,9 @@ function dragTempLine(e) {
     if (!currentLine) return;
     // получаем координаты курсора в SVG
     const pos = screenToSvg(e.clientX, e.clientY);
+    snapPort = findClosestPort(e.clientX, e.clientY, SNAP_R);
+    document.querySelectorAll('.port.highlight').forEach(p => p.classList.remove('highlight'));
+    if (snapPort) snapPort.classList.add('highlight');
 
     if (snapPort) {
         const c = portCenter(snapPort);  // уже возвращает SVG-координаты
@@ -420,19 +531,20 @@ function updateConnections() {
 
 function portCenter(port) {
     const wsRect = workspace.getBoundingClientRect();
-    const pr     = port.getBoundingClientRect();
+    const pr = port.getBoundingClientRect();
     // координаты центра порта на экране (после CSS-scale/translate):
-    const screenX = pr.left + pr.width  / 2;
-    const screenY = pr.top  + pr.height / 2;
+    const screenX = pr.left + pr.width / 2;
+    const screenY = pr.top + pr.height / 2;
 
     // получаем инвертированную матрицу экрана→SVG
-        const ctmInv = svg.getScreenCTM().inverse();
-    const pt     = svg.createSVGPoint();
-    pt.x = screenX; pt.y = screenY;
+    const ctmInv = svg.getScreenCTM().inverse();
+    const pt = svg.createSVGPoint();
+    pt.x = screenX;
+    pt.y = screenY;
 
     // преобразуем в локальные SVG-координаты
     const svgP = pt.matrixTransform(ctmInv);
-    return { x: svgP.x, y: svgP.y };
+    return {x: svgP.x, y: svgP.y};
 }
 
 
