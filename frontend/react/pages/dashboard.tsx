@@ -42,7 +42,7 @@ export default function Page() {
             <div className="flex items-center gap-2">
               <button className="rounded-md p-2 hover:bg-muted">
                 <span className="sr-only">Grid view</span>
-                {/* иконка grid */}
+                {/* grid */}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
                 </svg>
@@ -77,7 +77,7 @@ export default function Page() {
             <div className="border rounded-lg p-4 hover:shadow transition">
               <div className="aspect-[4/3] bg-gradient-to-r from-cyan-400 to-purple-400 rounded-md flex items-center justify-center overflow-hidden">
                 <img
-                    src="/path/to/your/phone-ui.png" // замените на актуальный путь
+                    src="/path"
                     alt="Circuit preview"
                     className="h-3/4"
                 />

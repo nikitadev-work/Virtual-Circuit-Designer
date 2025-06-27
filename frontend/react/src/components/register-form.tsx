@@ -65,7 +65,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
             window.location.href = '/login';
 
             
-        } catch (error) {
+        } catch {
             setError("Server error, please try again later")
         }
     };
