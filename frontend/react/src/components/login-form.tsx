@@ -35,8 +35,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       return;
     }
 
+    const HOST = window.location.host;
+
     try {
-      const response = await fetch('http://85.198.81.168:8052/user/login', {
+      const response = await fetch('http://' + HOST + '/user/login', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
