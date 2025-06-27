@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "TAILWIND_CONFIG=tailwind.config.js next dev",
+    "dev": "cross-env TAILWIND_CONFIG=tailwind.config.ts next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "export": "next export"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
