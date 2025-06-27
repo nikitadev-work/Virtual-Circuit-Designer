@@ -68,7 +68,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
 
       
-    } catch (error) {
+    } catch {
       setError("Server error, please try again later")
     }
   };
