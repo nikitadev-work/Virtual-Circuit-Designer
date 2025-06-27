@@ -1,18 +1,22 @@
-# Этап сборки
-FROM node:18-alpine AS builder
+# Этап сборки - используем Node 20
+FROM node:20-alpine AS builder
 
 # Устанавливаем зависимости и кэшируем их отдельным слоем
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && \
+
+# Устанавливаем все зависимости (включая devDependencies)
+RUN npm ci --include=dev && \
     apk add --no-cache libc6-compat curl
 
 # Копируем остальные файлы и собираем проект
 COPY . .
-RUN npm run build
+
+# Увеличиваем память для Next.js и запускаем сборку
+RUN node --max_old_space_size=4096 node_modules/.bin/next build
 
 # Этап рантайма
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Устанавливаем только необходимые для рантайма пакеты
