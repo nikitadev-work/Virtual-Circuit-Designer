@@ -56,7 +56,7 @@ export default function Page() {
           <div className="relative mb-6">
             <input
                 type="text"
-                placeholder="Search 2 projects..."
+                placeholder="Search"
                 className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-500"
             />
           </div>
@@ -75,12 +75,8 @@ export default function Page() {
 
             {/* Card 2 - Circuit #2 */}
             <div className="border rounded-lg p-4 hover:shadow transition">
-              <div className="aspect-[4/3] bg-gradient-to-r from-cyan-400 to-purple-400 rounded-md flex items-center justify-center overflow-hidden">
-                <img
-                    src="/path"
-                    alt="Circuit preview"
-                    className="h-3/4"
-                />
+              <div className="aspect-[4/3] bg-muted rounded-md flex items-center justify-center overflow-hidden">
+                <span className="text-sm text-gray-400">Empty</span>
               </div>
               <div className="mt-2">
                 <p className="font-medium text-sm">Circuit #2</p>
