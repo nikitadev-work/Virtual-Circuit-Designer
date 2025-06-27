@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="some fixes" />
+    <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="Important bugs fixed" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -42,7 +42,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/bimbiriim/WebstormProjects/visual-circuit-designer/frontend",
+    "last_opened_file_path": "/home/bimbiriim/WebstormProjects/visual-circuit-designer/frontend/react/public/Icons",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -52,6 +52,16 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/react/public/Icons" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/react/public/Icons" />
+      <recent name="$PROJECT_DIR$/react/public/Icons/Inputs&amp;Outputs" />
+      <recent name="$PROJECT_DIR$/react/public/Icons/LogicBlocks" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -102,7 +112,15 @@
       <option name="project" value="LOCAL" />
       <updated>1750947777458</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Important bugs fixed">
+      <option name="closed" value="true" />
+      <created>1750956158077</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1750956158077</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -112,6 +130,7 @@
     <MESSAGE value="reponse url fixed" />
     <MESSAGE value="1" />
     <MESSAGE value="some fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="some fixes" />
+    <MESSAGE value="Important bugs fixed" />
+    <option name="LAST_COMMIT_MESSAGE" value="Important bugs fixed" />
   </component>
 </project>
