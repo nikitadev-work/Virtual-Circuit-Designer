@@ -44,7 +44,6 @@ export default function MainPage() {
             vx: (Math.random() - 0.5) * 0.3,
             vy: (Math.random() - 0.5) * 0.3
         }));
-        let rafId: number;
         const draw = () => {
             ctx.clearRect(0, 0, width, height);
             ctx.fillStyle = 'rgba(100,150,255,0.2)';
@@ -77,7 +76,7 @@ export default function MainPage() {
                     }
                 }
             }
-            rafId = requestAnimationFrame(draw);
+            requestAnimationFrame(draw);
         };
 
         draw();
