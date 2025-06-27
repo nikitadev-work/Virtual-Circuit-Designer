@@ -1,11 +1,12 @@
-'use client';  // для Next.js App Router
+'use client';
 
-import { useEffect, useRef, useState } from 'react';
+
+import {useEffect, useRef, useState} from 'react';
 import Link from 'next/link';
 
 export default function MainPage() {
     const [typedText, setTypedText] = useState('');
-    const canvasRef = useRef(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const fullText = 'Visual Circuit Designer';
 
     useEffect(() => {
@@ -20,20 +21,30 @@ export default function MainPage() {
         return () => clearInterval(typingInterval);
     }, []);
 
+
     // Анимация точек/линий (эффект "электрической цепи")
     useEffect(() => {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return;
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
-        const particles = Array.from({ length: 80 }, () => ({
+        interface Particle {
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+        }
+
+        const particles: Particle[] = Array.from({length: 80}, () => ({
             x: Math.random() * width,
             y: Math.random() * height,
             vx: (Math.random() - 0.5) * 0.3,
             vy: (Math.random() - 0.5) * 0.3
         }));
-
+        let rafId: number;
         const draw = () => {
             ctx.clearRect(0, 0, width, height);
             ctx.fillStyle = 'rgba(100,150,255,0.2)';
@@ -66,8 +77,7 @@ export default function MainPage() {
                     }
                 }
             }
-
-            requestAnimationFrame(draw);
+            rafId = requestAnimationFrame(draw);
         };
 
         draw();
@@ -85,13 +95,12 @@ export default function MainPage() {
 
     return (
         <div className="relative w-full h-screen overflow-hidden bg-[#f9fafb] flex items-center justify-center">
-            {/* Фоновый Canvas */}
-            <canvas ref={canvasRef} className="absolute inset-0 z-0" />
-
+            <canvas ref={canvasRef} className="absolute inset-0 z-0"/>
             {/* Контент */}
             <div className="relative z-10 flex flex-col items-center justify-center space-y-6 animate-fade-in-slide">
                 <p className="text-[80px] font-bold text-center text-[#262626]">
-                    <span className="bg-gradient-to-r from-[#63CBFF] to-[#1C3BD5] bg-clip-text text-transparent inline-block">
+                    <span
+                        className="bg-gradient-to-r from-[#63CBFF] to-[#1C3BD5] bg-clip-text text-transparent inline-block">
                         {typedText}
                     </span>
                 </p>
