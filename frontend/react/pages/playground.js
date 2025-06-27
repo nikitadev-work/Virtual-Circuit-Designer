@@ -11,7 +11,7 @@ export default function Page() {
                 <title>VCD | Playground</title>
 
                 {/* Favicon */}
-                <link rel="shortcut icon" href="/favicon-black.png" type="image/png" />
+                <link rel="shortcut icon" href="/Icons/favicon-black.png" type="image/png" />
                 {/* Fonts */}
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
@@ -22,24 +22,25 @@ export default function Page() {
             <header className="header">
                 <div className="left-controls">
                     <button id="leftbar-toggle" button className="components-btn">
-                        <Image src="/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
+                        <Image src="Icons/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
                         Components
                     </button>
                 </div>
 
                 <button className="title-btn">
-                    <Image src="/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
+                    <Image src="/Icons/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
                 </button>
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
-                    <button id="rightbar-toggle" button className="settings-btn">
-                        <Image width={20} height={20} src="/settings.svg" alt="setting"/>
+                    <button id="rightbar-toggle" className="settings-btn">
+                        <Image width={20} height={20} src="Icons/settings.svg" alt="setting"/>
                     </button>
                     <button className="play-btn">
-                        <Image width={20} height={20} src="/play.svg" alt="play"/>
+                        <Image width={20} height={20} src="/Icons/play.svg" alt="play"/>
                     </button>
-                    <button id="export-btn" button className="export-btn">Export</button>
+
+                    <button id="export-btn" className="export-btn">Export</button>
                     <button className="save-btn">Save</button>
                 </div>
             </header>
@@ -57,22 +58,22 @@ export default function Page() {
                                 <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
                             <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/LogicBlocks/and.svg">
-                                <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                                <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="AND" className="component-icon"/>
                             </div>
                             <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/LogicBlocks/or.svg">
-                                <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                                <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="OR" className="component-icon"/>
                             </div>
                             <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
-                                <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                                <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NAND" className="component-icon"/>
                             </div>
                             <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
-                                <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                                <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOR" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/xnor.svg">
+                            <div className="draggable-item" draggable="true" data-type="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
                                 <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/xor.svg">
-                                <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="XOR" data-icon="/Icons/LogicBlocks/xor.svg">
+                                <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="XOR" className="component-icon"/>
                             </div>
                         </div>
                         {/* --- I/O -------------------------------------------------------------- */}
