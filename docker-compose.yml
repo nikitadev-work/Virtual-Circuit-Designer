@@ -57,6 +57,17 @@ services:
     networks:
       - my_shared_network
 
+  nginx:
+    image: nikitakhripunkov/frontend-nginx-vcd:latest
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - api-service
+      - frontend
+    networks:
+      - my_shared_network
+
 networks:
   my_shared_network:
     driver: bridge

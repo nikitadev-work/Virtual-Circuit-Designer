@@ -1,12 +1,22 @@
+<<<<<<< HEAD
 'use client';
 
 
 import {useEffect, useRef, useState} from 'react';
+=======
+'use client';  // для Next.js App Router
+
+import { useEffect, useRef, useState } from 'react';
+>>>>>>> develop
 import Link from 'next/link';
 
 export default function MainPage() {
     const [typedText, setTypedText] = useState('');
+<<<<<<< HEAD
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+=======
+    const canvasRef = useRef(null);
+>>>>>>> develop
     const fullText = 'Visual Circuit Designer';
 
     useEffect(() => {
@@ -21,6 +31,7 @@ export default function MainPage() {
         return () => clearInterval(typingInterval);
     }, []);
 
+<<<<<<< HEAD
 
     // Анимация точек/линий (эффект "электрической цепи")
     useEffect(() => {
@@ -39,11 +50,25 @@ export default function MainPage() {
         }
 
         const particles: Particle[] = Array.from({length: 80}, () => ({
+=======
+    // Анимация точек/линий (эффект "электрической цепи")
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const particles = Array.from({ length: 80 }, () => ({
+>>>>>>> develop
             x: Math.random() * width,
             y: Math.random() * height,
             vx: (Math.random() - 0.5) * 0.3,
             vy: (Math.random() - 0.5) * 0.3
         }));
+<<<<<<< HEAD
+=======
+
+>>>>>>> develop
         const draw = () => {
             ctx.clearRect(0, 0, width, height);
             ctx.fillStyle = 'rgba(100,150,255,0.2)';
@@ -76,6 +101,10 @@ export default function MainPage() {
                     }
                 }
             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> develop
             requestAnimationFrame(draw);
         };
 
@@ -94,12 +123,22 @@ export default function MainPage() {
 
     return (
         <div className="relative w-full h-screen overflow-hidden bg-[#f9fafb] flex items-center justify-center">
+<<<<<<< HEAD
             <canvas ref={canvasRef} className="absolute inset-0 z-0"/>
             {/* Контент */}
             <div className="relative z-10 flex flex-col items-center justify-center space-y-6 animate-fade-in-slide">
                 <p className="text-[80px] font-bold text-center text-[#262626]">
                     <span
                         className="bg-gradient-to-r from-[#63CBFF] to-[#1C3BD5] bg-clip-text text-transparent inline-block">
+=======
+            {/* Фоновый Canvas */}
+            <canvas ref={canvasRef} className="absolute inset-0 z-0" />
+
+            {/* Контент */}
+            <div className="relative z-10 flex flex-col items-center justify-center space-y-6 animate-fade-in-slide">
+                <p className="text-[80px] font-bold text-center text-[#262626]">
+                    <span className="bg-gradient-to-r from-[#63CBFF] to-[#1C3BD5] bg-clip-text text-transparent inline-block">
+>>>>>>> develop
                         {typedText}
                     </span>
                 </p>

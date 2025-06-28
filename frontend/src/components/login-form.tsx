@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../lib/utils";
-import { Button } from "./ui/button";
+import { Button } from "@components/button";
 import Link from 'next/link';
 import {
   Card,
@@ -8,9 +8,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./ui/card";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+} from "@components/card";
+import { Input } from "@components/input";
+import { Label } from "@components/label";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("");

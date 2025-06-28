@@ -2,7 +2,11 @@ import '../src/styles/global.css';
 import '../src/styles/style.css';
 
 import * as React from 'react';
+<<<<<<< HEAD
 import { useEffect} from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> develop
 import { useRouter } from 'next/router';
 
 export default function MyApp({ Component, pageProps }) {
