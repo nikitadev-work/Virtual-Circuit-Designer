@@ -16,7 +16,7 @@ build_and_push_images:
   script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
 
-    - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/react/
+    - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
 
     - docker build -t $DOCKERHUB_USER/backend-api-service:latest backend/API_service/
 
