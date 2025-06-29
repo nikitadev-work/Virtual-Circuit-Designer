@@ -3,6 +3,7 @@ package internal
 import (
 	"Database_service/config"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -117,9 +118,15 @@ func (db *PostgresDB) GetUser(email, password string) (int, string, error) {
 func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any) error {
 	config.DbLogger.Println("Saving circuits")
 	circuitID += 1
-	_, err := db.conn.Exec(
-		"Insert into Circuits (id, user_id, name_of_scheme, scheme)"+
-			" values ($1, $2, $3, $4)", circuitID, userId, circuitName, circuit)
+
+	circuitJSON, err := json.Marshal(circuit)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.conn.Exec(
+		"Insert into Circuits (id, user_id, name, circuit)"+
+			" values ($1, $2, $3, $4)", circuitID, userId, circuitName, string(circuitJSON))
 	if err != nil {
 		return err
 	}

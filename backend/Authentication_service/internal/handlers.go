@@ -5,14 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var secret_key = "our-secret-key"
+
+type Resp struct {
+	UserID    int    `json:"user_id"`
+	UserName  string `json:"user_name"`
+	UserEmail string `json:"user_email"`
+}
 
 type Claims struct {
 	UserID    string `json:"user_id"`
@@ -86,8 +93,9 @@ func CheckJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := Claims{
-		UserID:    claims.UserID,
+	id, _ := strconv.Atoi(claims.UserID)
+	resp := Resp{
+		UserID:    id,
 		UserName:  claims.UserName,
 		UserEmail: claims.UserEmail,
 	}
