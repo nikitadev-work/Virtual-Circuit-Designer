@@ -2,7 +2,7 @@ FROM node:20 as builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
-RUN npm rebuild lightningcss --force
+RUN npm rebuild lightningcss --platform=linux --arch=x64 --target=20.0.0
 COPY . .
 RUN npm run build
 FROM nginx:stable-alpine
