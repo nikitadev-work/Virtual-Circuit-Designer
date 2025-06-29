@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "export": "next export",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "engines": {
     "node": ">=20.0.0"
