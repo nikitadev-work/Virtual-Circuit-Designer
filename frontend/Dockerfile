@@ -1,4 +1,5 @@
 FROM node:20 as builder
+USER root
 WORKDIR /app
 COPY package*.json ./
 
@@ -7,6 +8,8 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN npm ci
+RUN npm install lightningcss@latest
+RUN npm rebuild
 
 COPY . .
 RUN npm run build
