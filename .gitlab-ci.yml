@@ -30,7 +30,7 @@ build_and_push_images:
 
     - docker build -t $DOCKERHUB_USER/backend-database-service:latest backend/Database_service/
 
-    - docker build -t $DOCKERHUB_USER/frontend-nginx-vcd:latest .
+    - docker build -t $DOCKERHUB_USER/frontend-nginx-vcd:latest nginx/
     # Pushing
     - docker push $DOCKERHUB_USER/frontend-vcd:latest
     - docker push $DOCKERHUB_USER/backend-api-service:latest
