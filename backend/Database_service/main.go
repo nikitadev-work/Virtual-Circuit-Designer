@@ -10,7 +10,8 @@ import (
 func main() {
 	config.ConfigureLogger()
 
-	db := internal.NewPostgresDB()
+	connStr := "host=database user=vcddbuser password=vcddbpassword dbname=vcddbname sslmode=disable"
+	db := internal.NewPostgresDB(connStr)
 	handler := internal.NewDBHandler(db)
 	err := db.CreateTables()
 	if err != nil {
