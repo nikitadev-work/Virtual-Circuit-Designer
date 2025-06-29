@@ -18,7 +18,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [error, setError] = useState("");
 
   const validateEmail = (email: string) => {
-    // Простая проверка email
+    
     return /\S+@\S+\.\S+/.test(email);
   };
 
@@ -67,7 +67,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         setError("Invalid server response");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      
     } catch (error) {
       setError("Server error, please try again later")
     }

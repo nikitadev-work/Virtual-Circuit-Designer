@@ -1,5 +1,10 @@
+/** @type {HTMLDivElement} */
 const canvas = document.querySelector('.canvas-container');
+
+/** @type {HTMLDivElement} */
 const workspace = document.getElementById('workspace');
+
+/** @type {SVGSVGElement} */
 const svg = document.getElementById('connections');
 const GRID = 25;
 const snap = (v) => {
@@ -13,6 +18,21 @@ function screenToSvg(xClient, yClient) {
     pt.x = xClient;
     pt.y = yClient;
     return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+const GRID = 25;
+const snap = (v) => {
+    const step = GRID * scale;
+    return Math.round(v / step) * step;
+};
+
+
+function screenToSvg(xClient, yClient) {
+    const pt = svg.createSVGPoint();
+    pt.x = xClient;
+    pt.y = yClient;
+    const ctm = svg.getScreenCTM();
+    return pt.matrixTransform(ctm.inverse());
 }
 
 // ---------- 0. Контекстное меню ---------------------------------------------
@@ -51,8 +71,7 @@ function clearSelection() {
 }
 
 workspace.addEventListener('click', e => {
-    if (e.target.classList.contains('port')) return;
-
+    if (e.target && e.target.classList && e.target.classList.contains('port')) return;
     const el = e.target.closest('.workspace-element');
 
     if (!el) {
@@ -75,7 +94,7 @@ workspace.addEventListener('click', e => {
 // ---------- 2. Панорамирование холста ---------------------------------------
 let posX = 0;
 let posY = 0;
-let scale = 1
+let scale = 1;
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
@@ -116,6 +135,7 @@ window.addEventListener('mouseup', () => {
 
 document.querySelectorAll('.draggable-item').forEach(item => {
     item.addEventListener('dragstart', e => {
+        if (!e.dataTransfer) return;
         e.dataTransfer.setData('type', e.target.dataset.type);
         e.dataTransfer.setData('icon', e.target.dataset.icon);
         e.dataTransfer.setData('source', 'sidebar');
@@ -161,7 +181,7 @@ function handleDrop(e) {
 }
 
 function exportSchemeAsList() {
-    const nodes = Array.from(document.querySeelctorAll('.workspace-element'));
+    const nodes = Array.from(document.querySelectorAll('.workspace-element'));
     const nodeIndex = new Map(nodes.map((el, i) => [el, i]));
 
     const typeMap = {
@@ -267,9 +287,13 @@ workspace.addEventListener('contextmenu', e => {
 
 
     const needEl = ['r90', 'r180', 'flipH', 'flipV', 'copy', 'cut'];
-    ctxMenu.querySelectorAll('button').forEach(btn => {
-        btn.disabled = !ctxTarget && needEl.includes(btn.dataset.action);
-    });
+    if (ctxMenu && typeof ctxMenu.querySelectorAll === 'function') {
+        ctxMenu.querySelectorAll('button').forEach(btn => {
+            const action = btn.dataset?.action;
+            btn.disabled = !ctxTarget && needEl.includes(action);
+        });
+    }
+
 
     showCtxMenu(e.clientX, e.clientY);
 });
@@ -324,9 +348,9 @@ function applyTransform(el, action) {
             break;
     }
 
-    el.dataset.angle = angle;
-    el.dataset.scaleX = scaleX;
-    el.dataset.scaleY = scaleY;
+    el.dataset.angle = angle + 'px';
+    el.dataset.scaleX = scaleX + 'px';
+    el.dataset.scaleY = scaleY + 'px';
     el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
 }
 
