@@ -53,7 +53,8 @@ services:
     image: nikitakhripunkov/frontend-vcd
     restart: always
     networks:
-      - my_shared_network
+      my_shared_network:
+        ipv4_address: 172.18.0.11
 
   nginx:
     image: nikitakhripunkov/frontend-nginx-vcd:latest
