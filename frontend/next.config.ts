@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     images: {
         unoptimized: true,
     },
+    distDir: 'build', // Указываем новую директорию сборки
 };
 
 export default nextConfig;
