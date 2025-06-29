@@ -150,6 +150,8 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 		return
 	}
 
+	config.APILogger.Println("authHeader:", authHeader)
+
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
 		config.APILogger.Println("Token is invalid")
@@ -182,16 +184,14 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := parts[1]
-
-	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/check-token", nil)
+	req, err := http.NewRequest(http.MethodPost, config.AuthServiceURL+"/check-token", nil)
 	if err != nil {
 		config.APILogger.Println("Request with token: " + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	req.Header.Set("Authorization", token)
+	req.Header.Set("Authorization", authHeader)
 
 	resp, err := config.Client.Do(req)
 	if err != nil {
@@ -207,7 +207,7 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response ResponseUser
+	var response Circuit
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

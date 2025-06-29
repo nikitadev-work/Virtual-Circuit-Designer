@@ -55,11 +55,6 @@ func (h *DBHandler) RegistrationHandler(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	config.DbLogger.Printf(
-		"Request Body: \n %s, %s, %s",
-		regReq.Name, regReq.Email, regReq.Password,
-	)
-
 	id, _, err := h.db.GetUser(regReq.Email, "")
 	if id != 0 {
 		config.DbLogger.Println("User with current email already exists")
@@ -126,6 +121,7 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 			http.Error(resp, err.Error(), http.StatusBadRequest)
 			return
 		}
+
 		err = h.db.SaveCircuits(circuitPostReq.UserId, circuitPostReq.CircuitName, circuitPostReq.Circuit)
 		if err != nil {
 			config.DbLogger.Println("Circuit saving request: " + err.Error())
