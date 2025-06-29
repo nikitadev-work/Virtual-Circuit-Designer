@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "./react",
+    "baseUrl": ".",
     "paths": {
       "@components/*": ["src/components/ui/*"]
     },
@@ -25,7 +25,10 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src"
   ],
   "exclude": ["node_modules"]
 }
