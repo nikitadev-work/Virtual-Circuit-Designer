@@ -32,9 +32,8 @@ type PostgresDB struct {
 var userId int
 var circuitID int
 
-func NewPostgresDB() *PostgresDB {
+func NewPostgresDB(connStr string) *PostgresDB {
 	config.DbLogger.Println("Connecting to database")
-	connStr := "host=database user=vcddbuser password=vcddbpassword dbname=vcddbname sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
