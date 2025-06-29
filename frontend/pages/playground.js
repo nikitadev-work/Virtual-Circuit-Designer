@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-page-custom-font */
+
 import Head from 'next/head';
 import Script from 'next/script';
 import Image from 'next/image';
