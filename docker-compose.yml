@@ -52,18 +52,8 @@ services:
   frontend:
     image: nikitakhripunkov/frontend-vcd
     restart: always
-    networks:
-      my_shared_network:
-        ipv4_address: 172.18.0.11
-
-  nginx:
-    image: nikitakhripunkov/frontend-nginx-vcd:latest
-    restart: always
     ports:
       - "80:80"
-    depends_on:
-      - api-service
-      - frontend
     networks:
       - my_shared_network
 
