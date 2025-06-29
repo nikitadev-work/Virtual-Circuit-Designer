@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "../lib/utils";
-import { Button } from "./ui/button";
+import { Button } from "@components/button";
 import Link from 'next/link';
 import {
     Card,
@@ -8,9 +8,9 @@ import {
     CardDescription,
     CardHeader,
     CardTitle,
-} from "./ui/card";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+} from "@components/card";
+import { Input } from "@components/input";
+import { Label } from "@components/label";
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
     const [email, setEmail] = useState("");
@@ -46,8 +46,10 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
             return;
         }
 
+        const HOST = window.location.host;
+
         try {
-            const response = await fetch('http://85.198.81.168:8052/user/register', {
+            const response = await fetch('http://' + HOST + 'api/user/register', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -65,7 +67,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
             window.location.href = '/login';
 
             
-        } catch (error) {
+        } catch {
             setError("Server error, please try again later")
         }
     };

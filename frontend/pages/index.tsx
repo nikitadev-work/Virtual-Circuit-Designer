@@ -1,7 +1,5 @@
 'use client';
-
-
-import {useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 export default function MainPage() {
@@ -20,7 +18,6 @@ export default function MainPage() {
         }, 100);
         return () => clearInterval(typingInterval);
     }, []);
-
 
     // Анимация точек/линий (эффект "электрической цепи")
     useEffect(() => {
@@ -103,11 +100,6 @@ export default function MainPage() {
                         {typedText}
                     </span>
                 </p>
-
-                <p className="text-2xl font-medium text-center text-[#808080] max-w-[700px]">
-                    Streamlined platform for designing and compiling digital circuits directly in the browser
-                </p>
-
                 <Link href="/login">
                     <div
                         className="bg-gradient-to-r from-[#63CBFF] to-[#1C3BD5] text-white text-[26px] w-[242px] h-[57px]

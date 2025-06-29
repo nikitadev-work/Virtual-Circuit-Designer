@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./react",
     "paths": {
-      "@components/*": ["src/components/ui/*"],
+      "@components/*": ["src/components/ui/*"]
     },
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -21,9 +21,11 @@
       {
         "name": "next"
       }
-    ],
+    ]
   },
   "include": [
-    "next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+    "next-env.d.ts",
+    "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

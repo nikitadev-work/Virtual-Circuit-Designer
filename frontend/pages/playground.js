@@ -70,6 +70,7 @@ export default function Page() {
                                 <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOR" className="component-icon"/>
                             </div>
                             <div className="draggable-item" draggable="true" datatype="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
+
                                 <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor" className="component-icon"/>
                             </div>
                             <div className="draggable-item" draggable="true" datatype="XOR" data-icon="/Icons/LogicBlocks/xor.svg">

@@ -1,8 +1,7 @@
 import '../src/styles/global.css';
 import '../src/styles/style.css';
-
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect} from 'react';
 import { useRouter } from 'next/router';
 
 export default function MyApp({ Component, pageProps }) {

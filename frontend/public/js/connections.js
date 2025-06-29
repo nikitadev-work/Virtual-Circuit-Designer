@@ -1,41 +1,25 @@
 /** @type {HTMLDivElement} */
 const canvas = document.querySelector('.canvas-container');
-
 /** @type {HTMLDivElement} */
 const workspace = document.getElementById('workspace');
-
 /** @type {SVGSVGElement} */
 const svg = document.getElementById('connections');
-const GRID = 25;
-const snap = (v) => {
-    const step = GRID * scale;
-    return Math.round(v / step) * step;
-};
-
-
-function screenToSvg(xClient, yClient) {
-    const pt = svg.createSVGPoint();
-    pt.x = xClient;
-    pt.y = yClient;
-    return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
 
 const GRID = 25;
 const snap = (v) => {
     const step = GRID * scale;
     return Math.round(v / step) * step;
 };
-
 
 function screenToSvg(xClient, yClient) {
     const pt = svg.createSVGPoint();
     pt.x = xClient;
     pt.y = yClient;
     const ctm = svg.getScreenCTM();
+    if (!ctm) throw new Error('Cannot get SVG CTM');
     return pt.matrixTransform(ctm.inverse());
 }
 
-// ---------- 0. Контекстное меню ---------------------------------------------
 const ctxMenu = document.createElement('div');
 ctxMenu.className = 'context-menu hidden';
 ctxMenu.innerHTML = `
@@ -71,16 +55,17 @@ function clearSelection() {
 }
 
 workspace.addEventListener('click', e => {
-    if (e.target && e.target.classList && e.target.classList.contains('port')) return;
+    if (e.target.classList.contains('port')) return;
+
     const el = e.target.closest('.workspace-element');
 
     if (!el) {
-        if (!e.ctrlKey && !e.metaKey) clearSelection();   // кликом снимаем всё
+        if (!e.ctrlKey && !e.metaKey) clearSelection();
         return;
     }
 
     if (e.ctrlKey || e.metaKey) {
-        selection.has(el) ? deselect(el) : select(el);   // toggle
+        selection.has(el) ? deselect(el) : select(el);
         return;
     }
 
@@ -90,17 +75,13 @@ workspace.addEventListener('click', e => {
     }
 });
 
-
-// ---------- 2. Панорамирование холста ---------------------------------------
 let posX = 0;
 let posY = 0;
-let scale = 1;
+let scale = 1
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
-
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
-
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     scale *= delta;
@@ -109,7 +90,6 @@ canvas.parentElement.addEventListener('wheel', (e) => {
 });
 
 canvas.parentElement.addEventListener('mousedown', e => {
-
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
     isCanvasDrag = true;
     startX = e.clientX - posX;
@@ -117,16 +97,12 @@ canvas.parentElement.addEventListener('mousedown', e => {
     canvas.style.cursor = 'grabbing';
 });
 
-
 window.addEventListener('mousemove', e => {
     if (!isCanvasDrag) return;
     posX = e.clientX - startX;
     posY = e.clientY - startY;
-
-    canvas.style.transform =
-        `translate(${posX}px, ${posY}px) scale(${scale})`;
+    canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
 });
-
 
 window.addEventListener('mouseup', () => {
     isCanvasDrag = false;
@@ -139,14 +115,12 @@ document.querySelectorAll('.draggable-item').forEach(item => {
         e.dataTransfer.setData('type', e.target.dataset.type);
         e.dataTransfer.setData('icon', e.target.dataset.icon);
         e.dataTransfer.setData('source', 'sidebar');
-
         const img = new Image();
         img.src = e.target.querySelector('img').src;
         img.style.width = '10px';
         e.dataTransfer.setDragImage(img, 10, 10);
     });
 });
-
 
 workspace.addEventListener('dragover', e => e.preventDefault());
 workspace.addEventListener('drop', handleDrop);
@@ -161,20 +135,16 @@ function handleDrop(e) {
     el.className = 'workspace-element';
     el.dataset.type = type;
 
-
     const img = document.createElement('img');
     img.src = icon;
     img.style.transform = 'rotate(90deg)';
     el.appendChild(img);
 
-
     addPorts(el);
-
 
     const rect = workspace.getBoundingClientRect();
     el.style.left = snap(e.clientX - rect.left) + 'px';
     el.style.top = snap(e.clientY - rect.top) + 'px';
-
 
     enableElementDrag(el);
     workspace.appendChild(el);
@@ -199,7 +169,7 @@ function exportSchemeAsList() {
     const gates = nodes.map(el => {
         const t = el.dataset.type;
         const code = typeMap[t] != null ? typeMap[t] : 0;
-        return [code, /* inputs */ [], /* outputs */ []];
+        return [code, [], []];
     });
 
     connections.forEach(conn => {
@@ -282,26 +252,19 @@ function addPorts(el) {
 
 workspace.addEventListener('contextmenu', e => {
     e.preventDefault();
-
     ctxTarget = e.target.closest('.workspace-element');
 
-
     const needEl = ['r90', 'r180', 'flipH', 'flipV', 'copy', 'cut'];
-    if (ctxMenu && typeof ctxMenu.querySelectorAll === 'function') {
-        ctxMenu.querySelectorAll('button').forEach(btn => {
-            const action = btn.dataset?.action;
-            btn.disabled = !ctxTarget && needEl.includes(action);
-        });
-    }
-
+    ctxMenu.querySelectorAll('button').forEach(btn => {
+        btn.disabled = !ctxTarget && needEl.includes(btn.dataset.action);
+    });
 
     showCtxMenu(e.clientX, e.clientY);
 });
 
-
 function showCtxMenu(x, y) {
     const {innerWidth: w, innerHeight: h} = window;
-    const mW = 170, mH = 180;    // примерные размеры
+    const mW = 170, mH = 180;
     ctxMenu.style.left = Math.min(x, w - mW) + 'px';
     ctxMenu.style.top = Math.min(y, h - mH) + 'px';
     ctxMenu.classList.remove('hidden');
@@ -311,7 +274,6 @@ function hideCtxMenu() {
     ctxMenu.classList.add('hidden');
     ctxTarget = null;
 }
-
 
 document.addEventListener('click', e => {
     if (!e.target.closest('.context-menu')) hideCtxMenu();
@@ -326,7 +288,6 @@ ctxMenu.addEventListener('click', e => {
 
 function applyTransform(el, action) {
     if (!el) return;
-
 
     const rot = +(el.dataset.angle ?? 0);
     const sx = +(el.dataset.scaleX ?? 1);
@@ -354,11 +315,9 @@ function applyTransform(el, action) {
     el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
 }
 
-
 if (!ctxMenu.classList.contains('hidden')) {
     hideCtxMenu();
 }
-
 
 function enableElementDrag(el) {
     let drag = false, offX, offY;
@@ -381,7 +340,6 @@ function enableElementDrag(el) {
         document.addEventListener('mouseup', onUp);
     });
 
-
     function onMove(e) {
         if (!drag) return;
 
@@ -399,7 +357,6 @@ function enableElementDrag(el) {
         updateConnections();
     }
 
-
     function onUp() {
         if (!drag) return;
         drag = false;
@@ -407,7 +364,6 @@ function enableElementDrag(el) {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     }
-
 
     el.addEventListener('dblclick', () => {
         connections = connections.filter(c => {
@@ -421,14 +377,12 @@ function enableElementDrag(el) {
     });
 }
 
-
 let connections = [];
 let snapPort = null;
 const SNAP_R = 20;
 let currentLine = null,
     startElement = null,
     startPort = null;
-
 
 workspace.addEventListener('mousedown', e => {
     if (!e.target.classList.contains('port')) return;
@@ -453,7 +407,6 @@ workspace.addEventListener('mousedown', e => {
     document.addEventListener('mousemove', dragTempLine);
     document.addEventListener('mouseup', finishLine);
 });
-
 
 function findClosestPort(xClient, yClient, radius) {
     const wsRect = workspace.getBoundingClientRect();
@@ -497,16 +450,13 @@ svg.style.overflow = 'visible';
 function finishLine(e) {
     if (!currentLine) return;
 
-
     const targetPort = snapPort ??
         (e.target.classList.contains('port') ? e.target : null);
-
 
     snapPort?.classList.remove('highlight');
     snapPort = null;
 
     if (!currentLine) return;
-
 
     if (targetPort && targetPort !== startPort) {
         const toElement = targetPort.parentElement;
@@ -526,7 +476,6 @@ function finishLine(e) {
     document.removeEventListener('mouseup', finishLine);
 }
 
-
 function updateConnections() {
     connections.forEach(c => {
         const a = portCenter(c.from.port);
@@ -537,7 +486,6 @@ function updateConnections() {
         c.line.setAttribute('y2', b.y);
     });
 }
-
 
 function portCenter(port) {
     const wsRect = workspace.getBoundingClientRect();
@@ -554,10 +502,8 @@ function portCenter(port) {
     return {x: svgP.x, y: svgP.y};
 }
 
-
 function updateTransform() {
-    canvas.style.transform =
-        `translate(${posX}px, ${posY}px) scale(${scale})`;
+    canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
 }
 
 let clipboard = null;
@@ -595,7 +541,6 @@ function paste(x, y) {
     });
 }
 
-
 function deleteElement(el) {
     connections = connections.filter(c => {
         if (c.from.element === el || c.to.element === el) {
@@ -611,14 +556,11 @@ ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
     const act = e.target.dataset.action;
 
-
     const target = ctxTarget || null;
 
     if (act === 'copy') copy(target);
     else if (act === 'cut') cut(target);
     else if (act === 'paste') {
-
-
         const x = parseInt(ctxMenu.style.left) - workspace.getBoundingClientRect().left + 10;
         const y = parseInt(ctxMenu.style.top) - workspace.getBoundingClientRect().top + 10;
         paste(x, y);
@@ -634,9 +576,7 @@ workspace.addEventListener('mousemove', e => {
     cursorPos.y = e.clientY - rect.top;
 });
 
-
 window.addEventListener('keydown', e => {
-    // нужна Ctrl или ⌘ и курсор НЕ в поле ввода
     if (!(e.ctrlKey || e.metaKey) || ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
 
     switch (e.code) {

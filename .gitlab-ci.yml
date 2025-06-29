@@ -3,8 +3,58 @@ stages:
   - test
   - deploy
 
-build-job:
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - frontend/node_modules/
+
+build_and_push_images:
   stage: build
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
+    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+    - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
+
+    - docker build -t $DOCKERHUB_USER/backend-api-service:latest backend/API_service/
+
+    - docker build -t $DOCKERHUB_USER/backend-auth-service:latest backend/Authentication_service/
+
+    - docker build -t $DOCKERHUB_USER/backend-database-service:latest backend/Database_service/
+
+    - docker build -t $DOCKERHUB_USER/frontend-nginx-vcd:latest .
+    # Pushing
+    - docker push $DOCKERHUB_USER/frontend-vcd:latest
+    - docker push $DOCKERHUB_USER/backend-api-service:latest
+    - docker push $DOCKERHUB_USER/backend-auth-service:latest
+    - docker push $DOCKERHUB_USER/backend-database-service:latest
+    - docker push $DOCKERHUB_USER/frontend-nginx-vcd:latest
+
+  only:
+    - main
+
+deploy_to_server:
+  stage: deploy
+  image: alpine:latest
+  needs: ["build_and_push_images"]
+  before_script:
+    - apk update && apk add --no-cache openssh-client git
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config
+  script:
+    - ssh -vvv -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH connection test successful'"
+
+    - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "cd visual-circuit-designer &&
+      git fetch origin &&
+      git reset --hard origin/main &&
+      docker-compose pull &&
+      docker-compose down &&
+      docker container prune -f &&
+      docker-compose up -d --force-recreate
+      "
+  only:
+    - main
