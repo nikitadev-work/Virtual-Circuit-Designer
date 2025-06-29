@@ -54,6 +54,7 @@ export default function Page() {
                     <div className="sidebar-body">
                         <div className="logic-components">Logic Components</div>
                         <div className="components-grid">
+
                             <div className="draggable-item" draggable="true" datatype="NOT" data-icon="/Icons/LogicBlocks/not.svg">
                                 <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
@@ -98,7 +99,6 @@ export default function Page() {
                                 <Image src="/Icons/Inputs&Outputs/Output-0.svg" width={60} height={60} alt="Output" className="component-icon"/>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -116,3 +116,4 @@ export default function Page() {
         </>
     );
 }
+

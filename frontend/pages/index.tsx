@@ -1,10 +1,13 @@
 'use client';
+
 import { useEffect, useRef, useState } from 'react';
+
 import Link from 'next/link';
 
 export default function MainPage() {
     const [typedText, setTypedText] = useState('');
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
     const fullText = 'Visual Circuit Designer';
 
     useEffect(() => {
@@ -41,6 +44,7 @@ export default function MainPage() {
             vx: (Math.random() - 0.5) * 0.3,
             vy: (Math.random() - 0.5) * 0.3
         }));
+
         const draw = () => {
             ctx.clearRect(0, 0, width, height);
             ctx.fillStyle = 'rgba(100,150,255,0.2)';
@@ -73,6 +77,7 @@ export default function MainPage() {
                     }
                 }
             }
+
             requestAnimationFrame(draw);
         };
 
