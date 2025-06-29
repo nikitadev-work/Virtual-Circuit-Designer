@@ -13,8 +13,14 @@ build_and_push_images:
   image: docker:latest
   services:
     - docker:dind
+  before_script:
+    - apk add --no-cache nodejs npm
   script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+    - cd frontend
+    - npm install --save-dev postcss autoprefixer tailwindcss
+    - cd ..
 
     - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
 
@@ -24,7 +30,7 @@ build_and_push_images:
 
     - docker build -t $DOCKERHUB_USER/backend-database-service:latest backend/Database_service/
 
-    - docker build -t $DOCKERHUB_USER/frontend-nginx-vcd:latest .
+    - docker build -t $DOCKERHUB_USER/frontend-nginx-vcd:latest nginx/
     # Pushing
     - docker push $DOCKERHUB_USER/frontend-vcd:latest
     - docker push $DOCKERHUB_USER/backend-api-service:latest

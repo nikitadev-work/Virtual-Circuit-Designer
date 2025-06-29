@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 module.exports = {
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
