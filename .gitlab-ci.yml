@@ -19,7 +19,7 @@ build_and_push_images:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
 
     - cd frontend
-    - npm install --save-dev postcss autoprefixer
+    - npm install --save-dev postcss autoprefixer tailwindcss
     - cd ..
 
     - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
