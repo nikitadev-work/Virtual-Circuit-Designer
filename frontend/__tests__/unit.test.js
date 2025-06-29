@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars */
+
 const {describe, expect, test, beforeEach} = require('@jest/globals');
 
 let scale = 1;

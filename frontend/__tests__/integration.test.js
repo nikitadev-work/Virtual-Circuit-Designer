@@ -3,8 +3,6 @@
  */
 
 // 1 test - checks that a new element can be added to the workspace DOM container
-const { fireEvent } = require('@testing-library/dom');
-
 describe('Workspace integration', () => {
     let workspace;
 
