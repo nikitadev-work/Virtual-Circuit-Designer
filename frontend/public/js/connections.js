@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+
 /** @type {HTMLDivElement} */
 const canvas = document.querySelector('.canvas-container');
 /** @type {HTMLDivElement} */
@@ -488,7 +490,6 @@ function updateConnections() {
 }
 
 function portCenter(port) {
-    const wsRect = workspace.getBoundingClientRect();
     const pr = port.getBoundingClientRect();
     const screenX = pr.left + pr.width / 2;
     const screenY = pr.top + pr.height / 2;
