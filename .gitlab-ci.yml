@@ -16,6 +16,10 @@ build_and_push_images:
   script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
 
+    - cd frontend
+    - npm install --save-dev postcss autoprefixer
+    - cd ..
+
     - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
 
     - docker build -t $DOCKERHUB_USER/backend-api-service:latest backend/API_service/
