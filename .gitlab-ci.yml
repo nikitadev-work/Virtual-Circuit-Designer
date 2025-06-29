@@ -29,7 +29,7 @@ build_and_push_images:
     - docker build -t $DOCKERHUB_USER/backend-auth-service:latest backend/Authentication_service/
 
     - docker build -t $DOCKERHUB_USER/backend-database-service:latest backend/Database_service/
-    -
+    
     # Pushing
     - docker push $DOCKERHUB_USER/frontend-vcd:latest
     - docker push $DOCKERHUB_USER/backend-api-service:latest
