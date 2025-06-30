@@ -53,7 +53,7 @@ services:
     image: nikitakhripunkov/frontend-vcd:latest
     restart: always
     ports:
-      - "80:80"
+      - "80:3000"
     networks:
       - my_shared_network
 
