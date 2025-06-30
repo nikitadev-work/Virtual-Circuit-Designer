@@ -5,7 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="ww">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/build-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/build-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/0.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/0.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/1.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/1.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/2.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/2.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/3.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/3.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/4.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/4.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/5.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/5.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/index.pack.gz" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/index.pack.gz" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/index.pack.gz.old" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/index.pack.gz.old" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/middleware-build-manifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/middleware-build-manifest.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/pages-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/vendor-chunks/next.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/vendor-chunks/next.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/webpack-runtime.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/webpack-runtime.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/_app.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/chunks/pages/_app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/chunks/webpack.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/chunks/webpack.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/development/_buildManifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/development/_buildManifest.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/nJLiH9ilktdy2Kne2B5aR/_buildManifest.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/nJLiH9ilktdy2Kne2B5aR/_ssgManifest.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/trace" beforeDir="false" afterPath="$PROJECT_DIR$/build/trace" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components.json" beforeDir="false" afterPath="$PROJECT_DIR$/components.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pages/dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/pages/dashboard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,6 +110,7 @@
       <workItem from="1751192711034" duration="697000" />
       <workItem from="1751193474487" duration="8252000" />
       <workItem from="1751282493114" duration="2001000" />
+      <workItem from="1751287145810" duration="3882000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
