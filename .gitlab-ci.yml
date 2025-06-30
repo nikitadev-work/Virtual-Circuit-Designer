@@ -5,13 +5,11 @@ stages:
 variables:
   IMAGE_PREFIX: nikitakhripunkov
 
-# ---------- универсальный шаблон -------------
 .build-with-kaniko:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   before_script:
-    # создаём ~/.docker/config.json для Private Hub
     - |
       mkdir -p /kaniko/.docker
       printf '{"auths":{"https://index.docker.io/v1/":{"username":"%s","password":"%s"}}}\n' \
@@ -25,7 +23,6 @@ variables:
         --digest-file /tmp/$IMAGE_NAME.digest \
         --single-snapshot \
         --skip-tls-verify
-# ---------------------------------------------
 
 build_frontend:
   stage: build
@@ -63,7 +60,7 @@ deploy_to_server:
     - build_api
     - build_auth
     - build_dbsvc
-  # ▼ остаётся без изменений ▼
+
   before_script:
     - apk add --no-cache openssh-client git
     - mkdir -p ~/.ssh
