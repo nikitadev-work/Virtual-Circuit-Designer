@@ -13,6 +13,18 @@ const eslintConfig = [
   {
     ignores: ["**/node_modules/**", ".next/**", "dist/**", "build/**"]
   },
+  {
+    // Здесь перечислены все тестовые файлы и setup
+    files: [
+      "**/__tests__/**/*.[jt]s?(x)",
+      "**/*.test.[jt]s?(x)",
+      "**/jest.setup.js"
+    ],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-unused-vars": "off"
+    },
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

@@ -50,10 +50,10 @@ services:
         ipv4_address: 172.18.0.10
 
   frontend:
-    image: nikitakhripunkov/frontend-vcd
+    image: nikitakhripunkov/frontend-vcd:latest
     restart: always
     ports:
-      - "80:80"
+      - "80:3000"
     networks:
       - my_shared_network
 
