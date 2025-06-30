@@ -24,7 +24,7 @@ variables:
         --destination $IMAGE_PREFIX/$IMAGE_NAME:latest \
         --digest-file /tmp/$IMAGE_NAME.digest \
         --single-snapshot \
-        --skip-tls-verify   # если нужен HTTP-proxy, иначе уберите
+        --skip-tls-verify
 # ---------------------------------------------
 
 build_frontend:
