@@ -5,115 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="ww">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/BUILD_ID" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/build-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/build-manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/diagnostics/build-diagnostics.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/diagnostics/framework.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/dynamic-css-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/export-marker.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/images-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/next-minimal-server.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/next-server.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/prerender-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/required-server-files.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/routes-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/chunks/233.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/chunks/425.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/chunks/616.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/chunks/89.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/chunks/918.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/dynamic-css-manifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/functions-config-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/interception-route-rewrite-manifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/interception-route-rewrite-manifest.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/middleware-build-manifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/middleware-build-manifest.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/middleware-react-loadable-manifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/middleware-react-loadable-manifest.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/next-font-manifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/next-font-manifest.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages-manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/404.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/500.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/_app.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages/_app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/_app.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/_document.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages/_document.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/_document.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/_error.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages/_error.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/_error.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/dashboard.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/dashboard.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/index.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/login.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/login.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/playground.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/playground.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/registration.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/pages/registration.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/webpack-runtime.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/webpack-runtime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/BUILD_ID" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/build-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/dynamic-css-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/prerender-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/react-loadable-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/required-server-files.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/routes-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/chunks/233.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/chunks/425.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/chunks/616.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/chunks/89.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/chunks/918.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/dynamic-css-manifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/functions-config-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/middleware-build-manifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/middleware-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/middleware-react-loadable-manifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/next-font-manifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/next-font-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages-manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/404.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/500.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/_app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/_app.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/_document.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/_document.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/_error.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/_error.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/dashboard.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/dashboard.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/index.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/login.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/login.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/playground.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/playground.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/registration.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/pages/registration.js.nft.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/build/server/webpack-runtime.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/pages/_app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/standalone/server.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/bJlz9fVZfYeleiZyFizV3/_buildManifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/bJlz9fVZfYeleiZyFizV3/_ssgManifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/230-08fa8eaae70a32b0.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/587-27cea0cb5304d9bf.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/928-f5ff1ce64fdcf2f5.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/996-b13f8fdb4a3f28e4.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/framework-2f335d22a7318891.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/main-a4459e0702adba33.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/_app-6b4b4e4343242ac1.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/_error-41608b100cc61246.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/dashboard-8749ca6bd20d8ba1.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/index-122fb262cff6af8e.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/login-cd55f51821978dfd.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/playground-bf52dff864b4636e.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/registration-219c7a152918072a.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/polyfills-42372ed130431b0a.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/webpack-a91c5b7bfa5e5954.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/css/89d9c274a8e355f7.css" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/trace" beforeDir="false" afterPath="$PROJECT_DIR$/build/trace" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/coverage/clover.xml" beforeDir="false" afterPath="$PROJECT_DIR$/coverage/clover.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/coverage/lcov-report/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/coverage/lcov-report/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -194,7 +86,7 @@
       <workItem from="1751192176313" duration="486000" />
       <workItem from="1751192711034" duration="697000" />
       <workItem from="1751193474487" duration="8252000" />
-      <workItem from="1751282493114" duration="1675000" />
+      <workItem from="1751282493114" duration="2001000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -284,7 +176,23 @@
       <option name="project" value="LOCAL" />
       <updated>1751201717534</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="ww">
+      <option name="closed" value="true" />
+      <created>1751284252852</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1751284252852</updated>
+    </task>
+    <task id="LOCAL-00013" summary="ww">
+      <option name="closed" value="true" />
+      <created>1751284258795</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1751284258795</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
