@@ -1,29 +1,23 @@
-FROM node:20 AS builder
+# 1. Используем официальный образ Node.js с поддержкой bun, npm и corepack
+FROM node:20-alpine
+
+# 2. Устанавливаем рабочую директорию
 WORKDIR /app
 
-# 1) Устанавливаем инструменты для сборки C/C++ и Python (нужно для node-gyp)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      build-essential \
-      python3 \
-      curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 2) Ставим Rust toolchain и настраиваем CARGO_HOME/PATH
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV CARGO_HOME=/root/.cargo
-ENV PATH="${CARGO_HOME}/bin:${PATH}"
-
-# 3) Заставляем lightningcss собираться из исходников при npm ci
-ENV LIGHTNINGCSS_BUILD_FROM_SOURCE=1
-
-# 4) Устанавливаем зависимости (включая LightningCSS)
+# 3. Копируем package.json и lock-файл
 COPY package*.json ./
-RUN npm ci
 
-# 5) Копируем весь код и запускаем сборку Next.js
+# 4. Устанавливаем зависимости
+RUN npm install
+
+# 5. Копируем остальные файлы проекта
 COPY . .
+
+# 6. Собираем Next.js проект
 RUN npm run build
 
-# ---
-# Тут ваш production‑стадия: копируем статику или настраиваем сервер, как нужно
+# 7. Экспонируем порт, который использует next start (по умолчанию 3000)
+EXPOSE 3000
+
+# 8. Запускаем Next.js сервер
+CMD ["npm", "start"]
