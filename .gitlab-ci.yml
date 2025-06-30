@@ -1,63 +1,95 @@
 stages:
   - build
-  - test
   - deploy
+
+variables:
+  # Ваш namespace в DockerHub или GitLab Container Registry
+  IMAGE_REGISTRY: "docker.io/${DOCKERHUB_USER}"
+  # Флаг для Kaniko
+  DOCKER_CONFIG: "/kaniko/.docker"
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - frontend/node_modules/
-    - backend/API_service/node_modules/
-    - backend/Authentication_service/node_modules/
-    - backend/Database_service/node_modules/
 
 build_and_push_images:
-  image: docker:latest
-  services:
-    - name: docker:dind
-      alias: docker
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:latest
+    entrypoint: [""]
   variables:
-    # Отключаем встроенный TLS и слушаем на 2375
-    DOCKER_TLS_CERTDIR: ""
-    # Точка доступа к DinD-сервису
-    DOCKER_HOST: tcp://docker:2375
+    # куда пушим
+    PKG_REGISTRY: "${IMAGE_REGISTRY}"
+    # отключаем Helm логику (если есть)
+    DOCKER_CLI_EXPERIMENTAL: "enabled"
   before_script:
-    - apk add --no-cache nodejs npm
-    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+    # подготавливаем credentials для Kaniko
+    - mkdir -p /kaniko/.docker
+    - |
+      cat <<EOF > /kaniko/.docker/config.json
+      {
+        "auths": {
+          "docker.io": {
+            "username": "${DOCKERHUB_USER}",
+            "password": "${DOCKERHUB_TOKEN}"
+          }
+        }
+      }
+      EOF
   script:
-    - cd frontend
-    - npm install
-    - cd ..
-    - docker build -t ${DOCKERHUB_USER}/frontend-vcd:latest frontend/
-    - docker build -t ${DOCKERHUB_USER}/backend-api-service:latest backend/API_service/
-    - docker build -t ${DOCKERHUB_USER}/backend-auth-service:latest backend/Authentication_service/
-    - docker build -t ${DOCKERHUB_USER}/backend-database-service:latest backend/Database_service/
-    - docker push ${DOCKERHUB_USER}/frontend-vcd:latest
-    - docker push ${DOCKERHUB_USER}/backend-api-service:latest
-    - docker push ${DOCKERHUB_USER}/backend-auth-service:latest
-    - docker push ${DOCKERHUB_USER}/backend-database-service:latest
+    # 1) Собираем фронтенд (Next.js) и запускаем внутри container
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/frontend \
+      --dockerfile ${CI_PROJECT_DIR}/frontend/Dockerfile \
+      --destination ${PKG_REGISTRY}/frontend-vcd:latest \
+      --cleanup
+
+    # 2) Билдим бекенды
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/backend/API_service \
+      --dockerfile ${CI_PROJECT_DIR}/backend/API_service/Dockerfile \
+      --destination ${PKG_REGISTRY}/backend-api-service:latest \
+      --cleanup
+
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/backend/Authentication_service \
+      --dockerfile ${CI_PROJECT_DIR}/backend/Authentication_service/Dockerfile \
+      --destination ${PKG_REGISTRY}/backend-auth-service:latest \
+      --cleanup
+
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/backend/Database_service \
+      --dockerfile ${CI_PROJECT_DIR}/backend/Database_service/Dockerfile \
+      --destination ${PKG_REGISTRY}/backend-database-service:latest \
+      --cleanup
   only:
     - main
-
 
 deploy_to_server:
   stage: deploy
   image: alpine:latest
-  needs: ["build_and_push_images"]
+  dependencies:
+    - build_and_push_images
   before_script:
-    - apk update && apk add --no-cache openssh-client git
+    - apk add --no-cache openssh-client git
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519
-    - echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
   script:
-    - ssh -vvv -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH connection test successful'"
-    - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "cd visual-circuit-designer &&
-      git fetch origin &&
-      git reset --hard origin/main &&
-      docker-compose pull &&
-      docker-compose down --remove-orphans &&
-      docker container prune -f &&
-      docker-compose up -d --force-recreate"
+    # Проверка SSH-доступа
+    - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH OK'"
+    # На сервере:
+    # 1) Заходим в каталог проекта
+    # 2) Обновляем исходники, подтягиваем новые образы, пересобираем
+    - |
+      ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 << 'EOH'
+        cd /root/visual-circuit-designer
+        git fetch origin
+        git reset --hard origin/main
+        docker-compose pull
+        docker-compose up -d --force-recreate
+      EOH
   only:
     - main
