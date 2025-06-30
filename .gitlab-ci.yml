@@ -29,6 +29,7 @@ build_and_push_images:
     - cd frontend
     - npm install
     - npm run build
+    - echo "Listing .next directory after build:" && ls -la .next || echo ".next directory not found"
     - cd ..
     - docker build -t nikitakhripunkov/frontend-vcd:latest frontend/
     - docker build -t nikitakhripunkov/backend-api-service:latest backend/API_service/

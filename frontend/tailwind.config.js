@@ -40,7 +40,4 @@ module.exports = {
     plugins: [
         require('@tailwindcss/forms'),
     ],
-    experimental: {
-        optimizeCss: false, // Отключаем Lightning CSS
-    },
 };
