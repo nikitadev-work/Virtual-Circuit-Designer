@@ -1,29 +1,45 @@
-# 1. Используем официальный образ Node.js с поддержкой bun, npm и corepack
-FROM node:20-alpine
+############################################
+# 1) Builder: собираем Next.js + LightningCSS
+############################################
+FROM node:20-slim AS builder
 
-# 2. Устанавливаем рабочую директорию
 WORKDIR /app
 
-# 3. Копируем package.json и lock-файл
-COPY package*.json ./
+# Устанавливаем сборочные зависимости: gcc, python, rust
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential python3 curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y curl build-essential
+# Rust (для нативных плагинов, например LightningCSS)
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustc --version
+ENV CARGO_HOME=/root/.cargo
+ENV PATH="${CARGO_HOME}/bin:${PATH}"
 
-RUN npm install --force
-RUN npm install lightningcss
-RUN ls -la node_modules/lightningcss/
+# Говорим lightningcss собирать из исходников, и ставим Next.js deps
+ENV LIGHTNINGCSS_BUILD_FROM_SOURCE=1
+COPY package*.json ./
+RUN npm ci
 
-# 5. Копируем остальные файлы проекта
+# Копируем код и билдим
 COPY . .
-
-# 6. Собираем Next.js проект
 RUN npm run build
 
-# 7. Экспонируем порт, который использует next start (по умолчанию 3000)
+############################################
+# 2) Runner: запускаем Next.js
+############################################
+FROM node:20-slim AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Берём deps и билд из builder-а
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+# Открываем порт Next.js
 EXPOSE 3000
 
-# 8. Запускаем Next.js сервер
+# Стартуем сервер
 CMD ["npm", "start"]
