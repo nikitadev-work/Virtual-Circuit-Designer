@@ -17,7 +17,7 @@ services:
       - my_shared_network
 
   database-service:
-    build: backend/Database_service
+    image: registry.gitlab.pg.innopolis.university/team-45/visual-circuit-designer/packages/container/backend-database-service:latest
     depends_on:
       database:
         condition: service_healthy
@@ -25,7 +25,7 @@ services:
       - my_shared_network
 
   auth-service:
-    build: backend/Authentication_service
+    image: registry.gitlab.pg.innopolis.university/team-45/visual-circuit-designer/packages/container/backend-auth-service:latest
     depends_on:
       database:
         condition: service_healthy
@@ -35,7 +35,7 @@ services:
       - my_shared_network
 
   api-service:
-    build: backend/API_service
+    image: registry.gitlab.pg.innopolis.university/team-45/visual-circuit-designer/packages/container/backend-api-service:latest
     ports:
       - "8052:8080"
     depends_on:
@@ -50,7 +50,7 @@ services:
         ipv4_address: 172.18.0.10
 
   frontend:
-    image: nikitakhripunkov/frontend-vcd
+    image: registry.gitlab.pg.innopolis.university/team-45/visual-circuit-designer/packages/container/frontend-vcd:latest
     restart: always
     ports:
       - "80:80"
