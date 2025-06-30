@@ -49,7 +49,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         const HOST = window.location.host;
 
         try {
-            const response = await fetch('http://' + HOST + 'api/user/register', {
+            const response = await fetch('http://' + HOST + '/api/user/register', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
