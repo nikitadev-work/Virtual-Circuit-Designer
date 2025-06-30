@@ -2,72 +2,58 @@ stages:
   - build
   - deploy
 
-# Общие переменные для всех jobs
 variables:
-  IMAGE_PREFIX: nikitakhripunkov               # чтобы не дублировать
-  BUILDKITD_FLAGS: --oci-worker-no-process-sandbox  # рекомендует GitLab
+  IMAGE_PREFIX: nikitakhripunkov
 
-# ---------- Шаблон rootless-BuildKit ----------
-.build-with-buildkit:
-  image:
-    name: moby/buildkit:rootless               # BuildKit без root
-    entrypoint: ["sh", "-euc"]                 # переопределяем, иначе запустится buildkitd
+# ---------- универсальный шаблон -------------
+.build-with-kaniko:
+  image: gcr.io/kaniko-project/executor:latest
+  entrypoint: [""]
   before_script:
-    # 1. Docker-config с логином в Hub
+    # создаём ~/.docker/config.json для Private Hub
     - |
-      mkdir -p ~/.docker
-      echo "{
-        \"auths\": {
-          \"https://index.docker.io/v1/\": {
-            \"username\": \"$DOCKERHUB_USER\",
-            \"password\": \"$DOCKERHUB_TOKEN\"
-          }
-        }
-      }" > ~/.docker/config.json
+      mkdir -p /kaniko/.docker
+      printf '{"auths":{"https://index.docker.io/v1/":{"username":"%s","password":"%s"}}}\n' \
+        "$DOCKERHUB_USER" "$DOCKERHUB_TOKEN" > /kaniko/.docker/config.json
   script:
-    # 2. Сам билд и push
     - |
-      buildctl-daemonless.sh build \
-        --frontend dockerfile.v0 \
-        --local context=$CONTEXT_DIR \
-        --local dockerfile=$CONTEXT_DIR \
-        --output type=image,name=${IMAGE_PREFIX}/${IMAGE_NAME}:latest,push=true \
-        --progress plain
+      /kaniko/executor \
+        --context $CI_PROJECT_DIR/$CONTEXT_DIR \
+        --dockerfile $CI_PROJECT_DIR/$CONTEXT_DIR/Dockerfile \
+        --destination $IMAGE_PREFIX/$IMAGE_NAME:latest \
+        --digest-file /tmp/$IMAGE_NAME.digest \
+        --single-snapshot \
+        --skip-tls-verify   # если нужен HTTP-proxy, иначе уберите
 # ---------------------------------------------
 
-# ---------- Фронтенд ----------
 build_frontend:
   stage: build
-  extends: .build-with-buildkit
+  extends: .build-with-kaniko
   variables:
     CONTEXT_DIR: frontend
     IMAGE_NAME: frontend-vcd
 
-# ---------- API ----------
 build_api:
   stage: build
-  extends: .build-with-buildkit
+  extends: .build-with-kaniko
   variables:
     CONTEXT_DIR: backend/API_service
     IMAGE_NAME: backend-api-service
 
-# ---------- Auth ----------
 build_auth:
   stage: build
-  extends: .build-with-buildkit
+  extends: .build-with-kaniko
   variables:
     CONTEXT_DIR: backend/Authentication_service
     IMAGE_NAME: backend-auth-service
 
-# ---------- DB-service ----------
 build_dbsvc:
   stage: build
-  extends: .build-with-buildkit
+  extends: .build-with-kaniko
   variables:
     CONTEXT_DIR: backend/Database_service
     IMAGE_NAME: backend-database-service
 
-# ---------- Деплой (старый job почти без изменений) ----------
 deploy_to_server:
   stage: deploy
   image: alpine:latest
@@ -76,6 +62,7 @@ deploy_to_server:
     - build_api
     - build_auth
     - build_dbsvc
+  # ▼ остаётся без изменений ▼
   before_script:
     - apk add --no-cache openssh-client git
     - mkdir -p ~/.ssh
