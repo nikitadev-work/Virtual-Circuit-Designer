@@ -7,8 +7,9 @@ variables:
 
 # ---------- универсальный шаблон -------------
 .build-with-kaniko:
-  image: gcr.io/kaniko-project/executor:latest
-  entrypoint: [""]
+  image: 
+    name: gcr.io/kaniko-project/executor:latest
+    entrypoint: [""]
   before_script:
     # создаём ~/.docker/config.json для Private Hub
     - |
