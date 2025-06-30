@@ -18,7 +18,7 @@ ENV NODE_ENV=production
 # минимальный набор для запуска
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/build        ./.next        # ← distDir=build
+COPY --from=builder /app/build        ./.next
 COPY --from=builder /app/public       ./public
 
 EXPOSE 3000
