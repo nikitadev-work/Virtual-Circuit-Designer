@@ -7,37 +7,39 @@ cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - frontend/node_modules/
+    - backend/API_service/node_modules/
+    - backend/Authentication_service/node_modules/
+    - backend/Database_service/node_modules/
 
 build_and_push_images:
   stage: build
   image: docker:latest
   services:
-    - docker:dind
+    - name: docker:dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
   before_script:
     - apk add --no-cache nodejs npm
   script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
-
     - cd frontend
-    - npm install --save-dev postcss autoprefixer tailwindcss
+    - npm install
     - cd ..
-
     - docker build -t nikitakhripunkov/frontend-vcd:latest frontend/
-
     - docker build -t nikitakhripunkov/backend-api-service:latest backend/API_service/
-
     - docker build -t nikitakhripunkov/backend-auth-service:latest backend/Authentication_service/
-
     - docker build -t nikitakhripunkov/backend-database-service:latest backend/Database_service/
-
-    # Pushing
     - docker push nikitakhripunkov/frontend-vcd:latest
     - docker push nikitakhripunkov/backend-api-service:latest
     - docker push nikitakhripunkov/backend-auth-service:latest
     - docker push nikitakhripunkov/backend-database-service:latest
-
   only:
     - main
+  tags:
+    - docker
 
 deploy_to_server:
   stage: deploy
@@ -51,14 +53,12 @@ deploy_to_server:
     - echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config
   script:
     - ssh -vvv -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH connection test successful'"
-
     - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "cd visual-circuit-designer &&
       git fetch origin &&
       git reset --hard origin/main &&
       docker-compose pull &&
       docker-compose down --remove-orphans &&
       docker container prune -f &&
-      docker-compose up -d --force-recreate
-      "
+      docker-compose up -d --force-recreate"
   only:
     - main
