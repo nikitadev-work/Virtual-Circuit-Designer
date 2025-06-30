@@ -1,28 +1,24 @@
-################# 1.  B U I L D E R #################
+################ 1.  B U I L D E R ################
 FROM node:20 AS builder
 WORKDIR /app
 
-# 1. Устанавливаем все зависимости (dev+prod)
 COPY package*.json ./
-RUN npm ci --force            # быстро и воспроизводимо
+RUN npm ci --force          # dev+prod deps
 
-# 2. Копируем исходники и собираем Next.js
 COPY . .
-RUN npm run build             # создаёт /app/build   (distDir='build')
+RUN npm run build           # создаёт /app/.next
 
-################# 2.  R U N N E R ###################
+################ 2.  R U N N E R ##################
 FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# 3. Копируем только package-файлы
+# устанавливаем production-зависимости
 COPY package*.json ./
-
-# 4. Ставим **только production**-зависимости
 RUN npm ci --omit=dev --ignore-scripts
 
-# 5. Переносим артефакты из builder
-COPY --from=builder /app/build   ./build
+# копируем артефакты
+COPY --from=builder /app/.next   ./.next
 COPY --from=builder /app/public  ./public
 
 EXPOSE 3000
