@@ -22,19 +22,19 @@ build_and_push_images:
     - npm install --save-dev postcss autoprefixer tailwindcss
     - cd ..
 
-    - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
+    - docker build -t nikitakhripunkov/frontend-vcd:latest frontend/
 
-    - docker build -t $DOCKERHUB_USER/backend-api-service:latest backend/API_service/
+    - docker build -t nikitakhripunkov/backend-api-service:latest backend/API_service/
 
-    - docker build -t $DOCKERHUB_USER/backend-auth-service:latest backend/Authentication_service/
+    - docker build -t nikitakhripunkov/backend-auth-service:latest backend/Authentication_service/
 
-    - docker build -t $DOCKERHUB_USER/backend-database-service:latest backend/Database_service/
+    - docker build -t nikitakhripunkov/backend-database-service:latest backend/Database_service/
 
     # Pushing
-    - docker push $DOCKERHUB_USER/frontend-vcd:latest
-    - docker push $DOCKERHUB_USER/backend-api-service:latest
-    - docker push $DOCKERHUB_USER/backend-auth-service:latest
-    - docker push $DOCKERHUB_USER/backend-database-service:latest
+    - docker push nikitakhripunkov/frontend-vcd:latest
+    - docker push nikitakhripunkov/backend-api-service:latest
+    - docker push nikitakhripunkov/backend-auth-service:latest
+    - docker push nikitakhripunkov/backend-database-service:latest
 
   only:
     - main
