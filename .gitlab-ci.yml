@@ -56,7 +56,7 @@ deploy_to_server:
       git fetch origin &&
       git reset --hard origin/main &&
       docker-compose pull &&
-      docker-compose down &&
+      docker-compose down --remove-orphans &&
       docker container prune -f &&
       docker-compose up -d --force-recreate
       "
