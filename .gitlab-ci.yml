@@ -6,7 +6,7 @@ variables:
   IMAGE_REGISTRY: "docker.io/${DOCKERHUB_USER}"
   CANONICAL_KANIKO_IMAGE: "gcr.io/kaniko-project/executor:latest"
 
-# Подготовительный job: генерим конфиг Docker для Kaniko
+# 1) Генерируем Docker‑credentials для Kaniko
 kaniko-credentials:
   stage: build
   image: alpine:latest
@@ -27,32 +27,48 @@ kaniko-credentials:
     paths:
       - kaniko/.docker/config.json
 
-# Собираем и пушим образы Kaniko-ом
+# 2) Собираем и пушим Docker‑образы Kaniko (rootless, без docker:dind)
 build_and_push_images:
   stage: build
   image:
     name: $CANONICAL_KANIKO_IMAGE
-    entrypoint: [""]
+    entrypoint: [""]             # <–– сбрасываем entrypoint, чтобы не искал /bin/sh
   dependencies:
     - kaniko-credentials
   variables:
     DOCKER_CONFIG: "/kaniko/.docker"
   script:
-    # Копируем credentials из артефакта в ожидаемое место
+    # Копируем артефакт с логином в DockerHub
     - mkdir -p /kaniko/.docker
     - cp kaniko/.docker/config.json /kaniko/.docker/config.json
 
-    # Собираем фронтенд
+    # Фронтенд
     - /kaniko/executor \
       --context ${CI_PROJECT_DIR}/frontend \
       --dockerfile ${CI_PROJECT_DIR}/frontend/Dockerfile \
       --destination ${IMAGE_REGISTRY}/frontend-vcd:latest \
       --cleanup
 
-    # Собираем backend-сервисы
-    - /kaniko/executor --context ${CI_PROJECT_DIR}/backend/API_service  --dockerfile ${CI_PROJECT_DIR}/backend/API_service/Dockerfile  --destination ${IMAGE_REGISTRY}/backend-api-service:latest  --cleanup
-    - /kaniko/executor --context ${CI_PROJECT_DIR}/backend/Authentication_service --dockerfile ${CI_PROJECT_DIR}/backend/Authentication_service/Dockerfile --destination ${IMAGE_REGISTRY}/backend-auth-service:latest --cleanup
-    - /kaniko/executor --context ${CI_PROJECT_DIR}/backend/Database_service --dockerfile ${CI_PROJECT_DIR}/backend/Database_service/Dockerfile --destination ${IMAGE_REGISTRY}/backend-database-service:latest --cleanup
+    # Backend API
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/backend/API_service \
+      --dockerfile ${CI_PROJECT_DIR}/backend/API_service/Dockerfile \
+      --destination ${IMAGE_REGISTRY}/backend-api-service:latest \
+      --cleanup
+
+    # Backend Auth
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/backend/Authentication_service \
+      --dockerfile ${CI_PROJECT_DIR}/backend/Authentication_service/Dockerfile \
+      --destination ${IMAGE_REGISTRY}/backend-auth-service:latest \
+      --cleanup
+
+    # Backend Database
+    - /kaniko/executor \
+      --context ${CI_PROJECT_DIR}/backend/Database_service \
+      --dockerfile ${CI_PROJECT_DIR}/backend/Database_service/Dockerfile \
+      --destination ${IMAGE_REGISTRY}/backend-database-service:latest \
+      --cleanup
 
 deploy_to_server:
   stage: deploy
@@ -75,3 +91,5 @@ deploy_to_server:
         docker-compose pull
         docker-compose up -d --force-recreate
       EOH
+  only:
+    - main
