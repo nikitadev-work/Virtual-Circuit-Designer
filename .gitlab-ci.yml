@@ -19,8 +19,9 @@ build_and_push_images:
     - name: docker:24.0.7-dind
       alias: docker
   variables:
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2375
+  privileged: true
   before_script:
     - apk add --no-cache nodejs npm
     - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
@@ -34,7 +35,7 @@ build_and_push_images:
     - docker build -t ${PKG_REGISTRY}/backend-auth-service:latest backend/Authentication_service/
     - docker build -t ${PKG_REGISTRY}/backend-database-service:latest backend/Database_service/
 
-      # Pushing to Package Registrн
+      # Pushing to Package Registry
     - docker push ${PKG_REGISTRY}/frontend-vcd:latest
     - docker push ${PKG_REGISTRY}/backend-api-service:latest
     - docker push ${PKG_REGISTRY}/backend-auth-service:latest
