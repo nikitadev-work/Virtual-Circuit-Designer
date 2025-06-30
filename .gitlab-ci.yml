@@ -7,7 +7,7 @@ variables:
 
 # ---------- универсальный шаблон -------------
 .build-with-kaniko:
-  image: 
+  image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   before_script:
