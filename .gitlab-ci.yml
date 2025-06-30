@@ -1,67 +1,97 @@
 stages:
   - build
-  - test
   - deploy
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - frontend/node_modules/
-    - backend/API_service/node_modules/
-    - backend/Authentication_service/node_modules/
-    - backend/Database_service/node_modules/
+# Общие переменные для всех jobs
+variables:
+  IMAGE_PREFIX: nikitakhripunkov               # чтобы не дублировать
+  BUILDKITD_FLAGS: --oci-worker-no-process-sandbox  # рекомендует GitLab
 
-build_and_push_images:
-  stage: build
-  image: docker:26.0.2
-  services:
-    - name: docker:26.0.2-dind
-      alias: docker
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
+# ---------- Шаблон rootless-BuildKit ----------
+.build-with-buildkit:
+  image:
+    name: moby/buildkit:rootless               # BuildKit без root
+    entrypoint: ["sh", "-euc"]                 # переопределяем, иначе запустится buildkitd
   before_script:
-    - apk add --no-cache nodejs npm
-    - docker info --format '{{.ServerVersion}}' || echo "Docker daemon not running"
+    # 1. Docker-config с логином в Hub
+    - |
+      mkdir -p ~/.docker
+      echo "{
+        \"auths\": {
+          \"https://index.docker.io/v1/\": {
+            \"username\": \"$DOCKERHUB_USER\",
+            \"password\": \"$DOCKERHUB_TOKEN\"
+          }
+        }
+      }" > ~/.docker/config.json
   script:
-    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
-    - cd frontend
-    - npm install
-    - npm run build
-    - echo "Listing .next directory after build:" && ls -la .next || echo ".next directory not found"
-    - cd ..
-    - docker build -t nikitakhripunkov/frontend-vcd:latest frontend/
-    - docker build -t nikitakhripunkov/backend-api-service:latest backend/API_service/
-    - docker build -t nikitakhripunkov/backend-auth-service:latest backend/Authentication_service/
-    - docker build -t nikitakhripunkov/backend-database-service:latest backend/Database_service/
-    - docker push nikitakhripunkov/frontend-vcd:latest
-    - docker push nikitakhripunkov/backend-api-service:latest
-    - docker push nikitakhripunkov/backend-auth-service:latest
-    - docker push nikitakhripunkov/backend-database-service:latest
-  only:
-    - main
-  tags:
-    - docker
+    # 2. Сам билд и push
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=$CONTEXT_DIR \
+        --local dockerfile=$CONTEXT_DIR \
+        --output type=image,name=${IMAGE_PREFIX}/${IMAGE_NAME}:latest,push=true \
+        --progress plain
+# ---------------------------------------------
 
+# ---------- Фронтенд ----------
+build_frontend:
+  stage: build
+  extends: .build-with-buildkit
+  variables:
+    CONTEXT_DIR: frontend
+    IMAGE_NAME: frontend-vcd
+
+# ---------- API ----------
+build_api:
+  stage: build
+  extends: .build-with-buildkit
+  variables:
+    CONTEXT_DIR: backend/API_service
+    IMAGE_NAME: backend-api-service
+
+# ---------- Auth ----------
+build_auth:
+  stage: build
+  extends: .build-with-buildkit
+  variables:
+    CONTEXT_DIR: backend/Authentication_service
+    IMAGE_NAME: backend-auth-service
+
+# ---------- DB-service ----------
+build_dbsvc:
+  stage: build
+  extends: .build-with-buildkit
+  variables:
+    CONTEXT_DIR: backend/Database_service
+    IMAGE_NAME: backend-database-service
+
+# ---------- Деплой (старый job почти без изменений) ----------
 deploy_to_server:
   stage: deploy
   image: alpine:latest
-  needs: ["build_and_push_images"]
+  needs:
+    - build_frontend
+    - build_api
+    - build_auth
+    - build_dbsvc
   before_script:
-    - apk update && apk add --no-cache openssh-client git
+    - apk add --no-cache openssh-client git
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519
     - echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config
-  script:
-    - ssh -vvv -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH connection test successful'"
-    - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "cd visual-circuit-designer &&
-      git fetch origin &&
-      git reset --hard origin/main &&
-      docker-compose pull &&
-      docker-compose down --remove-orphans &&
-      docker container prune -f &&
-      docker-compose up -d --force-recreate"
+  script: |
+    ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 <<'EOF'
+      set -e
+      cd visual-circuit-designer
+      git fetch origin
+      git reset --hard origin/main
+      docker-compose pull
+      docker-compose down --remove-orphans
+      docker container prune -f
+      docker-compose up -d --force-recreate
+    EOF
   only:
     - main
