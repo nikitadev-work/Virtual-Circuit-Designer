@@ -7,8 +7,14 @@ WORKDIR /app
 # 3. Копируем package.json и lock-файл
 COPY package*.json ./
 
-# 4. Устанавливаем зависимости
-RUN npm install
+RUN apt-get update && apt-get install -y curl build-essential
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustc --version
+
+RUN npm install --force
+RUN npm install lightningcss
+RUN ls -la node_modules/lightningcss/
 
 # 5. Копируем остальные файлы проекта
 COPY . .
