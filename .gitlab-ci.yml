@@ -3,31 +3,17 @@ stages:
   - deploy
 
 variables:
-  # Ваш namespace в DockerHub или GitLab Container Registry
   IMAGE_REGISTRY: "docker.io/${DOCKERHUB_USER}"
-  # Флаг для Kaniko
-  DOCKER_CONFIG: "/kaniko/.docker"
+  CANONICAL_KANIKO_IMAGE: "gcr.io/kaniko-project/executor:latest"
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - frontend/node_modules/
-
-build_and_push_images:
+# Подготовительный job: генерим конфиг Docker для Kaniko
+kaniko-credentials:
   stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:latest
-    entrypoint: [""]
-  variables:
-    # куда пушим
-    PKG_REGISTRY: "${IMAGE_REGISTRY}"
-    # отключаем Helm логику (если есть)
-    DOCKER_CLI_EXPERIMENTAL: "enabled"
-  before_script:
-    # подготавливаем credentials для Kaniko
-    - mkdir -p /kaniko/.docker
+  image: alpine:latest
+  script:
+    - mkdir -p kaniko/.docker
     - |
-      cat <<EOF > /kaniko/.docker/config.json
+      cat <<EOF > kaniko/.docker/config.json
       {
         "auths": {
           "docker.io": {
@@ -37,34 +23,36 @@ build_and_push_images:
         }
       }
       EOF
+  artifacts:
+    paths:
+      - kaniko/.docker/config.json
+
+# Собираем и пушим образы Kaniko-ом
+build_and_push_images:
+  stage: build
+  image:
+    name: $CANONICAL_KANIKO_IMAGE
+    entrypoint: [""]
+  dependencies:
+    - kaniko-credentials
+  variables:
+    DOCKER_CONFIG: "/kaniko/.docker"
   script:
-    # 1) Собираем фронтенд (Next.js) и запускаем внутри container
+    # Копируем credentials из артефакта в ожидаемое место
+    - mkdir -p /kaniko/.docker
+    - cp kaniko/.docker/config.json /kaniko/.docker/config.json
+
+    # Собираем фронтенд
     - /kaniko/executor \
       --context ${CI_PROJECT_DIR}/frontend \
       --dockerfile ${CI_PROJECT_DIR}/frontend/Dockerfile \
-      --destination ${PKG_REGISTRY}/frontend-vcd:latest \
+      --destination ${IMAGE_REGISTRY}/frontend-vcd:latest \
       --cleanup
 
-    # 2) Билдим бекенды
-    - /kaniko/executor \
-      --context ${CI_PROJECT_DIR}/backend/API_service \
-      --dockerfile ${CI_PROJECT_DIR}/backend/API_service/Dockerfile \
-      --destination ${PKG_REGISTRY}/backend-api-service:latest \
-      --cleanup
-
-    - /kaniko/executor \
-      --context ${CI_PROJECT_DIR}/backend/Authentication_service \
-      --dockerfile ${CI_PROJECT_DIR}/backend/Authentication_service/Dockerfile \
-      --destination ${PKG_REGISTRY}/backend-auth-service:latest \
-      --cleanup
-
-    - /kaniko/executor \
-      --context ${CI_PROJECT_DIR}/backend/Database_service \
-      --dockerfile ${CI_PROJECT_DIR}/backend/Database_service/Dockerfile \
-      --destination ${PKG_REGISTRY}/backend-database-service:latest \
-      --cleanup
-  only:
-    - main
+    # Собираем backend-сервисы
+    - /kaniko/executor --context ${CI_PROJECT_DIR}/backend/API_service  --dockerfile ${CI_PROJECT_DIR}/backend/API_service/Dockerfile  --destination ${IMAGE_REGISTRY}/backend-api-service:latest  --cleanup
+    - /kaniko/executor --context ${CI_PROJECT_DIR}/backend/Authentication_service --dockerfile ${CI_PROJECT_DIR}/backend/Authentication_service/Dockerfile --destination ${IMAGE_REGISTRY}/backend-auth-service:latest --cleanup
+    - /kaniko/executor --context ${CI_PROJECT_DIR}/backend/Database_service --dockerfile ${CI_PROJECT_DIR}/backend/Database_service/Dockerfile --destination ${IMAGE_REGISTRY}/backend-database-service:latest --cleanup
 
 deploy_to_server:
   stage: deploy
@@ -78,11 +66,7 @@ deploy_to_server:
     - chmod 600 ~/.ssh/id_ed25519
     - echo -e "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
   script:
-    # Проверка SSH-доступа
     - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH OK'"
-    # На сервере:
-    # 1) Заходим в каталог проекта
-    # 2) Обновляем исходники, подтягиваем новые образы, пересобираем
     - |
       ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 << 'EOH'
         cd /root/visual-circuit-designer
@@ -91,5 +75,3 @@ deploy_to_server:
         docker-compose pull
         docker-compose up -d --force-recreate
       EOH
-  only:
-    - main
