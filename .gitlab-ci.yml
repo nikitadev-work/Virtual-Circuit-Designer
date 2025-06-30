@@ -12,34 +12,33 @@ cache:
     - backend/Database_service/node_modules/
 
 build_and_push_images:
-  stage: build
   image: docker:latest
   services:
     - name: docker:dind
       alias: docker
   variables:
-    DOCKER_HOST: tcp://docker:2375
+    # Отключаем встроенный TLS и слушаем на 2375
     DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
+    # Точка доступа к DinD-сервису
+    DOCKER_HOST: tcp://docker:2375
   before_script:
     - apk add --no-cache nodejs npm
-  script:
     - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+  script:
     - cd frontend
     - npm install
     - cd ..
-    - docker build -t nikitakhripunkov/frontend-vcd:latest frontend/
-    - docker build -t nikitakhripunkov/backend-api-service:latest backend/API_service/
-    - docker build -t nikitakhripunkov/backend-auth-service:latest backend/Authentication_service/
-    - docker build -t nikitakhripunkov/backend-database-service:latest backend/Database_service/
-    - docker push nikitakhripunkov/frontend-vcd:latest
-    - docker push nikitakhripunkov/backend-api-service:latest
-    - docker push nikitakhripunkov/backend-auth-service:latest
-    - docker push nikitakhripunkov/backend-database-service:latest
+    - docker build -t ${DOCKERHUB_USER}/frontend-vcd:latest frontend/
+    - docker build -t ${DOCKERHUB_USER}/backend-api-service:latest backend/API_service/
+    - docker build -t ${DOCKERHUB_USER}/backend-auth-service:latest backend/Authentication_service/
+    - docker build -t ${DOCKERHUB_USER}/backend-database-service:latest backend/Database_service/
+    - docker push ${DOCKERHUB_USER}/frontend-vcd:latest
+    - docker push ${DOCKERHUB_USER}/backend-api-service:latest
+    - docker push ${DOCKERHUB_USER}/backend-auth-service:latest
+    - docker push ${DOCKERHUB_USER}/backend-database-service:latest
   only:
     - main
-  tags:
-    - docker
+
 
 deploy_to_server:
   stage: deploy
