@@ -32,9 +32,9 @@ func ProxyAuthHandler(w http.ResponseWriter, r *http.Request) {
 	var path string
 
 	switch r.URL.Path {
-	case "/user/register":
+	case "/api/user/register":
 		path = "/register"
-	case "/user/login":
+	case "/api/user/login":
 		path = "/login"
 	}
 
@@ -70,7 +70,9 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 		string(reqBody),
 	)
 
-	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+path, bytes.NewReader(reqBody))
+	fullURL := config.DatabaseServiceURL + path
+
+	req, err := http.NewRequest(http.MethodPost, fullURL, bytes.NewReader(reqBody))
 	if err != nil {
 		config.APILogger.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
