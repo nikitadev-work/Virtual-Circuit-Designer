@@ -88,6 +88,12 @@ deploy_to_server:
       cd visual-circuit-designer
       git fetch origin
       git reset --hard origin/main
+    
+    docker container prune -f || true
+    docker image prune -af || true
+    docker volume prune -f || true
+    docker builder prune -af || true
+    docker system prune -af --volumes || true
 
       echo "API_TAG=$API_TAG"       > .env
       echo "AUTH_TAG=$AUTH_TAG"    >> .env
@@ -96,7 +102,6 @@ deploy_to_server:
 
       docker-compose --env-file .env pull
       docker-compose --env-file .env down --remove-orphans
-      docker system prune -af --volumes
       docker-compose --env-file .env up -d --force-recreate
     EOF
   only:
