@@ -17,17 +17,59 @@
       <change beforePath="$PROJECT_DIR$/build/cache/webpack/server-development/index.pack.gz.old" beforeDir="false" afterPath="$PROJECT_DIR$/build/cache/webpack/server-development/index.pack.gz.old" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/server/middleware-build-manifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/middleware-build-manifest.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/server/pages-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/pages/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/pages/dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/pages/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/pages/login.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/server/vendor-chunks/@swc.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/vendor-chunks/@swc.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/server/vendor-chunks/next.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/vendor-chunks/next.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/server/webpack-runtime.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/server/webpack-runtime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/_app.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/chunks/pages/_app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/chunks/pages/dashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/chunks/pages/login.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/static/chunks/webpack.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/chunks/webpack.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/static/development/_buildManifest.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/static/development/_buildManifest.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/nJLiH9ilktdy2Kne2B5aR/_buildManifest.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/static/nJLiH9ilktdy2Kne2B5aR/_ssgManifest.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/0d481504b138e5b8.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/11475dd7e615e961.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/21438b387f91ccd1.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/2e28442439e7b3ea.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/4acec74bfc034070.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/55932183f7aaadfe.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/564cca46e9170eb3.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/65efa740ee72b779.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/94fee4502565c6bd.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/99852324e2e3bacb.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/d18a24c6a31515dc.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/e07827c2e7a6178c.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/ecba5f7febd2f076.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/f7c0be08b790af01.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/fbff35daa0fcc764.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/_app.564cca46e9170eb3.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/_app.65efa740ee72b779.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.11475dd7e615e961.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.21438b387f91ccd1.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.2e28442439e7b3ea.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.4acec74bfc034070.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.55932183f7aaadfe.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.94fee4502565c6bd.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.99852324e2e3bacb.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.e07827c2e7a6178c.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.ecba5f7febd2f076.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/pages/dashboard.f7c0be08b790af01.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.0d481504b138e5b8.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.11475dd7e615e961.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.21438b387f91ccd1.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.2e28442439e7b3ea.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.4acec74bfc034070.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.55932183f7aaadfe.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.564cca46e9170eb3.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.65efa740ee72b779.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.94fee4502565c6bd.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.99852324e2e3bacb.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.d18a24c6a31515dc.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.e07827c2e7a6178c.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.ecba5f7febd2f076.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.f7c0be08b790af01.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/webpack/webpack.fbff35daa0fcc764.hot-update.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/trace" beforeDir="false" afterPath="$PROJECT_DIR$/build/trace" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components.json" beforeDir="false" afterPath="$PROJECT_DIR$/components.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pages/dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/pages/dashboard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -82,6 +124,7 @@
       <recent name="$PROJECT_DIR$/react/public/Icons" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/components/ui" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/react/public/Icons" />
       <recent name="$PROJECT_DIR$/react/public/Icons/Inputs&amp;Outputs" />
@@ -110,7 +153,8 @@
       <workItem from="1751192711034" duration="697000" />
       <workItem from="1751193474487" duration="8252000" />
       <workItem from="1751282493114" duration="2001000" />
-      <workItem from="1751287145810" duration="3882000" />
+      <workItem from="1751287145810" duration="6352000" />
+      <workItem from="1751359854923" duration="2595000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -216,7 +260,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751284258795</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="ww">
+      <option name="closed" value="true" />
+      <created>1751291633277</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1751291633277</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -1,3 +1,7 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { v4 as uuid } from "uuid"
 import { AppSidebar } from "../src/components/app-sidebar"
 import {
   Breadcrumb,
@@ -11,8 +15,17 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@components/sidebar"
-import { useEffect, useState } from "react"
-import { v4 as uuid } from "uuid"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@components/dialog"
+import { Input } from "@components/input"
+import { Button } from "@components/button"
 
 type Project = {
   id: string
@@ -25,39 +38,60 @@ const STORAGE_KEY = "projects"
 
 export default function Page() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  const [newTitle, setNewTitle] = useState("")
+  const [open, setOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const filteredProjects = projects.filter((project) => project.title.toLowerCase().includes(searchQuery.toLowerCase()))
 
-  // Загружаем проекты из localStorage при старте
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
+    const HOST = window.location.host;
+
+    const loadProjects = async () => {
       try {
-        setProjects(JSON.parse(raw))
+        const res = await fetch(`http://${HOST}/api/circuits`)
+        const data: Project[] = await res.json()
+        setProjects(data)
       } catch {
+        console.error("Failed to load from backend, fallback to empty")
         setProjects([])
       }
     }
-    setLoading(false)
+
+    loadProjects()
   }, [])
 
-  // Сохраняем проекты в localStorage при каждом изменении
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
   }, [projects])
 
-  const handleNew = async () => {
-    const title = window.prompt("Enter a project title:")
-    if (!title) return
+  const handleCreateProject = async () => {
+    if (!newTitle.trim()) return
 
     const now = new Date().toISOString()
     const newProject: Project = {
       id: uuid(),
-      title,
+      title: newTitle.trim(),
       createdAt: now,
       updatedAt: now,
     }
 
-    setProjects((prev) => [newProject, ...prev])
+    try {
+      const HOST = window.location.host;
+      const res = await fetch(`http://${HOST}/api/circuits`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newProject)
+      })
+
+      if (!res.ok) throw new Error("Failed to create project")
+      setProjects((prev) => [newProject, ...prev])
+      setNewTitle("")
+      setOpen(false)
+    } catch {
+      alert("Could not save the project to server...")
+    }
   }
 
   return (
@@ -67,16 +101,11 @@ export default function Page() {
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
-              <Separator
-                  orientation="vertical"
-                  className="mr-2 data-[orientation=vertical]:h-4"
-              />
+              <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      Dashboard of the User
-                    </BreadcrumbLink>
+                    <BreadcrumbLink href="#">Dashboard of the User</BreadcrumbLink>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
@@ -88,18 +117,40 @@ export default function Page() {
               <h1 className="text-lg font-black">All projects</h1>
               <div className="flex items-center gap-2">
                 <button className="rounded-md p-2 hover:bg-muted">
-                  <span className="sr-only">Grid view</span>
-                  {/* grid */}
+                  {/* grid icon */}
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
                   </svg>
                 </button>
-                <button
-                    onClick={handleNew}
-                    className="cursor-pointer rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-blue-700"
-                >
-                  + New
-                </button>
+
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                        className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">
+                      + New
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Project</DialogTitle>
+                    </DialogHeader>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        handleCreateProject()
+                      }}
+                    >
+                      <Input
+                          placeholder="Project title"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                      />
+                      <DialogFooter className="mt-4">
+                        <Button onClick={handleCreateProject}>Create</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
 
@@ -107,15 +158,17 @@ export default function Page() {
               <input
                   type="text"
                   placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring focus:border-blue-500"
               />
             </div>
 
-            {loading ? (
-                <p>Loading…</p>
+            {filteredProjects.length === 0 ? (
+                <p className="text-gray-500 text-sm">No projects found</p>
             ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {projects.map((proj) => (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 cursor-pointer">
+                  {filteredProjects.map((proj) => (
                       <div key={proj.id} className="border rounded-lg p-4 hover:shadow transition">
                         <div className="aspect-[4/3] bg-muted rounded-md flex items-center justify-center">
                           <span className="text-sm text-gray-400">Empty</span>
