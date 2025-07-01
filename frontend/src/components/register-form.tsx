@@ -55,6 +55,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({name, email, password}),
             });
 

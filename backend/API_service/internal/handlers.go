@@ -27,6 +27,20 @@ type Circuit struct {
 	CircuitDescription [][3]any `json:"circuit_description"`
 }
 
+func writeCORS(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Vary", "Origin")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Access-Control-Expose-Headers", "Authorization")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
 func ProxyAuthHandler(w http.ResponseWriter, r *http.Request) {
 	config.APILogger.Println("Request for authentication")
 	var path string
@@ -42,15 +56,11 @@ func ProxyAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) {
-
 	config.APILogger.Println("Redirected to AuthenticationHandler")
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	writeCORS(w, r)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		config.APILogger.Println("Type of request: OPTIONS")
 		w.WriteHeader(http.StatusNoContent)
 		config.APILogger.Println("OPTIONS request completed")
