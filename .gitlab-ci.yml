@@ -24,6 +24,8 @@ variables:
         --digest-file /tmp/$IMAGE_NAME.digest \
         --single-snapshot \
         --skip-tls-verify
+  only:
+    - main
 
 build_frontend:
   stage: build
@@ -31,6 +33,8 @@ build_frontend:
   variables:
     CONTEXT_DIR: frontend
     IMAGE_NAME: frontend-vcd
+  only:
+    - main
 
 build_api:
   stage: build
@@ -38,6 +42,8 @@ build_api:
   variables:
     CONTEXT_DIR: backend/API_service
     IMAGE_NAME: backend-api-service
+  only:
+    - main
 
 build_auth:
   stage: build
@@ -45,6 +51,8 @@ build_auth:
   variables:
     CONTEXT_DIR: backend/Authentication_service
     IMAGE_NAME: backend-auth-service
+  only:
+    - main
 
 build_dbsvc:
   stage: build
@@ -52,6 +60,8 @@ build_dbsvc:
   variables:
     CONTEXT_DIR: backend/Database_service
     IMAGE_NAME: backend-database-service
+  only:
+    - main
 
 deploy_to_server:
   stage: deploy
