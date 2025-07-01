@@ -17,7 +17,7 @@ services:
       - my_shared_network
 
   database-service:
-    build: backend/Database_service
+    image: nikitakhripunkov/backend-database-service:${DB_TAG}
     depends_on:
       database:
         condition: service_healthy
@@ -25,7 +25,7 @@ services:
       - my_shared_network
 
   auth-service:
-    build: backend/Authentication_service
+    image: nikitakhripunkov/backend-auth-service:${AUTH_TAG}
     depends_on:
       database:
         condition: service_healthy
@@ -35,7 +35,7 @@ services:
       - my_shared_network
 
   api-service:
-    build: backend/API_service
+    image: nikitakhripunkov/backend-api-service:${API_TAG}
     ports:
       - "8052:8080"
     depends_on:
@@ -50,7 +50,7 @@ services:
         ipv4_address: 172.18.0.10
 
   frontend:
-    image: nikitakhripunkov/frontend-vcd:latest
+    image: nikitakhripunkov/frontend-vcd:${FRONTEND_TAG}
     restart: always
     ports:
       - "80:3000"

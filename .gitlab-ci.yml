@@ -20,6 +20,7 @@ variables:
         --context $CI_PROJECT_DIR/$CONTEXT_DIR \
         --dockerfile $CI_PROJECT_DIR/$CONTEXT_DIR/Dockerfile \
         --destination $IMAGE_PREFIX/$IMAGE_NAME:latest \
+        --destination $IMAGE_PREFIX/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA \
         --digest-file /tmp/$IMAGE_NAME.digest \
         --single-snapshot \
         --skip-tls-verify
@@ -60,7 +61,6 @@ deploy_to_server:
     - build_api
     - build_auth
     - build_dbsvc
-
   before_script:
     - apk add --no-cache openssh-client git
     - mkdir -p ~/.ssh
@@ -68,15 +68,26 @@ deploy_to_server:
     - chmod 600 ~/.ssh/id_ed25519
     - echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config
   script: |
-    ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 <<'EOF'
+    export API_TAG=$CI_COMMIT_SHORT_SHA
+    export AUTH_TAG=$CI_COMMIT_SHORT_SHA
+    export DB_TAG=$CI_COMMIT_SHORT_SHA
+    export FRONTEND_TAG=$CI_COMMIT_SHORT_SHA
+
+    ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 <<EOF
       set -e
       cd visual-circuit-designer
       git fetch origin
       git reset --hard origin/main
-      docker-compose pull
-      docker-compose down --remove-orphans
+
+      echo "API_TAG=$API_TAG"       > .env
+      echo "AUTH_TAG=$AUTH_TAG"    >> .env
+      echo "DB_TAG=$DB_TAG"        >> .env
+      echo "FRONTEND_TAG=$FRONTEND_TAG" >> .env
+
+      docker-compose --env-file .env pull
+      docker-compose --env-file .env down --remove-orphans
       docker container prune -f
-      docker-compose up -d --force-recreate
+      docker-compose --env-file .env up -d --force-recreate
     EOF
   only:
     - main
