@@ -65,24 +65,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     name: string
     email: string
     avatar?: string
+    id: string
   } | null>(null)
 
 
   React.useEffect(() => {
     const token = localStorage.getItem('token')
+    console.log("Токен из localStorage:", token) // Логи
     if (token) {
       try {
-        const decoded = jwtDecode<{ name: string; email: string }>(token)
+        const decoded = jwtDecode<{ name: string; email: string; id: string }>(token)
+        console.log("Decoded токена:", decoded) // Логи
         setUser({
           name: decoded.name,
           email: decoded.email,
-          avatar: "/avatars/shadcn.jpg"
+          avatar: "/avatars/shadcn.jpg",
+          id: decoded.id
         })
       } catch (err) {
         console.error("Ошибка при декодировании токена", err)
       }
     }
   }, [])
+  console.log("user state:", user)  // Логи
 
   return (
     <Sidebar collapsible="icon" {...props}>
