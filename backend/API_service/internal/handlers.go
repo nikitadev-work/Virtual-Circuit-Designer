@@ -4,8 +4,10 @@ import (
 	"API_service/config"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -181,6 +183,8 @@ func AuthenticationHandler(w http.ResponseWriter, r *http.Request, path string) 
 func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 	config.APILogger.Println("Request with token")
 
+	writeCORS(w, r)
+
 	//Token verification
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
@@ -235,11 +239,21 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.URL.Path {
-	case "/circuits":
+	path := strings.TrimSuffix(r.URL.Path, "/")
+	parts = strings.Split(path, "/")
+
+	switch {
+	case len(parts) == 3: // "/api/circuits
 		CircuitsHandler(w, r, response.UserID)
-	case "/circuits/simulate":
+	case len(parts) == 4 && parts[3] == "simulate": // "/api/circuits/simulate
 		StartSimulationHandler(w, r)
+	case len(parts) == 4: // "/api/circuits/{id}
+		circuitID, err := strconv.Atoi(parts[3])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		GetCircuitByIDHandler(w, r, response.UserID, circuitID)
 	default:
 		config.APILogger.Println("Error while processing request: " + r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
@@ -263,6 +277,71 @@ func CircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
 func GetAllCircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
 	config.APILogger.Println("Redirected to GetAllCircuitsHandler")
 
+	reqURL := fmt.Sprintf(config.DatabaseServiceURL+"/circuits?user_id=%d", userID)
+
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
+	if err != nil {
+		config.APILogger.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := config.Client.Do(req)
+	if err != nil {
+		config.APILogger.Println("Get all circuits by ID: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		config.APILogger.Println("Error while getting all circuits by ID: Status " + resp.Status)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		config.APILogger.Println("Error while copying the body to response: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetCircuitByIDHandler(w http.ResponseWriter, r *http.Request, userID int, circuitID int) {
+	config.APILogger.Println("Redirected to GetCircuitByIDHandler")
+
+	reqURL := fmt.Sprintf(config.DatabaseServiceURL+"/circuits/%d?user_id=%d", userID, circuitID)
+
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
+	if err != nil {
+		config.APILogger.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := config.Client.Do(req)
+	if err != nil {
+		config.APILogger.Println("Get circuit by ID: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		config.APILogger.Println("Error while getting circuit by ID: Status " + resp.Status)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		config.APILogger.Println("Error while copying the body to response: " + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
@@ -286,7 +365,9 @@ func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
 
 	response.UserID = userID
 
-	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/circuits", bytes.NewReader(body))
+	newBody, _ := json.Marshal(response)
+
+	req, err := http.NewRequest(http.MethodPost, config.DatabaseServiceURL+"/circuits", bytes.NewReader(newBody))
 	if err != nil {
 		config.APILogger.Println("Error while creating request: " + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
