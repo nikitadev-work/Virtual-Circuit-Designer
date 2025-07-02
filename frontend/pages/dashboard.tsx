@@ -41,24 +41,50 @@ export default function Page() {
   const [newTitle, setNewTitle] = useState("")
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [token, setToken] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const filteredProjects = projects.filter((project) => project.title.toLowerCase().includes(searchQuery.toLowerCase()))
 
-  useEffect(() => {
-    const HOST = window.location.host;
+  function parseJwt(token: string) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]))
+    } catch {
+      return null
+    }
+  }
 
+  // Загрузить token из localStorage
+  useEffect(() => {
+    const storedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    if (storedToken) {
+      setToken(storedToken)
+      const parsed = parseJwt(storedToken)
+      setUserId(parsed?.userId ?? null)
+    }
+  }, [])
+
+
+  // Загрузка проектов
+  useEffect(() => {
     const loadProjects = async () => {
+      if (!token) return
       try {
-        const res = await fetch(`http://${HOST}/api/circuits`)
+        const HOST = window.location.host;
+        const res = await fetch(`http://${HOST}:8052/api/circuits`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
         const data: Project[] = await res.json()
         setProjects(data)
-      } catch {
-        console.error("Failed to load from backend, fallback to empty")
+      } catch (err) {
+        console.error("Failed to load from backend", err)
         setProjects([])
       }
     }
 
     loadProjects()
-  }, [])
+  }, [token])
 
 
   useEffect(() => {
@@ -69,6 +95,7 @@ export default function Page() {
     if (!newTitle.trim()) return
 
     const now = new Date().toISOString()
+
     const newProject: Project = {
       id: uuid(),
       title: newTitle.trim(),
@@ -78,11 +105,16 @@ export default function Page() {
 
     try {
       const HOST = window.location.host;
-      const res = await fetch(`http://${HOST}/api/circuits`, {
+      const res = await fetch(`http://${HOST}:8052/api/circuits`, {
         method: "POST",
-        headers: { "Content-Type": "application/json",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(newProject)
+        body: JSON.stringify({
+          ...newProject,
+          userId: userId,
+        })
       })
 
       if (!res.ok) throw new Error("Failed to create project")

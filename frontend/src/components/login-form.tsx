@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from 'next/router'
 import { cn } from "../lib/utils";
 import { Button } from "@components/button";
 import Link from 'next/link';
@@ -16,6 +17,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const validateEmail = (email: string) => {
     
@@ -65,7 +67,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         if (data.token) {
           localStorage.setItem('token', data.token);
         }
-        window.location.href = '/dashboard';
+        router.push('/dashboard')
       } catch {
         setError("Invalid server response");
       }
