@@ -74,13 +74,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     console.log("Токен из localStorage:", token) // Логи
     if (token) {
       try {
-        const decoded = jwtDecode<{ name: string; email: string; id: string }>(token)
+        const decoded = jwtDecode<{ user_name: string; user_email: string; user_id: string }>(token)
         console.log("Decoded токена:", decoded) // Логи
         setUser({
-          name: decoded.name,
-          email: decoded.email,
+          name: decoded.user_name,
+          email: decoded.user_email,
           avatar: "/avatars/shadcn.jpg",
-          id: decoded.id
+          id: decoded.user_id
         })
       } catch (err) {
         console.error("Ошибка при декодировании токена", err)
