@@ -25,9 +25,9 @@ function screenToSvg(xClient, yClient) {
 const ctxMenu = document.createElement('div');
 ctxMenu.className = 'context-menu hidden';
 ctxMenu.innerHTML = `
-  <button data-action="copy">Copy</button>
+  <button data-action="duplicate">Duplicate</button>
   <button data-action="cut">Cut</button>
-  <button data-action="paste">Paste</button>
+  <button data-action="delete">Delete</button>
   <hr>
   <button data-action="r90">Turn 90°</button>
   <button data-action="r180">Turn 180°</button>
@@ -79,7 +79,14 @@ workspace.addEventListener('click', e => {
 
 let posX = 0;
 let posY = 0;
-let scale = 1
+let scale = 1;
+function clientToWorkspace(clientX, clientY) {
+    const rect = workspace.getBoundingClientRect();
+    return {
+        x: (clientX - rect.left)  / scale,
+        y: (clientY - rect.top)   / scale
+    };
+}
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
@@ -203,7 +210,7 @@ document.getElementById('export-btn').addEventListener('click', () => {
 })
 
 function addPorts(el) {
-    const type = el.dataset.type;
+    const type = el.dataset.type?.toUpperCase();
 
     const cfg = {
         INPUT: {ins: 0, outs: 1},
@@ -256,7 +263,7 @@ workspace.addEventListener('contextmenu', e => {
     e.preventDefault();
     ctxTarget = e.target.closest('.workspace-element');
 
-    const needEl = ['r90', 'r180', 'flipH', 'flipV', 'copy', 'cut'];
+    const needEl = ['duplicate', 'cut', 'delete', 'r90', 'r180', 'flipH', 'flipV'];
     ctxMenu.querySelectorAll('button').forEach(btn => {
         btn.disabled = !ctxTarget && needEl.includes(btn.dataset.action);
     });
@@ -329,10 +336,7 @@ function enableElementDrag(el) {
         e.stopPropagation();
         drag = true;
 
-        const rect = workspace.getBoundingClientRect();
-
-        const mouseX = (e.clientX - rect.left - posX) / scale;
-        const mouseY = (e.clientY - rect.top - posY) / scale;
+        const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
 
         offX = mouseX - parseFloat(el.style.left);
         offY = mouseY - parseFloat(el.style.top);
@@ -345,10 +349,7 @@ function enableElementDrag(el) {
     function onMove(e) {
         if (!drag) return;
 
-        const rect = workspace.getBoundingClientRect();
-
-        const mouseX = (e.clientX - rect.left - posX) / scale;
-        const mouseY = (e.clientY - rect.top - posY) / scale;
+        const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
 
         const x = snap(mouseX - offX);
         const y = snap(mouseY - offY);
@@ -510,9 +511,27 @@ function updateTransform() {
 let clipboard = null;
 
 function copy(src = null) {
-    const items = src ? [src] : [...selection];
-    if (!items.length) return;
-    clipboard = items.map(el => el.cloneNode(true));
+    // 1) собираем список элементов, которые надо копировать
+    let items;
+    if (!src) {
+        items = [...selection];          // если аргумента нет — копируем текущее выделение
+    } else if (Array.isArray(src)) {
+        items = src;                     // передан массив
+    } else {
+        items = [src];                   // передан единственный элемент
+    }
+    if (!items.length) return;         // ничего не выбрано — выходим
+
+    // 2) вычисляем минимальные координаты для нормализации смещения
+    const minX = Math.min(...items.map(el => parseFloat(el.style.left) || 0));
+    const minY = Math.min(...items.map(el => parseFloat(el.style.top)  || 0));
+
+    // 3) кладём в «буфер обмена» клоны и их относительные смещения
+    clipboard = items.map(el => ({
+        tpl: el.cloneNode(true),
+        dx: (parseFloat(el.style.left) || 0) - minX,
+        dy: (parseFloat(el.style.top)  || 0) - minY,
+    }));
 }
 
 function cut(src = null) {
@@ -524,46 +543,99 @@ function cut(src = null) {
 }
 
 function paste(x, y) {
-    if (!clipboard) return;
-
+    if (!clipboard?.length) return;
+    const baseX = snap(x);
+    const baseY = snap(y);
     clearSelection();
 
-    const gap = 20;
-    clipboard.forEach((tpl, i) => {
+    clipboard.forEach(({tpl, dx, dy}) => {
         const el = tpl.cloneNode(true);
 
         el.classList.remove('selected');
-        selection.delete(el);
-
-        el.style.left = x + gap * i + 'px';
-        el.style.top = y + gap * i + 'px';
         enableElementDrag(el);
+
+        el.style.left = (baseX + dx) + 'px';
+        el.style.top  = (baseY + dy) + 'px';
+
         workspace.appendChild(el);
+        select(el);
+    });
+
+    updateConnections();
+}
+
+function deleteItems(list) {
+    list.forEach(el => {
+        connections = connections.filter(c => {
+            if (c.from.element === el || c.to.element === el) {
+                c.line.remove();
+                return false;
+            }
+            return true;
+        });
+        el.remove();
+        selection.delete(el);
     });
 }
 
-function deleteElement(el) {
-    connections = connections.filter(c => {
-        if (c.from.element === el || c.to.element === el) {
-            c.line.remove();
-            return false;
-        }
-        return true;
+
+function duplicate(src = null) {
+    const items = src ? [src] : [...selection];
+    if (!items.length) return;
+
+    const GAP = 30;
+    clearSelection();
+
+    items.forEach(el => {
+        if (!(el instanceof Element)) return;
+
+        const clone = el.cloneNode(true);
+        clone.classList.remove('selected');
+
+        const left = parseFloat(el.style.left) || 0;
+        const top  = parseFloat(el.style.top)  || 0;
+
+        clone.style.left = (left + GAP) + 'px';
+        clone.style.top  = (top  + GAP)  + 'px';
+
+        enableElementDrag(clone);
+        workspace.appendChild(clone);
+        select(clone);
     });
-    el.remove();
+
+    updateConnections();
 }
+
+
+function withItems(src, fn) {
+    const items = src ? [src] : [...selection];
+    if (!items.length) return;
+    fn(items);
+}
+
 
 ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
-    const act = e.target.dataset.action;
 
-    const target = ctxTarget || null;
+    const act = (e.target.dataset.action || '').toLowerCase();
+    const target = ctxTarget;
 
-    if (act === 'copy') copy(target);
-    else if (act === 'cut') cut(target);
-    else if (act === 'paste') {
-        const x = parseInt(ctxMenu.style.left) - workspace.getBoundingClientRect().left + 10;
-        const y = parseInt(ctxMenu.style.top) - workspace.getBoundingClientRect().top + 10;
+    if (act === 'delete') {
+        withItems(target, deleteItems);
+    } else if (act === 'cut') {
+        withItems(target, items => {
+            copy(items);
+            deleteItems(items);
+        });
+    } else if (act === 'duplicate') {
+        duplicate(target);
+    } else if (act === 'copy') {
+        copy(target);
+    } else if (act === 'paste') {
+        const {x, y} = clientToWorkspace(
+            parseInt(ctxMenu.style.left) + 10,
+            parseInt(ctxMenu.style.top)  + 10
+        );
         paste(x, y);
     } else applyTransform(target, act);
 
@@ -572,9 +644,9 @@ ctxMenu.addEventListener('click', e => {
 
 const cursorPos = {x: 0, y: 0};
 workspace.addEventListener('mousemove', e => {
-    const rect = workspace.getBoundingClientRect();
-    cursorPos.x = e.clientX - rect.left;
-    cursorPos.y = e.clientY - rect.top;
+    const {x, y} = clientToWorkspace(e.clientX, e.clientY);
+    cursorPos.x = x;
+    cursorPos.y = y;
 });
 
 window.addEventListener('keydown', e => {
@@ -595,6 +667,10 @@ window.addEventListener('keydown', e => {
             e.preventDefault();
             paste(cursorPos.x, cursorPos.y);
             break;
+        case 'KeyD':
+            e.preventDefault();
+            duplicate();
+            break;
     }
 });
 
@@ -611,3 +687,68 @@ document.getElementById('rightbar-toggle')
             .querySelector('.playground-right-bar')
             .classList.toggle('is-collapsed');
     });
+
+(() => {
+    /** прямоугольник-маска */
+    const band = document.createElement('div');
+    band.id = 'selection-rect';
+
+    let selecting = false;      // идёт ли выделение
+    let startX, startY;         // стартовая точка (в координатах workspace)
+    let additive = false;       // Ctrl/Meta-click?
+    let baseSelection = null;   // что было выделено до начала
+
+    workspace.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        if (e.target !== workspace) return;
+        if (!(e.ctrlKey)) return;
+        e.stopPropagation();
+        e.preventDefault();
+
+        additive = e.ctrlKey || e.metaKey;
+        baseSelection = new Set(selection);
+
+        ({x: startX, y: startY} = clientToWorkspace(e.clientX, e.clientY));
+
+        Object.assign(band.style, {left:startX+'px',top:startY+'px',width:0,height:0});
+        workspace.appendChild(band);
+        selecting = true;
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', stop, {once:true});
+    });
+
+    function onMove(e){
+        if(!selecting) return;
+        const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
+
+        const x = Math.min(curX,startX);
+        const y = Math.min(curY,startY);
+        const w = Math.abs(curX-startX);
+        const h = Math.abs(curY-startY);
+
+        Object.assign(band.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+
+        // --- проверяем пересечение с каждым .workspace-element ---
+        document.querySelectorAll('.workspace-element').forEach(el=>{
+            const ex = parseFloat(el.style.left)||0;
+            const ey = parseFloat(el.style.top) ||0;
+            const ew = el.offsetWidth;
+            const eh = el.offsetHeight;
+
+            const hit = !(ex+ew < x || ex > x+w || ey+eh < y || ey > y+h);
+
+            if (hit){
+                select(el);                           // добавить в выбор
+            } else if (!additive || !baseSelection.has(el)){
+                deselect(el);                         // убрать, если не «плюсуем» Ctrl-ом
+            }
+        });
+    }
+
+    function stop(){
+        selecting = false;
+        band.remove();
+        window.removeEventListener('mousemove', onMove);
+    }
+})();
