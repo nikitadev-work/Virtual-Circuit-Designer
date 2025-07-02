@@ -543,6 +543,13 @@ button.playground {
     font-weight: bold;
 }
 
+#selection-rect {
+    position: absolute;
+    border: 1px solid #3390ff;
+    background: rgba(51, 144, 255, .25);
+    pointer-events: none;
+    z-index: 9999;
+}
 
 /* Ports */
 .port {
