@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="ww">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/login-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/login-form.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +91,7 @@
       <workItem from="1751287145810" duration="6352000" />
       <workItem from="1751359854923" duration="7095000" />
       <workItem from="1751444874144" duration="1827000" />
-      <workItem from="1751454633462" duration="8297000" />
+      <workItem from="1751454633462" duration="9393000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
