@@ -11,12 +11,14 @@ import {
 } from "@components/card";
 import { Input } from "@components/input";
 import { Label } from "@components/label";
+import {useRouter} from "next/router";
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [name, setName] = useState("");
+    const router = useRouter();
 
     const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -65,7 +67,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 return;
             }
 
-            window.location.href = '/login';
+            router.push('/login')
 
             
         } catch {
