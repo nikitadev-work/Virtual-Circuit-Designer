@@ -199,15 +199,20 @@ function exportSchemeAsList() {
     return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
 }
 
-const TOKEN = localStorage.getItem('access_token');
-const HOST = window.location.hostname;
+const TOKEN = localStorage.getItem('token');
+const HOST = window.location.host;
 const API_URL = `http://${HOST}:8052/api/circuits`;
 
 async function sendCircuit() {
     const gates = exportSchemeAsList();
 
+    if (!gates || gates.length === 0) {
+        alert("Схема пуста, сохранять нечего");
+        return;
+    }
+
     const nameInput = document.getElementById('scheme-name');
-    const schemeName = nameInput ? nameInput.value.trim() : prompt('Имя схемы', 'Scheme 1');
+    const schemeName = nameInput?.value?.trim() || prompt('Имя схемы', 'Scheme 1');
 
     if (!schemeName) return;
 
@@ -216,23 +221,31 @@ async function sendCircuit() {
         scheme_data: gates
     };
 
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    if (TOKEN) {
+        headers['Authorization'] = `Bearer ${TOKEN}`;
+    }
+
     try {
         const res = await fetch(API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(TOKEN && {'Authorization': `Bearer ${TOKEN}`})
-            },
+            headers,
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+
         const data = await res.json();
-        console.log('Backend ответил:', data);
+        console.log('Backend answer:', data);
     } catch (err) {
         console.error('Не удалось сохранить схему:', err);
+        alert("Произошла ошибка при сохранении схемы");
     }
 }
+
 
 document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
