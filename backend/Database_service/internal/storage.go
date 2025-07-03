@@ -129,7 +129,7 @@ func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]
 }
 
 func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
-	config.DbLogger.Println("Getting all circuits of user with id: ", userId)
+	config.DbLogger.Println("Getting all circuits of user with user_id: ", userId)
 
 	query := "Select * FROM Circuits WHERE user_id = $1"
 	rows, err := db.conn.Query(query, userId)
