@@ -58,9 +58,10 @@ export default function Page() {
                     </button>
                 </div>
 
-                <button className="title-btn">
-                    <Image src="/Icons/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
-                </button>
+                <div className="logo-wrapper">
+                    <img src="/Icons/LogoCenter.svg" alt="logo" className="logo-img" />
+                    <span className="page-name">Name of page</span>
+                </div>
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
@@ -79,8 +80,6 @@ export default function Page() {
             {/* Playground section */}
             <section className="playground">
                 <div className="playground-left-bar is-collapsed">
-                    {/* Ярлык, который всегда виден */}
-                    <div className="name-page">{circuit?.title || "Loading..."}</div>
                     {/* Всё, что прячем */}
                     <div className="sidebar-body">
                         <div className="logic-components">Logic Components</div>

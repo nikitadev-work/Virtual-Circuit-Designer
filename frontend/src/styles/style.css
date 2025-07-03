@@ -227,65 +227,29 @@ button.playground {
     transition: opacity 0.4s ease;
 }
 
-/* свернули панель */
-.playground-left-bar.is-collapsed {
-    overflow: hidden;
-    height: 50px; /* высота только “Name of the page” */
-}
-
-.playground-left-bar .name-page {
-    position: sticky;
-    top: 0;
-    /* чтобы не просвечивало содержимое при скролле */
-    background-color: white;
-    z-index: 1;
-}
-
-.playground-left-bar.is-collapsed .sidebar-body {
-    transform: translateX(-100%);
-    opacity: 0;
-}
-
-.playground-left-bar.is-collapsed .name-page::after {
-    display: none;
-}
-
 .playground-left-bar + .canvas-container {
     margin-left: 290px;
 }
 
-.playground-left-bar.is-collapsed + .canvas-container {
+.playground-left-bar.is-hidden {
+    display: none;
+}
+
+.playground-left-bar.is-hidden + .canvas-container {
     margin-left: 0;
 }
 
-/* обнуляем смещение при закрытой панели */
+.playground-left-bar.is-collapsed {
+    width: 0;
+    max-width: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+    overflow: hidden;
+}
+
 .playground-left-bar.is-collapsed + .canvas-container {
     margin-left: 0;
-}
-
-/* ширина всей полосы прокрутки */
-.playground-left-bar::-webkit-scrollbar {
-    width: 8px;
-}
-
-/* фон «рельсы» */
-.playground-left-bar::-webkit-scrollbar-track {
-    background: transparent;
-    /* “маскируем” по 20px сверху и снизу, цвет — фон контейнера */
-    box-shadow: inset 0 50px 0 white, /* сверху */ inset 0 -50px 0 white; /* снизу */
-}
-
-/* сам «ползунок» */
-.playground-left-bar::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-    border: 3px solid transparent; /* чтобы добавить отступ внутри */
-    background-clip: content-box; /* границы «прятятся» за рамкой */
-}
-
-/* подсветка при наведении */
-.playground-left-bar::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.4);
 }
 
 
@@ -294,6 +258,16 @@ button.playground {
     width: 0;
     opacity: 0;
     overflow: hidden;
+}
+
+/* Скрытие ползунка */
+.playground-left-bar {
+    scrollbar-width: none; /* для Firefox */
+    -ms-overflow-style: none; /* для IE и Edge */
+}
+
+.playground-left-bar::-webkit-scrollbar {
+    display: none; /* для Chrome, Safari */
 }
 
 /* Содержимое панели (должно оставаться внутри) */
@@ -332,7 +306,7 @@ button.playground {
     flex: 1 1 110px;
     aspect-ratio: 1 / 1;
     border-radius: 12px;
-    background: #dcdcdc; /* спокойный фон внутри панели */
+    background: #f8f6f6; /* спокойный фон внутри панели */
     box-shadow: 0 1px 3px rgba(255, 255, 255, 0.25);
     display: flex;
     justify-content: center;
@@ -391,50 +365,70 @@ button.playground {
     z-index: 10;
 }
 
-/* Текст */
-.name-page {
-    font-weight: bold;
-
+.header {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    width: 290px;
-    height: 35px;
-    margin: 8px auto 0;
-
-    padding-top: 5px;
-    padding-bottom: 11px;
 }
 
-/* линия */
-.name-page::after {
-    content: "";
+.logo-wrapper {
     position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.25);
+    left: 50%;
+    top: 50%;
+    trasform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: introMove 6s ease forwards;
 }
 
+.logo-img {
+    width: 80px;
+    height: auto;
+}
+
+.page-name {
+    font-weight: 600;
+    font-size: 15px;
+    opacity: 0;
+    animation: introTitle 6s ease forwards;
+}
+
+/* Интро */
+@keyframes introMove {
+    0% {
+        transform: translate(-50%, -50%);
+    }
+    100% {
+        transform: translate(-150px, -50%);
+    }
+}
+
+@keyframes introTitle {
+    0%, 30% {
+        opacity: 0;
+    }
+    40%, 60% {
+        opacity: 1;
+    }
+    70%, 100% {
+        opacity: 1;
+    }
+}
 
 .logic-components {
     color: white;
     background: #0099ff;
 
-    width: 140px;
-    height: 35px;
+    width: 150px;
+    height: 40px;
 
     margin-left: 70px;
-    margin-top: 25px;
-    margin-bottom: 15px;
+    margin-top: 15px;
+    margin-bottom: 5px;
 
     text-align: center;
-    padding-top: 8px;
+    padding-top: 11px;
 
-    border-radius: 8px;
+    border-radius: 12px;
 
     font-family: Inter, sans-serif;
     font-weight: 600;
@@ -445,17 +439,17 @@ button.playground {
     color: white;
     background: #0099ff;
 
-    width: 140px;
-    height: 35px;
+    width: 150px;
+    height: 40px;
 
     margin-left: 70px;
-    margin-top: 25px;
-    margin-bottom: 15px;
+    margin-top: 15px;
+    margin-bottom: 5px;
 
     text-align: center;
-    padding-top: 8px;
+    padding-top: 10px;
 
-    border-radius: 8px;
+    border-radius: 12px;
 
     font-family: Inter, sans-serif;
     font-weight: 600;
