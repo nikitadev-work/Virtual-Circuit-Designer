@@ -12,7 +12,7 @@ import Image from 'next/image';
 
 export default function Page() {
     const searcParams = useSearchParams();
-    const circuitId = searcParams.get("id");
+    const circuitId = searcParams.get("projectId");
     const [token, setToken] = useState(null);
     const [circuit, setCircuit] = useState(null);
 
