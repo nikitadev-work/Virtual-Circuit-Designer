@@ -136,6 +136,7 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 	case http.MethodGet:
 		userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
 		if err != nil {
+			config.DbLogger.Println("Invalid user_id in circuit request")
 			http.Error(resp, "Invalid user_id", http.StatusBadRequest)
 			return
 		}
