@@ -1,64 +1,108 @@
 stages:
   - build
-  - test
   - deploy
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - frontend/node_modules/
+variables:
+  IMAGE_PREFIX: nikitakhripunkov
 
-build_and_push_images:
-  stage: build
-  image: docker:latest
-  services:
-    - docker:dind
+.build-with-kaniko:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
   before_script:
-    - apk add --no-cache nodejs npm
+    - |
+      mkdir -p /kaniko/.docker
+      printf '{"auths":{"https://index.docker.io/v1/":{"username":"%s","password":"%s"}}}\n' \
+        "$DOCKERHUB_USER" "$DOCKERHUB_TOKEN" > /kaniko/.docker/config.json
   script:
-    - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+    - |
+      /kaniko/executor \
+        --context $CI_PROJECT_DIR/$CONTEXT_DIR \
+        --dockerfile $CI_PROJECT_DIR/$CONTEXT_DIR/Dockerfile \
+        --destination $IMAGE_PREFIX/$IMAGE_NAME:latest \
+        --destination $IMAGE_PREFIX/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA \
+        --digest-file /tmp/$IMAGE_NAME.digest \
+        --single-snapshot \
+        --skip-tls-verify
+  only:
+    - main
 
-    - cd frontend
-    - npm install --save-dev postcss autoprefixer tailwindcss
-    - cd ..
+build_frontend:
+  stage: build
+  extends: .build-with-kaniko
+  variables:
+    CONTEXT_DIR: frontend
+    IMAGE_NAME: frontend-vcd
+  only:
+    - main
 
-    - docker build -t $DOCKERHUB_USER/frontend-vcd:latest frontend/
+build_api:
+  stage: build
+  extends: .build-with-kaniko
+  variables:
+    CONTEXT_DIR: backend/API_service
+    IMAGE_NAME: backend-api-service
+  only:
+    - main
 
-    - docker build -t $DOCKERHUB_USER/backend-api-service:latest backend/API_service/
+build_auth:
+  stage: build
+  extends: .build-with-kaniko
+  variables:
+    CONTEXT_DIR: backend/Authentication_service
+    IMAGE_NAME: backend-auth-service
+  only:
+    - main
 
-    - docker build -t $DOCKERHUB_USER/backend-auth-service:latest backend/Authentication_service/
-
-    - docker build -t $DOCKERHUB_USER/backend-database-service:latest backend/Database_service/
-    
-    # Pushing
-    - docker push $DOCKERHUB_USER/frontend-vcd:latest
-    - docker push $DOCKERHUB_USER/backend-api-service:latest
-    - docker push $DOCKERHUB_USER/backend-auth-service:latest
-    - docker push $DOCKERHUB_USER/backend-database-service:latest
-
+build_dbsvc:
+  stage: build
+  extends: .build-with-kaniko
+  variables:
+    CONTEXT_DIR: backend/Database_service
+    IMAGE_NAME: backend-database-service
   only:
     - main
 
 deploy_to_server:
   stage: deploy
   image: alpine:latest
-  needs: ["build_and_push_images"]
+  needs:
+    - build_frontend
+    - build_api
+    - build_auth
+    - build_dbsvc
   before_script:
-    - apk update && apk add --no-cache openssh-client git
+    - apk add --no-cache openssh-client git
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
     - chmod 600 ~/.ssh/id_ed25519
     - echo -e "Host *\n\tStrictHostKeyChecking no" > ~/.ssh/config
-  script:
-    - ssh -vvv -i ~/.ssh/id_ed25519 root@85.198.81.168 "echo 'SSH connection test successful'"
+  script: |
+    export API_TAG=$CI_COMMIT_SHORT_SHA
+    export AUTH_TAG=$CI_COMMIT_SHORT_SHA
+    export DB_TAG=$CI_COMMIT_SHORT_SHA
+    export FRONTEND_TAG=$CI_COMMIT_SHORT_SHA
 
-    - ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 "cd visual-circuit-designer &&
-      git fetch origin &&
-      git reset --hard origin/main &&
-      docker-compose pull &&
-      docker-compose down &&
-      docker container prune -f &&
-      docker-compose up -d --force-recreate
-      "
+    ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 <<EOF
+      set -e
+      cd visual-circuit-designer
+      git fetch origin
+      git reset --hard origin/main
+    
+    docker container prune -f || true
+    docker image prune -af || true
+    docker volume prune -f || true
+    docker builder prune -af || true
+    docker system prune -af --volumes || true
+
+      echo "API_TAG=$API_TAG"       > .env
+      echo "AUTH_TAG=$AUTH_TAG"    >> .env
+      echo "DB_TAG=$DB_TAG"        >> .env
+      echo "FRONTEND_TAG=$FRONTEND_TAG" >> .env
+
+      docker-compose --env-file .env pull
+      docker-compose --env-file .env down --remove-orphans
+      docker-compose --env-file .env up -d --force-recreate
+    EOF
   only:
     - main

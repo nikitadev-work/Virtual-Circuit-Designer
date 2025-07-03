@@ -1,4 +1,9 @@
+"use client"
+
 /* eslint-disable @next/next/no-page-custom-font */
+
+import {useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import Head from 'next/head';
 import Script from 'next/script';
@@ -6,6 +11,30 @@ import Image from 'next/image';
 
 
 export default function Page() {
+    const searcParams = useSearchParams();
+    const circuitId = searcParams.get("projectId");
+    const [token, setToken] = useState(null);
+    const [circuit, setCircuit] = useState(null);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("token")
+        if (stored) setToken(stored)
+    }, [])
+
+    useEffect(() => {
+        if (!token || !circuitId) return
+
+        const HOST = window.location.host
+        fetch(`http://${HOST}:8052/api/circuits/${circuitId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setCircuit(data)
+            })
+            .catch(console.error)
+    }, [token, circuitId])
+
     return (
         <>
             <Head>
@@ -29,9 +58,20 @@ export default function Page() {
                     </button>
                 </div>
 
-                <button className="title-btn">
-                    <Image src="/Icons/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
-                </button>
+                {circuit && (
+                    <pre className="circuit-debug">{JSON.stringify(circuit, null, 2)}</pre>
+                )}
+
+                <div className="logo-wrapper">
+                    <Image
+                        src="/Icons/LogoCenter.svg"
+                        alt="logo"
+                        width={80}
+                        height={75}
+                        className="logo-img"
+                    />
+                    <span className="page-name">Name of page</span>
+                </div>
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
@@ -50,8 +90,6 @@ export default function Page() {
             {/* Playground section */}
             <section className="playground">
                 <div className="playground-left-bar is-collapsed">
-                    {/* Ярлык, который всегда виден */}
-                    <div className="name-page">Name of the page</div>
                     {/* Всё, что прячем */}
                     <div className="sidebar-body">
                         <div className="logic-components">Logic Components</div>
