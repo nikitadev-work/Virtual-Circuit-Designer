@@ -62,8 +62,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
 
       try {
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
+        const data = await response.json();
         console.log("Полученный ответ с сервера:", data); // <--- Добавь этот лог
         if (data.token) {
           console.log("Токен к сохранению:", data.token);  // <--- И этот
