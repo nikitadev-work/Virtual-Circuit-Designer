@@ -11,12 +11,14 @@ import {
 } from "@components/card";
 import { Input } from "@components/input";
 import { Label } from "@components/label";
+import {useRouter} from "next/router";
 
 export function RegisterForm({ className, ...props }: React.ComponentProps<"div">) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [name, setName] = useState("");
+    const router = useRouter();
 
     const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -49,12 +51,13 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
         const HOST = window.location.host;
 
         try {
-            const response = await fetch('http://' + HOST + 'api/user/register', {
+            const response = await fetch('http://' + HOST + ':8052/api/user/register', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({name, email, password}),
             });
 
@@ -64,7 +67,7 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 return;
             }
 
-            window.location.href = '/login';
+            router.push('/login')
 
             
         } catch {

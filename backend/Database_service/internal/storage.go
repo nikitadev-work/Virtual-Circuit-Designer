@@ -10,7 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-
 type User struct {
 	id       int
 	name     string
@@ -19,18 +18,15 @@ type User struct {
 }
 
 type Circuit struct {
-	id          int
-	userId      int
-	circuitName string
-	circuit     [][3]any
+	ID          int      `json:"id"`
+	UserID      int      `json:"user_id"`
+	CircuitName string   `json:"name"`
+	Circuit     [][3]any `json:"circuit"`
 }
 
 type PostgresDB struct {
 	conn *sql.DB
 }
-
-var userId int
-var circuitID int
 
 func NewPostgresDB(connStr string) *PostgresDB {
 	config.DbLogger.Println("Connecting to database")
@@ -72,17 +68,16 @@ func (db *PostgresDB) CreateTables() error {
 
 func (db *PostgresDB) CreateUser(username, email, password string) (int, error) {
 	config.DbLogger.Println("Creating user")
-	userId += 1
 	_, err := db.conn.Exec(
-		"insert into Users (id, name, email, password) "+
-			"values ($1, $2, $3, $4)", userId, username, email, password)
+		"insert into Users (name, email, password) "+
+			"values ($1, $2, $3)", username, email, password)
 
 	if err != nil {
 		return 0, err
 	}
-
+	userID, _, _ := db.GetUser(email, password)
 	config.DbLogger.Println("Created user")
-	return userId, nil
+	return userID, nil
 }
 
 func (db *PostgresDB) GetUser(email, password string) (int, string, error) {
@@ -116,7 +111,6 @@ func (db *PostgresDB) GetUser(email, password string) (int, string, error) {
 
 func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any) error {
 	config.DbLogger.Println("Saving circuits")
-	circuitID += 1
 
 	circuitJSON, err := json.Marshal(circuit)
 	if err != nil {
@@ -124,17 +118,18 @@ func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]
 	}
 
 	_, err = db.conn.Exec(
-		"Insert into Circuits (id, user_id, name, circuit)"+
-			" values ($1, $2, $3, $4)", circuitID, userId, circuitName, string(circuitJSON))
+		"Insert into Circuits (user_id, name, circuit)"+
+			" values ($1, $2, $3)", userId, circuitName, string(circuitJSON))
 	if err != nil {
+		config.DbLogger.Println("Error while saving circuits: ", err)
 		return err
 	}
 
 	return nil
 }
 
-func (db *PostgresDB) GetCircuit(userId int) ([]Circuit, error) {
-	config.DbLogger.Println("Getting circuits")
+func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
+	config.DbLogger.Println("Getting all circuits of user with id: ", userId)
 
 	query := "Select * FROM Circuits WHERE user_id = $1"
 	rows, err := db.conn.Query(query, userId)
@@ -146,14 +141,51 @@ func (db *PostgresDB) GetCircuit(userId int) ([]Circuit, error) {
 	var circuitsFound []Circuit
 	for rows.Next() {
 		var c Circuit
-		err := rows.Scan(&c.id, &c.userId, &c.circuitName, &c.circuit)
+		var circuitJSON []byte
+
+		err := rows.Scan(&c.ID, &c.UserID, &c.CircuitName, &circuitJSON)
 		if err != nil {
-			config.DbLogger.Println("Error getting circuits")
-			return []Circuit{}, err
+			config.DbLogger.Println("Error scanning circuit:", err)
+			return nil, err
+		}
+
+		if err := json.Unmarshal(circuitJSON, &c.Circuit); err != nil {
+			config.DbLogger.Println("Error unmarshaling circuit JSON:", err)
+			return nil, err
 		}
 		circuitsFound = append(circuitsFound, c)
 	}
 
-	config.DbLogger.Println("Got circuits")
+	config.DbLogger.Println("Got all circuits of user")
 	return circuitsFound, nil
+}
+
+func (db *PostgresDB) GetCircuit(userId, circuitId int) (Circuit, error) {
+	config.DbLogger.Println("Getting one circuit for user_id: ", userId)
+	query := "Select * FROM Circuits WHERE id = $1 AND user_id = $2"
+
+	var c Circuit
+	var circuitJSON []byte
+
+	err := db.conn.QueryRow(query, userId, circuitId).Scan(
+		&c.ID,
+		&c.UserID,
+		&c.CircuitName,
+		&circuitJSON,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			config.DbLogger.Printf("Circuit %d not found for user %d", circuitId, userId)
+			return Circuit{}, fmt.Errorf("circuit not found")
+		}
+		config.DbLogger.Printf("Error scanning circuit: %v", err)
+		return Circuit{}, fmt.Errorf("database error: %v", err)
+	}
+
+	if err := json.Unmarshal(circuitJSON, &c.Circuit); err != nil {
+		config.DbLogger.Println("Error unmarshaling circuit JSON:", err)
+		return Circuit{}, err
+	}
+	config.DbLogger.Println("Got circuit")
+	return c, nil
 }

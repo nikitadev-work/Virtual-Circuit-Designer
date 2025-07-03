@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from 'next/router'
 import { cn } from "../lib/utils";
 import { Button } from "@components/button";
 import Link from 'next/link';
@@ -16,6 +17,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const validateEmail = (email: string) => {
     
@@ -38,12 +40,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     const HOST = window.location.host;
 
     try {
-      const response = await fetch('http://' + HOST + 'api/user/login', {
+      const response = await fetch('http://' + HOST + ':8052/api/user/login', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({email, password}),
       });
 
@@ -59,13 +62,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
 
       try {
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
-        if (data.token) {
-          localStorage.setItem('token', data.token);
+        const token = response.headers.get("Authorization") || response.headers.get("authorization");
+        console.log("Токен из хедера:", token);
+        if (token) {
+          const pureToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+          localStorage.setItem('token', pureToken);
+          router.push('/dashboard')
+        } else {
+          setError("Token not found in response headers")
         }
-        window.location.href = '/dashboard';
-      } catch {
+      } catch (e) {
+        console.error("Error while handling token", e);
         setError("Invalid server response");
       }
 

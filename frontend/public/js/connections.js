@@ -25,9 +25,9 @@ function screenToSvg(xClient, yClient) {
 const ctxMenu = document.createElement('div');
 ctxMenu.className = 'context-menu hidden';
 ctxMenu.innerHTML = `
-  <button data-action="copy">Copy</button>
+  <button data-action="duplicate">Duplicate</button>
   <button data-action="cut">Cut</button>
-  <button data-action="paste">Paste</button>
+  <button data-action="delete">Delete</button>
   <hr>
   <button data-action="r90">Turn 90°</button>
   <button data-action="r180">Turn 180°</button>
@@ -79,7 +79,16 @@ workspace.addEventListener('click', e => {
 
 let posX = 0;
 let posY = 0;
-let scale = 1
+let scale = 1;
+
+function clientToWorkspace(clientX, clientY) {
+    const rect = workspace.getBoundingClientRect();
+    return {
+        x: (clientX - rect.left) / scale,
+        y: (clientY - rect.top) / scale
+    };
+}
+
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
@@ -114,11 +123,12 @@ window.addEventListener('mouseup', () => {
 document.querySelectorAll('.draggable-item').forEach(item => {
     item.addEventListener('dragstart', e => {
         if (!e.dataTransfer) return;
-        e.dataTransfer.setData('type', e.target.dataset.type);
-        e.dataTransfer.setData('icon', e.target.dataset.icon);
+        const src = e.currentTarget;
+        e.dataTransfer.setData('type', src.dataset.type);
+        e.dataTransfer.setData('icon', src.dataset.icon);
         e.dataTransfer.setData('source', 'sidebar');
         const img = new Image();
-        img.src = e.target.querySelector('img').src;
+        img.src = src.querySelector('img').src;
         img.style.width = '10px';
         e.dataTransfer.setDragImage(img, 10, 10);
     });
@@ -131,12 +141,14 @@ function handleDrop(e) {
     e.preventDefault();
     if (e.dataTransfer.getData('source') !== 'sidebar') return;
 
-    const type = e.dataTransfer.getData('type');
+    const type = (e.dataTransfer.getData('type') || '')
     const icon = e.dataTransfer.getData('icon');
     const el = document.createElement('div');
     el.className = 'workspace-element';
     el.dataset.type = type;
-
+    el.dataset.angle = 0;
+    el.dataset.scaleX = 1;
+    el.dataset.scaleY = 1;
     const img = document.createElement('img');
     img.src = icon;
     img.style.transform = 'rotate(90deg)';
@@ -153,8 +165,9 @@ function handleDrop(e) {
 }
 
 function exportSchemeAsList() {
-    const nodes = Array.from(document.querySelectorAll('.workspace-element'));
+    const nodes = [...document.querySelectorAll('.workspace-element')];
     const nodeIndex = new Map(nodes.map((el, i) => [el, i]));
+
 
     const typeMap = {
         INPUT: 0,
@@ -168,42 +181,64 @@ function exportSchemeAsList() {
         XNOR: 8
     };
 
+    connections = connections.filter(c => c.from.element.isConnected && c.to.element.isConnected);
+
     const gates = nodes.map(el => {
-        const t = el.dataset.type;
-        const code = typeMap[t] != null ? typeMap[t] : 0;
-        return [code, [], []];
+        const code = typeMap[(el.dataset.type || '').trim().toUpperCase()] ?? 0;
+        return [code, new Set(), new Set()];
     });
 
-    connections.forEach(conn => {
-        const fromEl = conn.from.element;
-        const toEl = conn.to.element;
-        const iFrom = nodeIndex.get(fromEl);
-        const iTo = nodeIndex.get(toEl);
-
-        if (iFrom == null || iTo == null) return;
-        gates[iFrom][2].push(iTo);
-        gates[iTo][1].push(iFrom);
+    connections.forEach(({from, to}) => {
+        const a = nodeIndex.get(from.element);
+        const b = nodeIndex.get(to.element);
+        if (a == null || b == null) return;
+        gates[a][2].add(b);
+        gates[b][1].add(a);
     });
-    return gates;
+
+    return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
 }
 
-document.getElementById('export-btn').addEventListener('click', () => {
-    const payload = exportSchemeAsList();
-    fetch('/api/upload-scheme', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-    })
-        .then(res => {
-            if (!res.ok) throw new Error(res.statusText);
-            return res.json();
-        })
-        .then(data => console.log('Сервер ответил', data))
-        .catch(err => console.error('Ошибка при отправке схемы', err));
-})
+const TOKEN = localStorage.getItem('access_token');
+const HOST = window.location.hostname;
+const API_URL = `http://${HOST}:8052/api/circuits`;
+
+async function sendCircuit() {
+    const gates = exportSchemeAsList();
+
+    const nameInput = document.getElementById('scheme-name');
+    const schemeName = nameInput ? nameInput.value.trim() : prompt('Имя схемы', 'Scheme 1');
+
+    if (!schemeName) return;
+
+    const payload = {
+        scheme_name: schemeName,
+        scheme_data: gates
+    };
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(TOKEN && {'Authorization': `Bearer ${TOKEN}`})
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const data = await res.json();
+        console.log('Backend ответил:', data);
+    } catch (err) {
+        console.error('Не удалось сохранить схему:', err);
+    }
+}
+
+document.getElementById('save-btn')
+    .addEventListener('click', sendCircuit);
 
 function addPorts(el) {
-    const type = el.dataset.type;
+    const type = el.dataset.type?.toUpperCase();
 
     const cfg = {
         INPUT: {ins: 0, outs: 1},
@@ -256,7 +291,7 @@ workspace.addEventListener('contextmenu', e => {
     e.preventDefault();
     ctxTarget = e.target.closest('.workspace-element');
 
-    const needEl = ['r90', 'r180', 'flipH', 'flipV', 'copy', 'cut'];
+    const needEl = ['duplicate', 'cut', 'delete', 'r90', 'r180', 'flipH', 'flipV'];
     ctxMenu.querySelectorAll('button').forEach(btn => {
         btn.disabled = !ctxTarget && needEl.includes(btn.dataset.action);
     });
@@ -281,80 +316,76 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.context-menu')) hideCtxMenu();
 });
 
-ctxMenu.addEventListener('click', e => {
-    if (!ctxTarget || e.target.tagName !== 'BUTTON') return;
-    const act = e.target.dataset.action;
-    applyTransform(ctxTarget, act);
-    hideCtxMenu();
-});
 
 function applyTransform(el, action) {
     if (!el) return;
 
-    const rot = +(el.dataset.angle ?? 0);
-    const sx = +(el.dataset.scaleX ?? 1);
-    const sy = +(el.dataset.scaleY ?? 1);
+    const num = (v, def) => Number.isFinite(v = parseFloat(v)) ? v : def;
 
-    let angle = rot, scaleX = sx, scaleY = sy;
+    let angle = num(el.dataset.angle, 0);
+    let scaleX = num(el.dataset.scaleX, 1);
+    let scaleY = num(el.dataset.scaleY, 1);
+
     switch (action) {
         case 'r90':
-            angle = (rot + 90) % 360;
+            angle = (angle + 90) % 360;
             break;
         case 'r180':
-            angle = (rot + 180) % 360;
+            angle = (angle + 180) % 360;
             break;
-        case 'flipH':
+        case 'fliph':
             scaleX = -scaleX;
             break;
-        case 'flipV':
+        case 'flipv':
             scaleY = -scaleY;
             break;
     }
 
-    el.dataset.angle = angle + 'px';
-    el.dataset.scaleX = scaleX + 'px';
-    el.dataset.scaleY = scaleY + 'px';
+    el.dataset.angle = angle;   // ← только число
+    el.dataset.scaleX = scaleX;
+    el.dataset.scaleY = scaleY;
+
     el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
 }
+
 
 if (!ctxMenu.classList.contains('hidden')) {
     hideCtxMenu();
 }
 
 function enableElementDrag(el) {
-    let drag = false, offX, offY;
+    let drag = false, startMouseX, startMouseY;
+    let dragItems = [];
 
     el.addEventListener('mousedown', e => {
         if (e.target.classList.contains('port')) return;
         e.stopPropagation();
         drag = true;
 
-        const rect = workspace.getBoundingClientRect();
+        dragItems = selection.has(el) ? [...selection] : [el];
 
-        const mouseX = (e.clientX - rect.left - posX) / scale;
-        const mouseY = (e.clientY - rect.top - posY) / scale;
+        dragItems.forEach(item => {
+            item.__startLeft = parseFloat(item.style.left) || 0;
+            item.__startTop = parseFloat(item.style.top) || 0;
+        });
 
-        offX = mouseX - parseFloat(el.style.left);
-        offY = mouseY - parseFloat(el.style.top);
+        ({x: startMouseX, y: startMouseY} = clientToWorkspace(e.clientX, e.clientY));
 
-        el.style.zIndex = 1000;
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     });
 
     function onMove(e) {
         if (!drag) return;
+        const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
+        const dx = snap(curX - startMouseX);
+        const dy = snap(curY - startMouseY);
 
-        const rect = workspace.getBoundingClientRect();
 
-        const mouseX = (e.clientX - rect.left - posX) / scale;
-        const mouseY = (e.clientY - rect.top - posY) / scale;
-
-        const x = snap(mouseX - offX);
-        const y = snap(mouseY - offY);
-
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
+        dragItems.forEach(item => {
+            item.style.left = snap(item.__startLeft + dx) + 'px';
+            item.style.top = snap(item.__startTop + dy) + 'px';
+        });
 
         updateConnections();
     }
@@ -362,7 +393,6 @@ function enableElementDrag(el) {
     function onUp() {
         if (!drag) return;
         drag = false;
-        el.style.zIndex = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     }
@@ -460,23 +490,39 @@ function finishLine(e) {
 
     if (!currentLine) return;
 
-    if (targetPort && targetPort !== startPort) {
-        const toElement = targetPort.parentElement;
+    const isInput = p => p?.classList.contains('input-port');
+    const isOutput = p => p?.classList.contains('output-port');
 
-        connections.push({
-            from: {element: startElement, port: startPort},
-            to: {element: toElement, port: targetPort},
-            line: currentLine
-        });
-        updateConnections();
-    } else {
+    // разрешаем ТОЛЬКО «output-порт → input-порт»
+    if (!isOutput(startPort) || !isInput(targetPort)) {
         currentLine.remove();
+        currentLine = startElement = startPort = null;
+        document.removeEventListener('mousemove', dragTempLine);
+        document.removeEventListener('mouseup', finishLine);
+        return;
     }
+    if (connections.some(c =>
+        c.from.port === startPort && c.to.port === targetPort)) {
+        currentLine.remove();
+        currentLine = startElement = startPort = null;
+        document.removeEventListener('mousemove', dragTempLine);
+        document.removeEventListener('mouseup', finishLine);
+        return;
+    }
+
+    const toElement = targetPort.parentElement;
+    connections.push({
+        from: {element: startElement, port: startPort},
+        to: {element: toElement, port: targetPort},
+        line: currentLine
+    });
+    updateConnections();
 
     currentLine = startElement = startPort = null;
     document.removeEventListener('mousemove', dragTempLine);
     document.removeEventListener('mouseup', finishLine);
 }
+
 
 function updateConnections() {
     connections.forEach(c => {
@@ -510,71 +556,150 @@ function updateTransform() {
 let clipboard = null;
 
 function copy(src = null) {
-    const items = src ? [src] : [...selection];
-    if (!items.length) return;
-    clipboard = items.map(el => el.cloneNode(true));
+    let items;
+    if (!src) {
+        items = [...selection];          // если аргумента нет — копируем текущее выделение
+    } else if (Array.isArray(src)) {
+        items = src;                     // передан массив
+    } else {
+        items = [src];                   // передан единственный элемент
+    }
+    if (!items.length) return;         // ничего не выбрано — выходим
+
+    const minX = Math.min(...items.map(el => parseFloat(el.style.left) || 0));
+    const minY = Math.min(...items.map(el => parseFloat(el.style.top) || 0));
+
+    clipboard = items.map(el => ({
+        tpl: el.cloneNode(true),
+        dx: (parseFloat(el.style.left) || 0) - minX,
+        dy: (parseFloat(el.style.top) || 0) - minY,
+    }));
 }
 
 function cut(src = null) {
     const items = src ? [src] : [...selection];
     if (!items.length) return;
     copy(src);
-    items.forEach(deleteElement);
+    deleteItems(items);
     clearSelection();
 }
 
 function paste(x, y) {
-    if (!clipboard) return;
-
+    if (!clipboard?.length) return;
+    const baseX = snap(x);
+    const baseY = snap(y);
     clearSelection();
 
-    const gap = 20;
-    clipboard.forEach((tpl, i) => {
+    clipboard.forEach(({tpl, dx, dy}) => {
         const el = tpl.cloneNode(true);
 
         el.classList.remove('selected');
-        selection.delete(el);
-
-        el.style.left = x + gap * i + 'px';
-        el.style.top = y + gap * i + 'px';
         enableElementDrag(el);
+
+        el.style.left = (baseX + dx) + 'px';
+        el.style.top = (baseY + dy) + 'px';
+
         workspace.appendChild(el);
+        select(el);
+    });
+
+    updateConnections();
+}
+
+function deleteItems(list) {
+    list.forEach(el => {
+        connections = connections.filter(c => {
+            if (c.from.element === el || c.to.element === el) {
+                c.line.remove();
+                return false;
+            }
+            return true;
+        });
+        el.remove();
+        selection.delete(el);
     });
 }
 
-function deleteElement(el) {
-    connections = connections.filter(c => {
-        if (c.from.element === el || c.to.element === el) {
-            c.line.remove();
-            return false;
-        }
-        return true;
+
+function duplicate(src = null) {
+    const items = src ? [src] : [...selection];
+    if (!items.length) return;
+
+    const GAP = 30;
+    clearSelection();
+
+    items.forEach(el => {
+        if (!(el instanceof Element)) return;
+
+        const clone = el.cloneNode(true);
+        clone.classList.remove('selected');
+
+        const left = parseFloat(el.style.left) || 0;
+        const top = parseFloat(el.style.top) || 0;
+
+        clone.style.left = (left + GAP) + 'px';
+        clone.style.top = (top + GAP) + 'px';
+
+        enableElementDrag(clone);
+        workspace.appendChild(clone);
+        select(clone);
     });
-    el.remove();
+
+    updateConnections();
 }
 
 ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
-    const act = e.target.dataset.action;
 
-    const target = ctxTarget || null;
+    const act = (e.target.dataset.action || '').toLowerCase();
 
-    if (act === 'copy') copy(target);
-    else if (act === 'cut') cut(target);
-    else if (act === 'paste') {
-        const x = parseInt(ctxMenu.style.left) - workspace.getBoundingClientRect().left + 10;
-        const y = parseInt(ctxMenu.style.top) - workspace.getBoundingClientRect().top + 10;
-        paste(x, y);
-    } else applyTransform(target, act);
+    const items = selection.size > 1 ? [...selection] : [ctxTarget];
+
+    switch (act) {
+        case 'r90':
+        case 'r180':
+        case 'fliph':
+        case 'flipv':
+            items.forEach(el => applyTransform(el, act));
+            updateConnections();
+            break;
+
+        case 'delete':
+            deleteItems(items);
+            break;
+
+        case 'cut':
+            copy(items);
+            deleteItems(items);
+            break;
+
+        case 'duplicate':
+            duplicate(ctxTarget);
+            break;
+
+        case 'copy':
+            copy(ctxTarget);
+            break;
+
+        case 'paste': {
+            const {x, y} = clientToWorkspace(
+                parseInt(ctxMenu.style.left) + 10,
+                parseInt(ctxMenu.style.top) + 10
+            );
+            paste(x, y);
+            break;
+        }
+    }
 
     hideCtxMenu();
 });
 
+
 const cursorPos = {x: 0, y: 0};
 workspace.addEventListener('mousemove', e => {
-    const rect = workspace.getBoundingClientRect();
-    cursorPos.x = e.clientX - rect.left;
-    cursorPos.y = e.clientY - rect.top;
+    const {x, y} = clientToWorkspace(e.clientX, e.clientY);
+    cursorPos.x = x;
+    cursorPos.y = y;
 });
 
 window.addEventListener('keydown', e => {
@@ -595,6 +720,10 @@ window.addEventListener('keydown', e => {
             e.preventDefault();
             paste(cursorPos.x, cursorPos.y);
             break;
+        case 'KeyD':
+            e.preventDefault();
+            duplicate();
+            break;
     }
 });
 
@@ -611,3 +740,68 @@ document.getElementById('rightbar-toggle')
             .querySelector('.playground-right-bar')
             .classList.toggle('is-collapsed');
     });
+
+(() => {
+    /** прямоугольник-маска */
+    const band = document.createElement('div');
+    band.id = 'selection-rect';
+
+    let selecting = false;      // идёт ли выделение
+    let startX, startY;         // стартовая точка (в координатах workspace)
+    let additive = false;       // Ctrl/Meta-click?
+    let baseSelection = null;   // что было выделено до начала
+
+    workspace.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        if (e.target !== workspace) return;
+        if (!(e.ctrlKey)) return;
+        e.stopPropagation();
+        e.preventDefault();
+
+        additive = e.ctrlKey || e.metaKey;
+        baseSelection = new Set(selection);
+
+        ({x: startX, y: startY} = clientToWorkspace(e.clientX, e.clientY));
+
+        Object.assign(band.style, {left: startX + 'px', top: startY + 'px', width: 0, height: 0});
+        workspace.appendChild(band);
+        selecting = true;
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', stop, {once: true});
+    });
+
+    function onMove(e) {
+        if (!selecting) return;
+        const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
+
+        const x = Math.min(curX, startX);
+        const y = Math.min(curY, startY);
+        const w = Math.abs(curX - startX);
+        const h = Math.abs(curY - startY);
+
+        Object.assign(band.style, {left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px'});
+
+        // --- проверяем пересечение с каждым .workspace-element ---
+        document.querySelectorAll('.workspace-element').forEach(el => {
+            const ex = parseFloat(el.style.left) || 0;
+            const ey = parseFloat(el.style.top) || 0;
+            const ew = el.offsetWidth;
+            const eh = el.offsetHeight;
+
+            const hit = !(ex + ew < x || ex > x + w || ey + eh < y || ey > y + h);
+
+            if (hit) {
+                select(el);                           // добавить в выбор
+            } else if (!additive || !baseSelection.has(el)) {
+                deselect(el);                         // убрать, если не «плюсуем» Ctrl-ом
+            }
+        });
+    }
+
+    function stop() {
+        selecting = false;
+        band.remove();
+        window.removeEventListener('mousemove', onMove);
+    }
+})();

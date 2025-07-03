@@ -1,9 +1,11 @@
 import * as React from "react"
+import { jwtDecode } from 'jwt-decode'
 import {
   Frame,
   Settings2,
   SquareTerminal,
 } from "lucide-react"
+
 
 import { NavMain } from "./nav-main"
 import { NavProjects } from "./nav-projects"
@@ -62,34 +64,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [user, setUser] = React.useState<{
     name: string
     email: string
+    avatar?: string
+    id: string
   } | null>(null)
 
+
   React.useEffect(() => {
-    const fetchUser = async() => {
-      const token = localStorage.getItem("token")
-      if (!token) return
-
+    const token = localStorage.getItem('token')
+    console.log("Токен из localStorage:", token) // Логи
+    if (token) {
       try {
-        const res = await fetch("http://localhost:8080/user/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        if (!res.ok) throw new Error("Not authorized")
-
-        const data = await res.json()
+        const decoded = jwtDecode<{ user_name: string; user_email: string; user_id: string }>(token)
+        console.log("Decoded токена:", decoded) // Логи
         setUser({
-          name: data.name,
-          email: data.email,
+          name: decoded.user_name,
+          email: decoded.user_email,
+          avatar: "/avatars/shadcn.jpg",
+          id: decoded.user_id
         })
-      } catch (error) {
-        console.error("Failed to fetch user", error)
+      } catch (err) {
+        console.error("Ошибка при декодировании токена", err)
       }
     }
-
-    fetchUser()
   }, [])
-
+  console.log("user state:", user)  // Логи
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -99,7 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        {user ? <NavUser user={data.user} /> : <div className="px-4 py-2 text-xs text-muted-foreground">Loading user...</div>}
+        {user ? <NavUser user={user} /> : <div className="px-4 py-2 text-xs text-muted-foreground">Loading user...</div>}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
