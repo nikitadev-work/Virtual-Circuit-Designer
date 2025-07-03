@@ -598,13 +598,6 @@ function duplicate(src = null) {
     updateConnections();
 }
 
-
-function withItems(src, fn) {
-    const items = src ? [src] : [...selection];
-    if (!items.length) return;
-    fn(items);
-}
-
 ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
 
