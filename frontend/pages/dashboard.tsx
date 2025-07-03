@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation";
 import { v4 as uuid } from "uuid"
 import { AppSidebar } from "../src/components/app-sidebar"
 import {
@@ -26,6 +27,7 @@ import {
 } from "@components/dialog"
 import { Input } from "@components/input"
 import { Button } from "@components/button"
+import {router} from "next/client";
 
 type Project = {
   id: string
@@ -45,6 +47,11 @@ export default function Page() {
   const [userId, setUserId] = useState<string | null>(null)
   const filteredProjects = projects.filter((project) => project.title.toLowerCase().includes(searchQuery.toLowerCase()))
 
+  const searchParams = useSearchParams();
+  const circuitId = searchParams.get("id"); // Getting id of the scheme from the URl of the page
+
+  const [circuit, setCircuit] = useState(null)
+
   function parseJwt(token: string) {
     try {
       return JSON.parse(atob(token.split('.')[1]))
@@ -52,6 +59,12 @@ export default function Page() {
       return null
     }
   }
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
+
 
   // Загрузить token из localStorage
   useEffect(() => {
@@ -62,6 +75,19 @@ export default function Page() {
       setUserId(parsed?.userId ?? null)
     }
   }, [])
+
+  useEffect(() => {
+    if (!token || !circuitId) return;
+
+    const HOST = window.location.host;
+    fetch(`http://${HOST}:8052/api/circuits/${circuitId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+        .then((res) => res.json())
+        .then((data) => setCircuit(data))
+        .catch(console.error);
+  }, [token, circuitId]);
+
 
 
   // Загрузка проектов
@@ -201,7 +227,9 @@ export default function Page() {
             ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 cursor-pointer">
                   {filteredProjects.map((proj) => (
-                      <div key={proj.id} className="border rounded-lg p-4 hover:shadow transition">
+                      <div key={proj.id}
+                           onClick={() => router.push(`/playground?id=${proj.id}`)}
+                           className="border rounded-lg p-4 hover:shadow transition">
                         <div className="aspect-[4/3] bg-muted rounded-md flex items-center justify-center">
                           <span className="text-sm text-gray-400">Empty</span>
                         </div>
