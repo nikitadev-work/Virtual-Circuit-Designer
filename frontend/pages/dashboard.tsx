@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation";
-import { v4 as uuid } from "uuid"
 import { AppSidebar } from "../src/components/app-sidebar"
 import {
   Breadcrumb,
@@ -118,39 +117,39 @@ export default function Page() {
   }, [projects])
 
   const handleCreateProject = async () => {
-    if (!newTitle.trim()) return
-
-    const now = new Date().toISOString()
-
-    const newProject: Project = {
-      id: uuid(),
-      title: newTitle.trim(),
-      createdAt: now,
-      updatedAt: now,
-    }
+    if (!newTitle.trim()) return;
 
     try {
       const HOST = window.location.host;
+
       const res = await fetch(`http://${HOST}:8052/api/circuits`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...newProject,
-          userId: userId,
-        })
-      })
+          title: newTitle.trim(),
+          userId,
+        }),
+      });
 
-      if (!res.ok) throw new Error("Failed to create project")
-      setProjects((prev) => [newProject, ...prev])
-      setNewTitle("")
-      setOpen(false)
-    } catch {
-      alert("Could not save the project to server...")
+      const resultText = await res.text();
+      console.log("Scheme creating, answer from the server:", resultText);
+
+      if (!res.ok) throw new Error("Error while creating project");
+
+      const newProject: Project = JSON.parse(resultText);
+
+      setProjects((prev) => [newProject, ...prev]);
+      setNewTitle("");
+      setOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert("Could not save the project to server...");
     }
-  }
+  };
+
 
   return (
       <SidebarProvider>
