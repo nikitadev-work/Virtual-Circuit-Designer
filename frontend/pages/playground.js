@@ -58,8 +58,18 @@ export default function Page() {
                     </button>
                 </div>
 
+                {circuit && (
+                    <pre className="circuit-debug">{JSON.stringify(circuit, null, 2)}</pre>
+                )}
+
                 <div className="logo-wrapper">
-                    <img src="/Icons/LogoCenter.svg" alt="logo" className="logo-img" />
+                    <Image
+                        src="/Icons/LogoCenter.svg"
+                        alt="logo"
+                        width={80}
+                        height={75}
+                        className="logo-img"
+                    />
                     <span className="page-name">Name of page</span>
                 </div>
 
