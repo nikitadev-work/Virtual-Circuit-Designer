@@ -345,15 +345,14 @@ button.playground {
 }
 
 .playground-right-bar {
-    display: inline-block;
-    vertical-align: top;
+    position: absolute;
+    top: -5px;
+    bottom: 85px;
 
+    width: 290px;
+    max-height: 850px;
 
     background: #fff;
-    width: 290px;
-    height: 850px;
-
-
     border-radius: 16px;
 
 
@@ -361,7 +360,8 @@ button.playground {
     margin-top: 16px;
 
 
-    position: absolute;
+    overflow-x: hidden;
+    overflow-y: auto;
     z-index: 10;
 }
 
@@ -372,8 +372,8 @@ button.playground {
 .logo-wrapper {
     position: absolute;
     left: 50%;
-    top: 50%;
-    trasform: translate(-50%, -50%);
+    top: 33%;
+    transform: translate(-50%, -50%);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -386,20 +386,17 @@ button.playground {
 }
 
 .page-name {
-    font-weight: 600;
-    font-size: 15px;
+    font-weight: 550;
+    font-size: 13px;
+    transform: translateY(2px);
     opacity: 0;
     animation: introTitle 6s ease forwards;
 }
 
 /* Интро */
 @keyframes introMove {
-    0% {
-        transform: translate(-50%, -50%);
-    }
-    100% {
-        transform: translate(-150px, -50%);
-    }
+    0%   { transform: translateX(-50%); }
+    100% { transform: translateX(calc(-15% - 75px)); }
 }
 
 @keyframes introTitle {
@@ -578,7 +575,7 @@ button.playground {
     z-index: 2000; /* выше элементов и линий */
     min-width: 160px;
     padding: 4px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #fff;
     box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
     font-family: Inter, sans-serif;

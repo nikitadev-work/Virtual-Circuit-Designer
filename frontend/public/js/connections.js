@@ -143,7 +143,9 @@ function handleDrop(e) {
     const el = document.createElement('div');
     el.className = 'workspace-element';
     el.dataset.type = type;
-
+    el.dataset.angle  = 0;
+    el.dataset.scaleX = 1;
+    el.dataset.scaleY = 1;
     const img = document.createElement('img');
     img.src = icon;
     img.style.transform = 'rotate(90deg)';
@@ -288,74 +290,68 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.context-menu')) hideCtxMenu();
 });
 
-ctxMenu.addEventListener('click', e => {
-    if (!ctxTarget || e.target.tagName !== 'BUTTON') return;
-    const act = e.target.dataset.action;
-    applyTransform(ctxTarget, act);
-    hideCtxMenu();
-});
 
 function applyTransform(el, action) {
     if (!el) return;
 
-    const rot = +(el.dataset.angle ?? 0);
-    const sx = +(el.dataset.scaleX ?? 1);
-    const sy = +(el.dataset.scaleY ?? 1);
+    const num = (v, def) => Number.isFinite(v = parseFloat(v)) ? v : def;
 
-    let angle = rot, scaleX = sx, scaleY = sy;
+    let angle  = num(el.dataset.angle,  0);
+    let scaleX = num(el.dataset.scaleX, 1);
+    let scaleY = num(el.dataset.scaleY, 1);
+
     switch (action) {
-        case 'r90':
-            angle = (rot + 90) % 360;
-            break;
-        case 'r180':
-            angle = (rot + 180) % 360;
-            break;
-        case 'flipH':
-            scaleX = -scaleX;
-            break;
-        case 'flipV':
-            scaleY = -scaleY;
-            break;
+        case 'r90':   angle = (angle + 90)  % 360; break;
+        case 'r180':  angle = (angle + 180) % 360; break;
+        case 'fliph': scaleX = -scaleX;            break;
+        case 'flipv': scaleY = -scaleY;            break;
     }
 
-    el.dataset.angle = angle + 'px';
-    el.dataset.scaleX = scaleX + 'px';
-    el.dataset.scaleY = scaleY + 'px';
+    el.dataset.angle  = angle;   // ← только число
+    el.dataset.scaleX = scaleX;
+    el.dataset.scaleY = scaleY;
+
     el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
 }
+
 
 if (!ctxMenu.classList.contains('hidden')) {
     hideCtxMenu();
 }
 
 function enableElementDrag(el) {
-    let drag = false, offX, offY;
+    let drag = false, startMouseX, startMouseY;
+    let dragItems = [];
 
     el.addEventListener('mousedown', e => {
         if (e.target.classList.contains('port')) return;
         e.stopPropagation();
         drag = true;
 
-        const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
+        dragItems = selection.has(el) ? [...selection] : [el];
 
-        offX = mouseX - parseFloat(el.style.left);
-        offY = mouseY - parseFloat(el.style.top);
+        dragItems.forEach(item => {
+            item.__startLeft = parseFloat(item.style.left) || 0;
+            item.__startTop  = parseFloat(item.style.top)  || 0;
+        });
 
-        el.style.zIndex = 1000;
+        ({x: startMouseX, y: startMouseY} = clientToWorkspace(e.clientX, e.clientY));
+
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     });
 
     function onMove(e) {
         if (!drag) return;
+        const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
+        const dx = snap(curX - startMouseX);
+        const dy = snap(curY - startMouseY);
 
-        const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
 
-        const x = snap(mouseX - offX);
-        const y = snap(mouseY - offY);
-
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
+        dragItems.forEach(item => {
+            item.style.left = snap(item.__startLeft + dx) + 'px';
+            item.style.top  = snap(item.__startTop  + dy) + 'px';
+        });
 
         updateConnections();
     }
@@ -363,7 +359,6 @@ function enableElementDrag(el) {
     function onUp() {
         if (!drag) return;
         drag = false;
-        el.style.zIndex = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     }
@@ -511,7 +506,6 @@ function updateTransform() {
 let clipboard = null;
 
 function copy(src = null) {
-    // 1) собираем список элементов, которые надо копировать
     let items;
     if (!src) {
         items = [...selection];          // если аргумента нет — копируем текущее выделение
@@ -522,11 +516,9 @@ function copy(src = null) {
     }
     if (!items.length) return;         // ничего не выбрано — выходим
 
-    // 2) вычисляем минимальные координаты для нормализации смещения
     const minX = Math.min(...items.map(el => parseFloat(el.style.left) || 0));
     const minY = Math.min(...items.map(el => parseFloat(el.style.top)  || 0));
 
-    // 3) кладём в «буфер обмена» клоны и их относительные смещения
     clipboard = items.map(el => ({
         tpl: el.cloneNode(true),
         dx: (parseFloat(el.style.left) || 0) - minX,
@@ -613,34 +605,52 @@ function withItems(src, fn) {
     fn(items);
 }
 
-
 ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
 
     const act = (e.target.dataset.action || '').toLowerCase();
-    const target = ctxTarget;
 
-    if (act === 'delete') {
-        withItems(target, deleteItems);
-    } else if (act === 'cut') {
-        withItems(target, items => {
+    const items = selection.size > 1 ? [...selection] : [ctxTarget];
+
+    switch (act) {
+        case 'r90':
+        case 'r180':
+        case 'fliph':
+        case 'flipv':
+            items.forEach(el => applyTransform(el, act));
+            updateConnections();
+            break;
+
+        case 'delete':
+            deleteItems(items);
+            break;
+
+        case 'cut':
             copy(items);
             deleteItems(items);
-        });
-    } else if (act === 'duplicate') {
-        duplicate(target);
-    } else if (act === 'copy') {
-        copy(target);
-    } else if (act === 'paste') {
-        const {x, y} = clientToWorkspace(
-            parseInt(ctxMenu.style.left) + 10,
-            parseInt(ctxMenu.style.top)  + 10
-        );
-        paste(x, y);
-    } else applyTransform(target, act);
+            break;
+
+        case 'duplicate':
+            duplicate(ctxTarget);
+            break;
+
+        case 'copy':
+            copy(ctxTarget);
+            break;
+
+        case 'paste': {
+            const {x, y} = clientToWorkspace(
+                parseInt(ctxMenu.style.left) + 10,
+                parseInt(ctxMenu.style.top)  + 10
+            );
+            paste(x, y);
+            break;
+        }
+    }
 
     hideCtxMenu();
 });
+
 
 const cursorPos = {x: 0, y: 0};
 workspace.addEventListener('mousemove', e => {
