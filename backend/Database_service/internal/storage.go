@@ -161,7 +161,7 @@ func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
 }
 
 func (db *PostgresDB) GetCircuit(userId, circuitId int) (Circuit, error) {
-	config.DbLogger.Println("Getting one circuit for user")
+	config.DbLogger.Println("Getting one circuit for user_id: ", userId)
 	query := "Select * FROM Circuits WHERE id = $1 AND user_id = $2"
 
 	var c Circuit
