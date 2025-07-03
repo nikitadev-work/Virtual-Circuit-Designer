@@ -3,8 +3,6 @@ services:
     image: grafana/loki:latest
     ports:
       - "3100:3100"
-    volumes:
-      - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - my_shared_network
@@ -103,3 +101,6 @@ networks:
       config:
         - subnet:  "172.18.0.0/16"
           gateway: "172.18.0.1"
+
+volumes:
+  grafana_data:
