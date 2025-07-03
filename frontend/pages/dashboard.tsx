@@ -50,7 +50,7 @@ export default function Page() {
   const searchParams = useSearchParams();
   const circuitId = searchParams.get("id"); // Getting id of the scheme from the URl of the page
 
-  const [circuit, setCircuit] = useState(null)
+  const [, setCircuit] = useState(null)
 
   function parseJwt(token: string) {
     try {
