@@ -83,7 +83,7 @@ export default function Page() {
                     </button>
 
                     <button id="export-btn" className="export-btn">Export</button>
-                    <button className="save-btn">Save</button>
+                    <button id="save-btn" className="save-btn">Save</button>
                 </div>
             </header>
 
@@ -95,26 +95,26 @@ export default function Page() {
                         <div className="logic-components">Logic Components</div>
                         <div className="components-grid">
 
-                            <div className="draggable-item" draggable="true" datatype="NOT" data-icon="/Icons/LogicBlocks/not.svg">
+                            <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/LogicBlocks/not.svg">
                                 <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="AND" data-icon="/Icons/LogicBlocks/and.svg">
+                            <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/LogicBlocks/and.svg">
                                 <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="AND" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="OR" data-icon="/Icons/LogicBlocks/or.svg">
+                            <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/LogicBlocks/or.svg">
                                 <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="OR" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
+                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
                                 <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NAND" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
+                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
                                 <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOR" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
+                            <div className="draggable-item" draggable="true" data-type="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
 
                                 <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="XOR" data-icon="/Icons/LogicBlocks/xor.svg">
+                            <div className="draggable-item" draggable="true" data-type="XOR" data-icon="/Icons/LogicBlocks/xor.svg">
                                 <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="XOR" className="component-icon"/>
                             </div>
                         </div>
