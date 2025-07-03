@@ -128,6 +128,7 @@ export default function Page() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           title: newTitle.trim(),
           userId,
