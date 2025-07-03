@@ -4,6 +4,8 @@ import (
 	"Database_service/config"
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -132,18 +134,49 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 		config.DbLogger.Println("Circuit saving request completed")
 		resp.WriteHeader(http.StatusCreated)
 	case http.MethodGet:
-
-		var circuitGetReq CircuitGetRequest
-		err := json.NewDecoder(req.Body).Decode(&circuitGetReq)
+		userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
 		if err != nil {
-			config.DbLogger.Println("Circuit getting request: " + err.Error())
-			http.Error(resp, err.Error(), http.StatusBadRequest)
+			http.Error(resp, "Invalid user_id", http.StatusBadRequest)
+			return
 		}
 
-		circuits, err := h.db.GetCircuit(circuitGetReq.UserId)
+		circuits, err := h.db.GetCircuits(userID)
 
 		config.DbLogger.Println("Circuits getting request completed")
 		resp.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(resp).Encode(circuits)
 	}
+}
+
+func (h *DBHandler) CircuitByIDHandler(resp http.ResponseWriter, req *http.Request) {
+	config.DbLogger.Println("User circuit by ID request")
+	if req.Method != http.MethodGet {
+		http.Error(resp, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Извлекаем ID схемы из URL
+	pathParts := strings.Split(req.URL.Path, "/")
+	if len(pathParts) < 3 {
+		http.Error(resp, "Invalid circuit ID", http.StatusBadRequest)
+		return
+	}
+
+	circuitID, err := strconv.Atoi(pathParts[2])
+	if err != nil {
+		http.Error(resp, "Circuit ID must be a number", http.StatusBadRequest)
+		return
+	}
+
+	// Извлекаем user_id
+	userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
+	if err != nil {
+		http.Error(resp, "Invalid user_id", http.StatusBadRequest)
+		return
+	}
+
+	circuit, err := h.db.GetCircuit(userID, circuitID)
+	config.DbLogger.Println("Circuits getting request completed")
+	resp.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(resp).Encode(circuit)
 }
