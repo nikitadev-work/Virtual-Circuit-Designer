@@ -127,7 +127,7 @@ export default function Page() {
             Authorization: `Bearer ${token}`
           }
         })
-        const data: Project[] = await res.json()
+        const data = await res.json()
         if (Array.isArray(data)) {
           setProjects(data);
         } else {
