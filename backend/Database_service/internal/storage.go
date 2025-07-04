@@ -146,14 +146,25 @@ func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
 		err := rows.Scan(&c.ID, &c.UserID, &c.CircuitName, &circuitJSON)
 		if err != nil {
 			config.DbLogger.Println("Error scanning circuit:", err)
-			return nil, err
+			return []Circuit{}, err
 		}
 
 		if err := json.Unmarshal(circuitJSON, &c.Circuit); err != nil {
 			config.DbLogger.Println("Error unmarshaling circuit JSON:", err)
-			return nil, err
+			return []Circuit{}, err
 		}
 		circuitsFound = append(circuitsFound, c)
+	}
+
+	if circuitsFound == nil {
+		circuitsFound = []Circuit{}
+	}
+
+	circuitsJSON, err := json.MarshalIndent(circuitsFound, "", "  ")
+	if err != nil {
+		config.DbLogger.Println("Error marshaling circuitsFound for logging:", err)
+	} else {
+		config.DbLogger.Println("circuitsFound:", string(circuitsJSON))
 	}
 
 	config.DbLogger.Println("Got all circuits of user")
