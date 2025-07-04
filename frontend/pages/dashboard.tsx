@@ -46,7 +46,9 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState("")
   const [token, setToken] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
-  const filteredProjects = projects.filter((project) => project.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredProjects = (projects || []).filter((project) =>
+      project.title.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const searchParams = useSearchParams();
   const circuitId = searchParams.get("id"); // Getting id of the scheme from the URl of the page
