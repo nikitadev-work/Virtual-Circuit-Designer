@@ -185,6 +185,13 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	writeCORS(w, r)
 
+	if r.Method == http.MethodOptions {
+		config.APILogger.Println("Type of request: OPTIONS")
+		w.WriteHeader(http.StatusNoContent)
+		config.APILogger.Println("OPTIONS request completed")
+		return
+	}
+
 	//Token verification
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
