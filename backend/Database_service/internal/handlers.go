@@ -133,6 +133,7 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 
 		config.DbLogger.Println("Circuit saving request completed")
 		resp.WriteHeader(http.StatusCreated)
+
 	case http.MethodGet:
 		userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
 		if err != nil {
@@ -142,6 +143,15 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 		}
 
 		circuits, err := h.db.GetCircuits(userID)
+		if err != nil {
+			config.DbLogger.Println("Error retrieving circuits: " + err.Error())
+			http.Error(resp, "Error retrieving circuits", http.StatusInternalServerError)
+			return
+		}
+
+		if circuits == nil {
+			circuits = []Circuit{}
+		}
 
 		config.DbLogger.Println("Circuits getting request completed")
 		resp.Header().Set("Content-Type", "application/json")
@@ -156,7 +166,6 @@ func (h *DBHandler) CircuitByIDHandler(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	// Извлекаем ID схемы из URL
 	pathParts := strings.Split(req.URL.Path, "/")
 	if len(pathParts) < 3 {
 		http.Error(resp, "Invalid circuit ID", http.StatusBadRequest)
@@ -169,7 +178,6 @@ func (h *DBHandler) CircuitByIDHandler(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	// Извлекаем user_id
 	userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
 	if err != nil {
 		http.Error(resp, "Invalid user_id", http.StatusBadRequest)
