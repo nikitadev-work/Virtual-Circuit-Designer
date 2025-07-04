@@ -70,7 +70,7 @@ export default function Page() {
                         height={75}
                         className="logo-img"
                     />
-                    <span className="page-name">Name of page</span>
+                    <span className="page-name">{circuit?.title || "Untitled"}</span>
                 </div>
 
                 <div className="right-controls">
