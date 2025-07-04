@@ -73,7 +73,14 @@ export default function Page() {
 
     const saved = localStorage.getItem(getStorageKey(userId));
     if (saved) {
-      setProjects(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setProjects(parsed);
+        }
+      } catch (e) {
+        console.error("Invalid project data in localStorage", e);
+      }
     }
   }, [userId]);
 
