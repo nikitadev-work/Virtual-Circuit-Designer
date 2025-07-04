@@ -27,7 +27,7 @@ import {
 } from "@components/dialog"
 import { Input } from "@components/input"
 import { Button } from "@components/button"
-import {router} from "next/client";
+import { useRouter} from "next/navigation";
 
 type Project = {
   id: string
@@ -49,6 +49,8 @@ export default function Page() {
   const filteredProjects = (projects || []).filter((project) =>
       project.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const router = useRouter();
 
   const searchParams = useSearchParams();
   const circuitId = searchParams.get("id"); // Getting id of the scheme from the URl of the page
@@ -126,7 +128,12 @@ export default function Page() {
           }
         })
         const data: Project[] = await res.json()
-        setProjects(data)
+        if (Array.isArray(data)) {
+          setProjects(data);
+        } else {
+          console.error("Expected array of projects, got:", data);
+          setProjects([]);
+        }
       } catch (err) {
         console.error("Failed to load from backend", err)
         setProjects([])
