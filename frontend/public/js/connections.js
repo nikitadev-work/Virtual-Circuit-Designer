@@ -80,13 +80,15 @@ workspace.addEventListener('click', e => {
 let posX = 0;
 let posY = 0;
 let scale = 1;
+
 function clientToWorkspace(clientX, clientY) {
     const rect = workspace.getBoundingClientRect();
     return {
-        x: (clientX - rect.left)  / scale,
-        y: (clientY - rect.top)   / scale
+        x: (clientX - rect.left) / scale,
+        y: (clientY - rect.top) / scale
     };
 }
+
 let isCanvasDrag = false, startX, startY;
 
 canvas.parentElement.addEventListener('wheel', (e) => {
@@ -121,11 +123,12 @@ window.addEventListener('mouseup', () => {
 document.querySelectorAll('.draggable-item').forEach(item => {
     item.addEventListener('dragstart', e => {
         if (!e.dataTransfer) return;
-        e.dataTransfer.setData('type', e.target.dataset.type);
-        e.dataTransfer.setData('icon', e.target.dataset.icon);
+        const src = e.currentTarget;
+        e.dataTransfer.setData('type', src.dataset.type);
+        e.dataTransfer.setData('icon', src.dataset.icon);
         e.dataTransfer.setData('source', 'sidebar');
         const img = new Image();
-        img.src = e.target.querySelector('img').src;
+        img.src = src.querySelector('img').src;
         img.style.width = '10px';
         e.dataTransfer.setDragImage(img, 10, 10);
     });
@@ -138,12 +141,14 @@ function handleDrop(e) {
     e.preventDefault();
     if (e.dataTransfer.getData('source') !== 'sidebar') return;
 
-    const type = e.dataTransfer.getData('type');
+    const type = (e.dataTransfer.getData('type') || '')
     const icon = e.dataTransfer.getData('icon');
     const el = document.createElement('div');
     el.className = 'workspace-element';
     el.dataset.type = type;
-
+    el.dataset.angle = 0;
+    el.dataset.scaleX = 1;
+    el.dataset.scaleY = 1;
     const img = document.createElement('img');
     img.src = icon;
     img.style.transform = 'rotate(90deg)';
@@ -160,8 +165,9 @@ function handleDrop(e) {
 }
 
 function exportSchemeAsList() {
-    const nodes = Array.from(document.querySelectorAll('.workspace-element'));
+    const nodes = [...document.querySelectorAll('.workspace-element')];
     const nodeIndex = new Map(nodes.map((el, i) => [el, i]));
+
 
     const typeMap = {
         INPUT: 0,
@@ -175,39 +181,80 @@ function exportSchemeAsList() {
         XNOR: 8
     };
 
+    connections = connections.filter(c => c.from.element.isConnected && c.to.element.isConnected);
+
     const gates = nodes.map(el => {
-        const t = el.dataset.type;
-        const code = typeMap[t] != null ? typeMap[t] : 0;
-        return [code, [], []];
+        const code = typeMap[(el.dataset.type || '').trim().toUpperCase()] ?? 0;
+        return [code, new Set(), new Set()];
     });
 
-    connections.forEach(conn => {
-        const fromEl = conn.from.element;
-        const toEl = conn.to.element;
-        const iFrom = nodeIndex.get(fromEl);
-        const iTo = nodeIndex.get(toEl);
-
-        if (iFrom == null || iTo == null) return;
-        gates[iFrom][2].push(iTo);
-        gates[iTo][1].push(iFrom);
+    connections.forEach(({from, to}) => {
+        const a = nodeIndex.get(from.element);
+        const b = nodeIndex.get(to.element);
+        if (a == null || b == null) return;
+        gates[a][2].add(b);
+        gates[b][1].add(a);
     });
-    return gates;
+
+    return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
 }
 
-document.getElementById('export-btn').addEventListener('click', () => {
-    const payload = exportSchemeAsList();
-    fetch('/api/upload-scheme', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-    })
-        .then(res => {
-            if (!res.ok) throw new Error(res.statusText);
-            return res.json();
-        })
-        .then(data => console.log('Сервер ответил', data))
-        .catch(err => console.error('Ошибка при отправке схемы', err));
-})
+const TOKEN = localStorage.getItem('token');
+const HOST = window.location.host;
+const API_URL = `http://${HOST}:8052/api/circuits`;
+
+async function sendCircuit() {
+
+    const gates = exportSchemeAsList();
+
+    if (!gates || gates.length === 0) {
+        alert("Схема пуста, сохранять нечего");
+        return;
+    }
+
+    const nameInput = document.getElementById('scheme-name');
+    const circuitName =
+        nameInput?.value.trim() ||
+        prompt('Имя схемы', 'Scheme 1')?.trim();
+
+    if (!circuitName) return;
+
+    const payload = {
+        circuit_name: circuitName,
+        circuit_description: gates
+    };
+
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    if (TOKEN) {
+        headers['Authorization'] = `Bearer ${TOKEN}`;
+    }
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+        }
+
+        const data = await res.json();
+        console.log('Backend answer:', data);
+    } catch (err) {
+        console.error('Не удалось сохранить схему:', err);
+        alert("Произошла ошибка при сохранении схемы");
+    }
+}
+
+
+document.getElementById('save-btn')
+    .addEventListener('click', sendCircuit);
 
 function addPorts(el) {
     const type = el.dataset.type?.toUpperCase();
@@ -288,74 +335,76 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.context-menu')) hideCtxMenu();
 });
 
-ctxMenu.addEventListener('click', e => {
-    if (!ctxTarget || e.target.tagName !== 'BUTTON') return;
-    const act = e.target.dataset.action;
-    applyTransform(ctxTarget, act);
-    hideCtxMenu();
-});
 
 function applyTransform(el, action) {
     if (!el) return;
 
-    const rot = +(el.dataset.angle ?? 0);
-    const sx = +(el.dataset.scaleX ?? 1);
-    const sy = +(el.dataset.scaleY ?? 1);
+    const num = (v, def) => Number.isFinite(v = parseFloat(v)) ? v : def;
 
-    let angle = rot, scaleX = sx, scaleY = sy;
+    let angle = num(el.dataset.angle, 0);
+    let scaleX = num(el.dataset.scaleX, 1);
+    let scaleY = num(el.dataset.scaleY, 1);
+
     switch (action) {
         case 'r90':
-            angle = (rot + 90) % 360;
+            angle = (angle + 90) % 360;
             break;
         case 'r180':
-            angle = (rot + 180) % 360;
+            angle = (angle + 180) % 360;
             break;
-        case 'flipH':
+        case 'fliph':
             scaleX = -scaleX;
             break;
-        case 'flipV':
+        case 'flipv':
             scaleY = -scaleY;
             break;
     }
 
-    el.dataset.angle = angle + 'px';
-    el.dataset.scaleX = scaleX + 'px';
-    el.dataset.scaleY = scaleY + 'px';
+    el.dataset.angle = angle;   // ← только число
+    el.dataset.scaleX = scaleX;
+    el.dataset.scaleY = scaleY;
+
     el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
 }
+
 
 if (!ctxMenu.classList.contains('hidden')) {
     hideCtxMenu();
 }
 
 function enableElementDrag(el) {
-    let drag = false, offX, offY;
+    let drag = false, startMouseX, startMouseY;
+    let dragItems = [];
 
     el.addEventListener('mousedown', e => {
         if (e.target.classList.contains('port')) return;
         e.stopPropagation();
         drag = true;
 
-        const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
+        dragItems = selection.has(el) ? [...selection] : [el];
 
-        offX = mouseX - parseFloat(el.style.left);
-        offY = mouseY - parseFloat(el.style.top);
+        dragItems.forEach(item => {
+            item.__startLeft = parseFloat(item.style.left) || 0;
+            item.__startTop = parseFloat(item.style.top) || 0;
+        });
 
-        el.style.zIndex = 1000;
+        ({x: startMouseX, y: startMouseY} = clientToWorkspace(e.clientX, e.clientY));
+
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
     });
 
     function onMove(e) {
         if (!drag) return;
+        const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
+        const dx = snap(curX - startMouseX);
+        const dy = snap(curY - startMouseY);
 
-        const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
 
-        const x = snap(mouseX - offX);
-        const y = snap(mouseY - offY);
-
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
+        dragItems.forEach(item => {
+            item.style.left = snap(item.__startLeft + dx) + 'px';
+            item.style.top = snap(item.__startTop + dy) + 'px';
+        });
 
         updateConnections();
     }
@@ -363,7 +412,6 @@ function enableElementDrag(el) {
     function onUp() {
         if (!drag) return;
         drag = false;
-        el.style.zIndex = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     }
@@ -461,23 +509,39 @@ function finishLine(e) {
 
     if (!currentLine) return;
 
-    if (targetPort && targetPort !== startPort) {
-        const toElement = targetPort.parentElement;
+    const isInput = p => p?.classList.contains('input-port');
+    const isOutput = p => p?.classList.contains('output-port');
 
-        connections.push({
-            from: {element: startElement, port: startPort},
-            to: {element: toElement, port: targetPort},
-            line: currentLine
-        });
-        updateConnections();
-    } else {
+    // разрешаем ТОЛЬКО «output-порт → input-порт»
+    if (!isOutput(startPort) || !isInput(targetPort)) {
         currentLine.remove();
+        currentLine = startElement = startPort = null;
+        document.removeEventListener('mousemove', dragTempLine);
+        document.removeEventListener('mouseup', finishLine);
+        return;
     }
+    if (connections.some(c =>
+        c.from.port === startPort && c.to.port === targetPort)) {
+        currentLine.remove();
+        currentLine = startElement = startPort = null;
+        document.removeEventListener('mousemove', dragTempLine);
+        document.removeEventListener('mouseup', finishLine);
+        return;
+    }
+
+    const toElement = targetPort.parentElement;
+    connections.push({
+        from: {element: startElement, port: startPort},
+        to: {element: toElement, port: targetPort},
+        line: currentLine
+    });
+    updateConnections();
 
     currentLine = startElement = startPort = null;
     document.removeEventListener('mousemove', dragTempLine);
     document.removeEventListener('mouseup', finishLine);
 }
+
 
 function updateConnections() {
     connections.forEach(c => {
@@ -511,7 +575,6 @@ function updateTransform() {
 let clipboard = null;
 
 function copy(src = null) {
-    // 1) собираем список элементов, которые надо копировать
     let items;
     if (!src) {
         items = [...selection];          // если аргумента нет — копируем текущее выделение
@@ -522,15 +585,13 @@ function copy(src = null) {
     }
     if (!items.length) return;         // ничего не выбрано — выходим
 
-    // 2) вычисляем минимальные координаты для нормализации смещения
     const minX = Math.min(...items.map(el => parseFloat(el.style.left) || 0));
-    const minY = Math.min(...items.map(el => parseFloat(el.style.top)  || 0));
+    const minY = Math.min(...items.map(el => parseFloat(el.style.top) || 0));
 
-    // 3) кладём в «буфер обмена» клоны и их относительные смещения
     clipboard = items.map(el => ({
         tpl: el.cloneNode(true),
         dx: (parseFloat(el.style.left) || 0) - minX,
-        dy: (parseFloat(el.style.top)  || 0) - minY,
+        dy: (parseFloat(el.style.top) || 0) - minY,
     }));
 }
 
@@ -538,7 +599,7 @@ function cut(src = null) {
     const items = src ? [src] : [...selection];
     if (!items.length) return;
     copy(src);
-    items.forEach(deleteElement);
+    deleteItems(items);
     clearSelection();
 }
 
@@ -555,7 +616,7 @@ function paste(x, y) {
         enableElementDrag(el);
 
         el.style.left = (baseX + dx) + 'px';
-        el.style.top  = (baseY + dy) + 'px';
+        el.style.top = (baseY + dy) + 'px';
 
         workspace.appendChild(el);
         select(el);
@@ -593,10 +654,10 @@ function duplicate(src = null) {
         clone.classList.remove('selected');
 
         const left = parseFloat(el.style.left) || 0;
-        const top  = parseFloat(el.style.top)  || 0;
+        const top = parseFloat(el.style.top) || 0;
 
         clone.style.left = (left + GAP) + 'px';
-        clone.style.top  = (top  + GAP)  + 'px';
+        clone.style.top = (top + GAP) + 'px';
 
         enableElementDrag(clone);
         workspace.appendChild(clone);
@@ -606,41 +667,52 @@ function duplicate(src = null) {
     updateConnections();
 }
 
-
-function withItems(src, fn) {
-    const items = src ? [src] : [...selection];
-    if (!items.length) return;
-    fn(items);
-}
-
-
 ctxMenu.addEventListener('click', e => {
     if (!e.target.matches('button')) return;
 
     const act = (e.target.dataset.action || '').toLowerCase();
-    const target = ctxTarget;
 
-    if (act === 'delete') {
-        withItems(target, deleteItems);
-    } else if (act === 'cut') {
-        withItems(target, items => {
+    const items = selection.size > 1 ? [...selection] : [ctxTarget];
+
+    switch (act) {
+        case 'r90':
+        case 'r180':
+        case 'fliph':
+        case 'flipv':
+            items.forEach(el => applyTransform(el, act));
+            updateConnections();
+            break;
+
+        case 'delete':
+            deleteItems(items);
+            break;
+
+        case 'cut':
             copy(items);
             deleteItems(items);
-        });
-    } else if (act === 'duplicate') {
-        duplicate(target);
-    } else if (act === 'copy') {
-        copy(target);
-    } else if (act === 'paste') {
-        const {x, y} = clientToWorkspace(
-            parseInt(ctxMenu.style.left) + 10,
-            parseInt(ctxMenu.style.top)  + 10
-        );
-        paste(x, y);
-    } else applyTransform(target, act);
+            break;
+
+        case 'duplicate':
+            duplicate(ctxTarget);
+            break;
+
+        case 'copy':
+            copy(ctxTarget);
+            break;
+
+        case 'paste': {
+            const {x, y} = clientToWorkspace(
+                parseInt(ctxMenu.style.left) + 10,
+                parseInt(ctxMenu.style.top) + 10
+            );
+            paste(x, y);
+            break;
+        }
+    }
 
     hideCtxMenu();
 });
+
 
 const cursorPos = {x: 0, y: 0};
 workspace.addEventListener('mousemove', e => {
@@ -710,43 +782,43 @@ document.getElementById('rightbar-toggle')
 
         ({x: startX, y: startY} = clientToWorkspace(e.clientX, e.clientY));
 
-        Object.assign(band.style, {left:startX+'px',top:startY+'px',width:0,height:0});
+        Object.assign(band.style, {left: startX + 'px', top: startY + 'px', width: 0, height: 0});
         workspace.appendChild(band);
         selecting = true;
 
         window.addEventListener('mousemove', onMove);
-        window.addEventListener('mouseup', stop, {once:true});
+        window.addEventListener('mouseup', stop, {once: true});
     });
 
-    function onMove(e){
-        if(!selecting) return;
+    function onMove(e) {
+        if (!selecting) return;
         const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
 
-        const x = Math.min(curX,startX);
-        const y = Math.min(curY,startY);
-        const w = Math.abs(curX-startX);
-        const h = Math.abs(curY-startY);
+        const x = Math.min(curX, startX);
+        const y = Math.min(curY, startY);
+        const w = Math.abs(curX - startX);
+        const h = Math.abs(curY - startY);
 
-        Object.assign(band.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+        Object.assign(band.style, {left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px'});
 
         // --- проверяем пересечение с каждым .workspace-element ---
-        document.querySelectorAll('.workspace-element').forEach(el=>{
-            const ex = parseFloat(el.style.left)||0;
-            const ey = parseFloat(el.style.top) ||0;
+        document.querySelectorAll('.workspace-element').forEach(el => {
+            const ex = parseFloat(el.style.left) || 0;
+            const ey = parseFloat(el.style.top) || 0;
             const ew = el.offsetWidth;
             const eh = el.offsetHeight;
 
-            const hit = !(ex+ew < x || ex > x+w || ey+eh < y || ey > y+h);
+            const hit = !(ex + ew < x || ex > x + w || ey + eh < y || ey > y + h);
 
-            if (hit){
+            if (hit) {
                 select(el);                           // добавить в выбор
-            } else if (!additive || !baseSelection.has(el)){
+            } else if (!additive || !baseSelection.has(el)) {
                 deselect(el);                         // убрать, если не «плюсуем» Ctrl-ом
             }
         });
     }
 
-    function stop(){
+    function stop() {
         selecting = false;
         band.remove();
         window.removeEventListener('mousemove', onMove);

@@ -1,4 +1,9 @@
+"use client"
+
 /* eslint-disable @next/next/no-page-custom-font */
+
+import {useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import Head from 'next/head';
 import Script from 'next/script';
@@ -6,6 +11,30 @@ import Image from 'next/image';
 
 
 export default function Page() {
+    const searcParams = useSearchParams();
+    const circuitId = searcParams.get("projectId");
+    const [token, setToken] = useState(null);
+    const [circuit, setCircuit] = useState(null);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("token")
+        if (stored) setToken(stored)
+    }, [])
+
+    useEffect(() => {
+        if (!token || !circuitId) return
+
+        const HOST = window.location.host;
+        fetch(`http://${HOST}:8052/api/circuits/${circuitId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setCircuit(data)
+            })
+            .catch(console.error)
+    }, [token, circuitId])
+
     return (
         <>
             <Head>
@@ -29,9 +58,20 @@ export default function Page() {
                     </button>
                 </div>
 
-                <button className="title-btn">
-                    <Image src="/Icons/LogoCenter.svg" width={75} height={75} className="LogoCenter"  alt="vector"/>
-                </button>
+                {circuit && (
+                    <pre className="circuit-debug">{JSON.stringify(circuit, null, 2)}</pre>
+                )}
+
+                <div className="logo-wrapper">
+                    <Image
+                        src="/Icons/LogoCenter.svg"
+                        alt="logo"
+                        width={80}
+                        height={75}
+                        className="logo-img"
+                    />
+                    <span className="page-name">{circuit?.title || "Untitled"}</span>
+                </div>
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
@@ -43,40 +83,38 @@ export default function Page() {
                     </button>
 
                     <button id="export-btn" className="export-btn">Export</button>
-                    <button className="save-btn">Save</button>
+                    <button id="save-btn" className="save-btn">Save</button>
                 </div>
             </header>
 
             {/* Playground section */}
             <section className="playground">
                 <div className="playground-left-bar is-collapsed">
-                    {/* Ярлык, который всегда виден */}
-                    <div className="name-page">Name of the page</div>
                     {/* Всё, что прячем */}
                     <div className="sidebar-body">
                         <div className="logic-components">Logic Components</div>
                         <div className="components-grid">
 
-                            <div className="draggable-item" draggable="true" datatype="NOT" data-icon="/Icons/LogicBlocks/not.svg">
+                            <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/LogicBlocks/not.svg">
                                 <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="AND" data-icon="/Icons/LogicBlocks/and.svg">
+                            <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/LogicBlocks/and.svg">
                                 <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="AND" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="OR" data-icon="/Icons/LogicBlocks/or.svg">
+                            <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/LogicBlocks/or.svg">
                                 <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="OR" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
+                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
                                 <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NAND" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
+                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
                                 <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOR" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
+                            <div className="draggable-item" draggable="true" data-type="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
 
                                 <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor" className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" datatype="XOR" data-icon="/Icons/LogicBlocks/xor.svg">
+                            <div className="draggable-item" draggable="true" data-type="XOR" data-icon="/Icons/LogicBlocks/xor.svg">
                                 <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="XOR" className="component-icon"/>
                             </div>
                         </div>
