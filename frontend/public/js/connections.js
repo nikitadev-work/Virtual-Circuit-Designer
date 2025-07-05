@@ -203,7 +203,7 @@ const TOKEN = localStorage.getItem('token');
 const HOST = window.location.host;
 const API_URL = `http://${HOST}:8052/api/circuits`;
 
-async function sendCircuit(): Promise<void> {
+async function sendCircuit() {
 
     const gates = exportSchemeAsList();
 
@@ -212,12 +212,10 @@ async function sendCircuit(): Promise<void> {
         return;
     }
 
-    /** @type {HTMLDivElement} */
     const nameInput = document.getElementById('scheme-name');
-
     const circuitName =
         nameInput?.value.trim() ||
-        (prompt('Имя схемы', 'Scheme 1') ?? '').trim();
+        prompt('Имя схемы', 'Scheme 1')?.trim();
 
     if (!circuitName) return;
 
@@ -226,7 +224,7 @@ async function sendCircuit(): Promise<void> {
         circuit_description: gates
     };
 
-    const headers: Record<string, string> = {
+    const headers = {
         'Content-Type': 'application/json',
     };
 
