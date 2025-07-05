@@ -234,29 +234,21 @@ async function sendCircuit() {
 
     try {
         const res = await fetch(API_URL, {
-            method : 'POST',
+            method: 'POST',
             headers,
-            body   : JSON.stringify(payload),
+            body: JSON.stringify(payload)
         });
 
-        // 4xx / 5xx → кидаем явное исключение
         if (!res.ok) {
             const text = await res.text();
             throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
         }
 
-        /* --- 201/204 могут прийти без содержимого --- */
-        let data: unknown = null;
-        const ct = res.headers.get('content-type') ?? '';
-        if (ct.includes('application/json')) {
-            data = await res.json();
-        }
-
-        console.log('Схема успешно сохранена:', data);
+        const data = await res.json();
+        console.log('Backend answer:', data);
     } catch (err) {
-        console.error('Ошибка при сохранении схемы:', err);
-        const msg = err instanceof Error ? err.message : String(err);
-        alert(`Не удалось сохранить схему:\n${msg}`);
+        console.error('Не удалось сохранить схему:', err);
+        alert("Произошла ошибка при сохранении схемы");
     }
 }
 
