@@ -244,8 +244,24 @@ async function sendCircuit() {
             throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
         }
 
-        const data = await res.json();
-        console.log('Backend answer:', data);
+        let data = null;
+
+        const contentLength =
+            res.headers.get('content-length');
+
+        const hasBody =
+            contentLength &&
+            contentLength !== '0' &&
+            (res.status !== 204);
+
+        const isJson =
+            res.headers.get('content-type')?.includes('application/json');
+
+        if (hasBody && isJson) {
+            data = await res.json();
+        }
+        console.log('Saved successfully:', data);
+        alert('Схема сохранена');
     } catch (err) {
         console.error('Не удалось сохранить схему:', err);
         alert("Произошла ошибка при сохранении схемы");
