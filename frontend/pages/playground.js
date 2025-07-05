@@ -42,7 +42,7 @@ export default function Page() {
                 <title>VCD | Playground</title>
 
                 {/* Favicon */}
-                <link rel="shortcut icon" href="/Icons/favicon-black.png" type="image/png" />
+                <link rel="shortcut icon" href="/Icons/Logos/favicon-black.png" type="image/png" />
                 {/* Fonts */}
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
@@ -52,8 +52,13 @@ export default function Page() {
 
             <header className="header">
                 <div className="left-controls">
+                    <button id="back-dashboard" button className="settings-btn">
+                        <Image src="/Icons/Logos/home.svg" width={40} height={40} className="home-vec"
+                               alt="home"/>
+                    </button>
                     <button id="leftbar-toggle" button className="components-btn">
-                        <Image src="Icons/components-vec.svg" width={25} height={25} className="components-vec"  alt="component"/>
+                        <Image src="/Icons/Logos/components-vec.svg" width={25} height={25} className="components-vec"
+                               alt="component"/>
                         Components
                     </button>
                 </div>
@@ -64,7 +69,7 @@ export default function Page() {
 
                 <div className="logo-wrapper">
                     <Image
-                        src="/Icons/LogoCenter.svg"
+                        src="/Icons/Logos/LogoCenter.svg"
                         alt="logo"
                         width={80}
                         height={75}
@@ -76,10 +81,10 @@ export default function Page() {
                 <div className="right-controls">
                     <button className="user-logo">M</button>
                     <button id="rightbar-toggle" className="settings-btn">
-                        <Image width={20} height={20} src="Icons/settings.svg" alt="setting"/>
+                        <Image width={20} height={20} src="/Icons/Logos/settings.svg" alt="setting"/>
                     </button>
                     <button className="play-btn">
-                        <Image width={20} height={20} src="/Icons/play.svg" alt="play"/>
+                        <Image width={20} height={20} src="/Icons/Logos/play.svg" alt="play"/>
                     </button>
 
                     <button id="export-btn" className="export-btn">Export</button>

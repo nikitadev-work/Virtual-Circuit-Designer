@@ -45,8 +45,37 @@ button.playground {
     font-family: Inter, sans-serif;
 }
 
+
+#connections line           { pointer-events: stroke; cursor: pointer; }
+#connections .selected-line { stroke: red; }
+
+
+
+#back-dashboard {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    background-color: #f3f3f3;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    border-radius: 6px;
+
+    align-items: center;
+}
+
+#back-dashboard:hover {
+    background-color: #dbdbdb;
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 0 40px rgb(219, 219, 219)
+}
+
+#back-dashboard-vec {
+    padding-right: 8px;
+}
+
 .components-btn {
-    color: black;
+    color: #000000;
     font-family: Inter, sans-serif;
     font-weight: 500;
     display: flex;
@@ -54,14 +83,18 @@ button.playground {
     align-items: center;
     transition: background-color 0.3s ease;
     cursor: pointer;
+    background-color: #f3f3f3;
+    width: 140px;
+    height: 34px;
 
-    padding: 4px 4px;
+    font-size: 15px;
     border-radius: 6px;
+    padding: 10px 8px;
 }
 
 
 .components-btn:hover {
-    background-color: #dbdbdb;
+    background: #dbdbdb;
     transform: translateY(-1px) scale(1.05);
     box-shadow: 0 0 40px rgb(219, 219, 219)
 }
@@ -72,7 +105,7 @@ button.playground {
 }
 
 .left-controls {
-    gap: 20px;
+    gap: 10px;
 }
 
 
@@ -104,7 +137,6 @@ button.playground {
     background: #fff;
     display: flex;
     justify-content: center;
-    box-shadow: 1px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 
@@ -478,8 +510,8 @@ button.playground {
     position: absolute;
     top: 0;
     left: 0;
-    width: 50000px;
-    height: 50000px;
+    width: 5000px;
+    height: 5000px;
 
     background-image: radial-gradient(circle at 1px 1px,
     #a8a8a8 1px, transparent 0);
