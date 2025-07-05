@@ -185,6 +185,13 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	writeCORS(w, r)
 
+	if r.Method == http.MethodOptions {
+		config.APILogger.Println("Type of request: OPTIONS")
+		w.WriteHeader(http.StatusNoContent)
+		config.APILogger.Println("OPTIONS request completed")
+		return
+	}
+
 	//Token verification
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
@@ -277,6 +284,8 @@ func CircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
 func GetAllCircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
 	config.APILogger.Println("Redirected to GetAllCircuitsHandler")
 
+	writeCORS(w, r)
+
 	reqURL := fmt.Sprintf(config.DatabaseServiceURL+"/circuits?user_id=%d", userID)
 
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
@@ -312,6 +321,8 @@ func GetAllCircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
 func GetCircuitByIDHandler(w http.ResponseWriter, r *http.Request, userID int, circuitID int) {
 	config.APILogger.Println("Redirected to GetCircuitByIDHandler")
 
+	writeCORS(w, r)
+
 	reqURL := fmt.Sprintf(config.DatabaseServiceURL+"/circuits/%d?user_id=%d", userID, circuitID)
 
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
@@ -346,6 +357,8 @@ func GetCircuitByIDHandler(w http.ResponseWriter, r *http.Request, userID int, c
 
 func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
 	config.APILogger.Println("Redirected to SaveNewCircuitHandler")
+
+	writeCORS(w, r)
 
 	var response Circuit
 

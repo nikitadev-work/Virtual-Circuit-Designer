@@ -199,37 +199,51 @@ function exportSchemeAsList() {
     return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
 }
 
-const TOKEN = localStorage.getItem('Authorization');
-const HOST = window.location.hostname;
+const TOKEN = localStorage.getItem('token');
+const HOST = window.location.host;
 const API_URL = `http://${HOST}:8052/api/circuits`;
 
 async function sendCircuit() {
-    const gates = exportSchemeAsList();        // то, что раньше scheme_data
+
+    const gates = exportSchemeAsList();
+
+    if (!gates || gates.length === 0) {
+        alert("Схема пуста, сохранять нечего");
+        return;
+    }
+
     const nameInput = document.getElementById('scheme-name');
-    const circuitName = nameInput ? nameInput.value.trim()
-        : prompt('Name of the scheme', 'Circuit 1');
+    const circuitName = nameInput?.value?.trim() || prompt('Имя схемы', 'Scheme 1');
 
     if (!circuitName) return;
 
     const payload = {
-        circuit_name:        circuitName,
+        circuit_name: circuitName,
         circuit_description: gates
     };
 
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    if (TOKEN) {
+        headers['Authorization'] = `Bearer ${TOKEN}`;
+    }
+
     try {
         const res = await fetch(API_URL, {
-            method : 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(TOKEN && { Authorization: `Bearer ${TOKEN}` })
-            },
+            method: 'POST',
+            headers,
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        console.log('Схема сохранена:', await res.json());
+
+        const data = await res.json();
+        console.log('Backend answer:', data);
     } catch (err) {
         console.error('Не удалось сохранить схему:', err);
+        alert("Произошла ошибка при сохранении схемы");
     }
 }
 

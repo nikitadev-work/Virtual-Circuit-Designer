@@ -12,7 +12,7 @@ import Image from 'next/image';
 
 export default function Page() {
     const searcParams = useSearchParams();
-    const circuitId = searcParams.get("id");
+    const circuitId = searcParams.get("projectId");
     const [token, setToken] = useState(null);
     const [circuit, setCircuit] = useState(null);
 
@@ -24,7 +24,7 @@ export default function Page() {
     useEffect(() => {
         if (!token || !circuitId) return
 
-        const HOST = window.location.host
+        const HOST = window.location.host;
         fetch(`http://${HOST}:8052/api/circuits/${circuitId}`, {
             headers: { Authorization: `Bearer ${token}` },
         })
@@ -70,7 +70,7 @@ export default function Page() {
                         height={75}
                         className="logo-img"
                     />
-                    <span className="page-name">Name of page</span>
+                    <span className="page-name">{circuit?.title || "Untitled"}</span>
                 </div>
 
                 <div className="right-controls">
