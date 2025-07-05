@@ -316,6 +316,11 @@ async function sendCircuit() {
 
 // Экспорт
 async function loadCircuit(id) {
+    if (!id) {
+        alert("Не передан ID схемы");
+        return;
+    }
+
     const res = await fetch(`http://${window.location.host}:8052/api/circuits/${id}`);
     if (!res.ok) {
         alert('Не удалось загрузить схему');
@@ -394,7 +399,13 @@ function getTypeName(id) {
 document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
 document.getElementById('export-btn')
-    .addEventListener('click', loadCircuit);
+    .addEventListener('click', () => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const id = searchParams.get('projectId');
+        if (id) loadCircuit(id);
+        else alert("ID схемы не найден");
+    });
+
 
 function addPorts(el) {
     const type = el.dataset.type?.toUpperCase();
