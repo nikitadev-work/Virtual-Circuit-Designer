@@ -7,9 +7,38 @@ const workspace = document.getElementById('workspace');
 /** @type {SVGSVGElement} */
 const svg = document.getElementById('connections');
 
+function removeConnection(lineEl) {
+    connections = connections.filter(c => {
+        const match = c.line === lineEl;
+        if (match) lineEl.remove();
+        return !match;
+    });
+}
+
+svg.addEventListener('dblclick', e => {
+    if (e.target.tagName === 'line') removeConnection(e.target);
+});
+
+let selectedLine = null;
+
+svg.addEventListener('click', e => {
+    if (e.target.tagName !== 'line') return;
+
+    selectedLine?.classList.remove('selected-line');
+    selectedLine = e.target;
+    selectedLine.classList.add('selected-line');
+});
+
+window.addEventListener('keydown', e => {
+    if (e.key === 'Delete' && selectedLine) {
+        removeConnection(selectedLine);
+        selectedLine = null;
+    }
+});
+
 const GRID = 25;
 const snap = (v) => {
-    const step = GRID * scale;
+    const step = GRID;
     return Math.round(v / step) * step;
 };
 
@@ -91,12 +120,11 @@ function clientToWorkspace(clientX, clientY) {
 
 let isCanvasDrag = false, startX, startY;
 
-canvas.parentElement.addEventListener('wheel', (e) => {
+canvas.parentElement.addEventListener('wheel', e => {
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    scale *= delta;
-    scale = Math.min(Math.max(0.5, scale), 3);
+    scale = Math.min(Math.max(0.5, scale * delta), 3);
     updateTransform();
 });
 
@@ -112,8 +140,23 @@ window.addEventListener('mousemove', e => {
     if (!isCanvasDrag) return;
     posX = e.clientX - startX;
     posY = e.clientY - startY;
-    canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+    updateTransform();
 });
+
+function centerCanvas() {
+    const viewW = canvas.parentElement.clientWidth;
+    const viewH = canvas.parentElement.clientHeight;
+    const workW = workspace.offsetWidth * scale;
+    const workH = workspace.offsetHeight * scale;
+    posX = (viewW  - workW) / 2;
+    posY = (viewH  - workH) / 2;
+    updateTransform();
+}
+
+window.addEventListener('load', () => {
+    requestAnimationFrame(centerCanvas);
+});
+
 
 window.addEventListener('mouseup', () => {
     isCanvasDrag = false;
@@ -199,6 +242,8 @@ function exportSchemeAsList() {
     return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
 }
 
+// Импорт
+
 const TOKEN = localStorage.getItem('token');
 const HOST = window.location.host;
 const API_URL = `http://${HOST}:8052/api/circuits`;
@@ -269,8 +314,87 @@ async function sendCircuit() {
 }
 
 
+// Экспорт
+async function loadCircuit(id) {
+    const res = await fetch(`http://${window.location.host}:8052/api/circuits/${id}`);
+    if (!res.ok) {
+        alert('Не удалось загрузить схему');
+        return;
+    }
+
+    const data = await res.json();
+    renderCircuit(data.circuit);
+}
+
+function renderCircuit(circuit) {
+    // Очистка рабочей области
+    document.querySelectorAll('.workspace-element').forEach(e => e.remove());
+    connections = [];
+
+    const elements = [];
+
+    circuit.forEach(([type, inputs = [], outputs = []], i) => {
+        const el = document.createElement('div');
+        el.className = 'workspace-element';
+        el.dataset.type = getTypeName(type);
+        el.dataset.angle = 0;
+        el.dataset.scaleX = 1;
+        el.dataset.scaleY = 1;
+        el.style.left = `${100 + i * 100}px`;
+        el.style.top = '100px';
+
+        const img = document.createElement('img');
+        img.src = `path/to/icon-${getTypeName(type).toLowerCase()}.svg`;
+        el.appendChild(img);
+        addPorts(el);
+        enableElementDrag(el);
+        workspace.appendChild(el);
+        elements.push(el);
+    });
+
+    circuit.forEach(([_, inputs = []], targetIndex) => {
+        inputs.forEach(sourceIndex => {
+            const from = elements[sourceIndex].querySelector('.output-port');
+            const to = elements[targetIndex].querySelector('.input-port');
+            if (from && to) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('stroke', 'black');
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+
+                connections.push({
+                    from: {element: elements[sourceIndex], port: from},
+                    to: {element: elements[targetIndex], port: to},
+                    line
+                });
+            }
+        });
+    });
+
+    updateConnections();
+    centerCanvas();
+}
+
+function getTypeName(id) {
+    return {
+        0: 'INPUT',
+        1: 'OUTPUT',
+        2: 'NOT',
+        3: 'AND',
+        4: 'OR',
+        5: 'XOR',
+        6: 'NAND',
+        7: 'NOR',
+        8: 'XNOR'
+    }[id] || 'INPUT';
+}
+
+
 document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
+document.getElementById('export-btn')
+    .addEventListener('click', loadCircuit);
 
 function addPorts(el) {
     const type = el.dataset.type?.toUpperCase();
@@ -296,8 +420,8 @@ function addPorts(el) {
             p.style.top = '50%';
             p.style.transform = 'translateY(-50%)';
         } else {
-            p.style.left = '-20px';
-            p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '33%' : '66%');
+            p.style.left = '-17px';
+            p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '35%' : '64%');
             p.style.transform = 'translateY(-50%)';
         }
 
@@ -351,6 +475,11 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.context-menu')) hideCtxMenu();
 });
 
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        hideCtxMenu();
+    }
+});
 
 function applyTransform(el, action) {
     if (!el) return;
@@ -468,7 +597,8 @@ workspace.addEventListener('mousedown', e => {
     currentLine.setAttribute('x2', start.x);
     currentLine.setAttribute('y2', start.y);
     currentLine.setAttribute('stroke', 'black');
-    currentLine.setAttribute('stroke-width', '2');
+    currentLine.setAttribute('stroke-width', '3');
+    currentLine.setAttribute('stroke-linecap', 'round');
     svg.appendChild(currentLine);
 
     document.addEventListener('mousemove', dragTempLine);
@@ -528,8 +658,15 @@ function finishLine(e) {
     const isInput = p => p?.classList.contains('input-port');
     const isOutput = p => p?.classList.contains('output-port');
 
-    // разрешаем ТОЛЬКО «output-порт → input-порт»
-    if (!isOutput(startPort) || !isInput(targetPort)) {
+    if (isInput(startPort) && isInput(targetPort)) {
+        currentLine.remove();
+        currentLine = startElement = startPort = null;
+        document.removeEventListener('mousemove', dragTempLine);
+        document.removeEventListener('mouseup', finishLine);
+        return;
+    }
+
+    if (isOutput(startPort) && isOutput(targetPort)) {
         currentLine.remove();
         currentLine = startElement = startPort = null;
         document.removeEventListener('mousemove', dragTempLine);
@@ -585,21 +722,39 @@ function portCenter(port) {
 }
 
 function updateTransform() {
+    const parent = canvas.parentElement;
+    const viewW = parent.clientWidth;
+    const viewH = parent.clientHeight;
+
+    const workW = workspace.offsetWidth * scale;
+    const workH = workspace.offsetHeight * scale;
+
+    // Вычисление пределов сдвига
+    const minX = Math.min(0, viewW - workW);
+    const minY = Math.min(0, viewH - workH);
+    const maxX = 0;
+    const maxY = 0;
+
+    // Ограничение posX и posY
+    posX = Math.min(maxX, Math.max(minX, posX));
+    posY = Math.min(maxY, Math.max(minY, posY));
+
     canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
 }
+
 
 let clipboard = null;
 
 function copy(src = null) {
     let items;
     if (!src) {
-        items = [...selection];          // если аргумента нет — копируем текущее выделение
+        items = [...selection];
     } else if (Array.isArray(src)) {
-        items = src;                     // передан массив
+        items = src;
     } else {
-        items = [src];                   // передан единственный элемент
+        items = [src];
     }
-    if (!items.length) return;         // ничего не выбрано — выходим
+    if (!items.length) return;
 
     const minX = Math.min(...items.map(el => parseFloat(el.style.left) || 0));
     const minY = Math.min(...items.map(el => parseFloat(el.style.top) || 0));
@@ -777,14 +932,13 @@ document.getElementById('rightbar-toggle')
     });
 
 (() => {
-    /** прямоугольник-маска */
     const band = document.createElement('div');
     band.id = 'selection-rect';
 
-    let selecting = false;      // идёт ли выделение
-    let startX, startY;         // стартовая точка (в координатах workspace)
-    let additive = false;       // Ctrl/Meta-click?
-    let baseSelection = null;   // что было выделено до начала
+    let selecting = false;
+    let startX, startY;
+    let additive = false;
+    let baseSelection = null;
 
     workspace.addEventListener('mousedown', e => {
         if (e.button !== 0) return;
@@ -827,9 +981,9 @@ document.getElementById('rightbar-toggle')
             const hit = !(ex + ew < x || ex > x + w || ey + eh < y || ey > y + h);
 
             if (hit) {
-                select(el);                           // добавить в выбор
+                select(el);
             } else if (!additive || !baseSelection.has(el)) {
-                deselect(el);                         // убрать, если не «плюсуем» Ctrl-ом
+                deselect(el);
             }
         });
     }
@@ -840,3 +994,8 @@ document.getElementById('rightbar-toggle')
         window.removeEventListener('mousemove', onMove);
     }
 })();
+
+document.getElementById('back-dashboard')
+    .addEventListener('click', () => {
+        window.location.href = '/dashboard';
+    });
