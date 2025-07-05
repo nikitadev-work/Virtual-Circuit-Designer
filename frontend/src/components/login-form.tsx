@@ -37,7 +37,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       return;
     }
 
-    const HOST = window.location.host;
+    const HOST = window.location.hostname;
 
     try {
       const response = await fetch('http://' + HOST + ':8052/api/user/login', {
