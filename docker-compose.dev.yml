@@ -1,0 +1,70 @@
+services:
+  database:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: vcddbname
+      POSTGRES_USER: vcddbuser
+      POSTGRES_PASSWORD: vcddbpassword
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vcddbuser -d vcddbname"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+    networks:
+      - my_shared_network
+
+  database-service:
+    build:
+      context: ./backend/Database_service
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - my_shared_network
+
+  auth-service:
+    build:
+      context: ./backend/Authentication_service
+    depends_on:
+      database:
+        condition: service_healthy
+      database-service:
+        condition: service_started
+    networks:
+      - my_shared_network
+
+  api-service:
+    build:
+      context: ./backend/API_service
+    ports:
+      - "8052:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      database-service:
+        condition: service_started
+    networks:
+      my_shared_network:
+        ipv4_address: 172.18.0.10
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: always
+    ports:
+      - "3001:3000"
+    networks:
+      - my_shared_network
+
+networks:
+  my_shared_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet:  "172.18.0.0/16"
+          gateway: "172.18.0.1"

@@ -105,7 +105,7 @@ export default function Page() {
   useEffect(() => {
     if (!token || !circuitId) return;
 
-    const HOST = window.location.host;
+    const HOST = window.location.hostname;
     fetch(`http://${HOST}:8052/api/circuits/${circuitId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
