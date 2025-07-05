@@ -204,6 +204,7 @@ const HOST = window.location.host;
 const API_URL = `http://${HOST}:8052/api/circuits`;
 
 async function sendCircuit() {
+
     const gates = exportSchemeAsList();
 
     if (!gates || gates.length === 0) {
@@ -212,13 +213,13 @@ async function sendCircuit() {
     }
 
     const nameInput = document.getElementById('scheme-name');
-    const schemeName = nameInput?.value?.trim() || prompt('Имя схемы', 'Scheme 1');
+    const circuitName = nameInput?.value?.trim() || prompt('Имя схемы', 'Scheme 1');
 
-    if (!schemeName) return;
+    if (!circuitName) return;
 
     const payload = {
-        scheme_name: schemeName,
-        scheme_data: gates
+        circuit_name: circuitName,
+        circuit_description: gates
     };
 
     const headers = {
