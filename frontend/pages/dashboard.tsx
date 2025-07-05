@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { v4 as uuid } from "uuid"
+import { useSearchParams } from "next/navigation";
+import { v4 as uuid } from "uuid";
 import { AppSidebar } from "../src/components/app-sidebar"
 import {
   Breadcrumb,
@@ -26,6 +27,7 @@ import {
 } from "@components/dialog"
 import { Input } from "@components/input"
 import { Button } from "@components/button"
+import { useRouter} from "next/navigation";
 
 type Project = {
   id: string
@@ -34,7 +36,8 @@ type Project = {
   updatedAt: string
 }
 
-const STORAGE_KEY = "projects"
+const getStorageKey = (userId: string | null) => `projects-${userId ?? "guest"}`
+
 
 export default function Page() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -43,7 +46,16 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState("")
   const [token, setToken] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
-  const filteredProjects = projects.filter((project) => project.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredProjects = (projects || []).filter((project) =>
+      project.title.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const circuitId = searchParams.get("id"); // Getting id of the scheme from the URl of the page
+
+  const [, setCircuit] = useState(null)
 
   function parseJwt(token: string) {
     try {
@@ -52,6 +64,33 @@ export default function Page() {
       return null
     }
   }
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) setToken(storedToken);
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const saved = localStorage.getItem(getStorageKey(userId));
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setProjects(parsed);
+        }
+      } catch (e) {
+        console.error("Invalid project data in localStorage", e);
+      }
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      localStorage.setItem(getStorageKey(userId), JSON.stringify(projects));
+    }
+  }, [projects, userId])
 
   // Загрузить token из localStorage
   useEffect(() => {
@@ -62,6 +101,19 @@ export default function Page() {
       setUserId(parsed?.userId ?? null)
     }
   }, [])
+
+  useEffect(() => {
+    if (!token || !circuitId) return;
+
+    const HOST = window.location.host;
+    fetch(`http://${HOST}:8052/api/circuits/${circuitId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+        .then((res) => res.json())
+        .then((data) => setCircuit(data))
+        .catch(console.error);
+  }, [token, circuitId]);
+
 
 
   // Загрузка проектов
@@ -75,8 +127,13 @@ export default function Page() {
             Authorization: `Bearer ${token}`
           }
         })
-        const data: Project[] = await res.json()
-        setProjects(data)
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          setProjects(data);
+        } else {
+          console.error("Expected array of projects, got:", data);
+          setProjects([]);
+        }
       } catch (err) {
         console.error("Failed to load from backend", err)
         setProjects([])
@@ -86,45 +143,23 @@ export default function Page() {
     loadProjects()
   }, [token])
 
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
-  }, [projects])
-
   const handleCreateProject = async () => {
-    if (!newTitle.trim()) return
+    if (!newTitle.trim()) return;
 
-    const now = new Date().toISOString()
+    const now = new Date().toISOString();
 
     const newProject: Project = {
       id: uuid(),
       title: newTitle.trim(),
       createdAt: now,
       updatedAt: now,
-    }
+    };
 
-    try {
-      const HOST = window.location.host;
-      const res = await fetch(`http://${HOST}:8052/api/circuits`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...newProject,
-          userId: userId,
-        })
-      })
+    setProjects((prev) => [newProject, ...prev]);
+    setNewTitle("");
+    setOpen(false);
+  };
 
-      if (!res.ok) throw new Error("Failed to create project")
-      setProjects((prev) => [newProject, ...prev])
-      setNewTitle("")
-      setOpen(false)
-    } catch {
-      alert("Could not save the project to server...")
-    }
-  }
 
   return (
       <SidebarProvider>
@@ -201,7 +236,9 @@ export default function Page() {
             ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 cursor-pointer">
                   {filteredProjects.map((proj) => (
-                      <div key={proj.id} className="border rounded-lg p-4 hover:shadow transition">
+                      <div key={proj.id}
+                           onClick={() => router.push(`/playground?projectId=${proj.id}`)}
+                           className="border rounded-lg p-4 hover:shadow transition">
                         <div className="aspect-[4/3] bg-muted rounded-md flex items-center justify-center">
                           <span className="text-sm text-gray-400">Empty</span>
                         </div>

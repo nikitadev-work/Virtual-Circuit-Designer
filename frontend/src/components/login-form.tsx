@@ -62,15 +62,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
 
       try {
-        const text = await response.text();
-        const data = text ? JSON.parse(text) : {};
-        console.log("Полученный ответ с сервера:", data); // <--- Добавь этот лог
-        if (data.token) {
-          console.log("Токен к сохранению:", data.token);  // <--- И этот
-          localStorage.setItem('token', data.token);
+        const token = response.headers.get("Authorization") || response.headers.get("authorization");
+        console.log("Токен из хедера:", token);
+        if (token) {
+          const pureToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+          localStorage.setItem('token', pureToken);
+          router.push('/dashboard')
+        } else {
+          setError("Token not found in response headers")
         }
-        router.push('/dashboard')
-      } catch {
+      } catch (e) {
+        console.error("Error while handling token", e);
         setError("Invalid server response");
       }
 
