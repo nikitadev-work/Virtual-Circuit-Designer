@@ -250,6 +250,7 @@ async function sendCircuit() {
             res.headers.get('content-length');
 
         const hasBody =
+            contentLength &&
             contentLength !== '0' &&
             (res.status !== 204);
 
