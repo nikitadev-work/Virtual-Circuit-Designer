@@ -56,7 +56,7 @@ Visual feedback and dynamic connections provide clarity and accuracy in design, 
 
 📹 [Video demo v2](https://youtu.be/...)
 
-📘 [Product Roadmap](./docs/roadmap.md)
+📘 [Product Roadmap](https://docs.google.com/spreadsheets/d/1SGbc4nW3ZNP6p4rJFL7kns3ftsbBbcRCNFcaKKOpOF8/edit?usp=sharing)
 
 ---
 
@@ -70,7 +70,7 @@ The architecture of Visual Circuit Designer is structured into three complementa
 
 This view describes the main frontend and backend components of the system and their interactions.
 
-- 🔗 ![Static View Diagram](.\frontend\docs\static.png)
+- 🔗 ![Static View Diagram](./frontend/docs/static.png)
 
 **Frontend:**
 - Built with **React.js**
@@ -98,7 +98,7 @@ This view describes the main frontend and backend components of the system and t
 
 This view shows a runtime scenario of how a user creates, compiles, and simulates a digital logic circuit.
 
--  ![Dynamic View Diagram](.\frontend\docs\static.png)
+-  ![Dynamic View Diagram](./frontend/docs/static.png)
 
 **Key flow (summarized):**
 1. The user logs in via Keycloak (OIDC).
@@ -115,7 +115,7 @@ This view shows a runtime scenario of how a user creates, compiles, and simulate
 
 The following diagram illustrates the detailed sequence of interactions across services for a scenario: **"Create → Compile → Simulate"**.
 
--  ![Sequence Diagram](.\frontend\docs\sequence.png)
+-  ![Sequence Diagram](./frontend/docs/sequence.png)
 
 **Steps Overview:**
 - ✅ User authentication & profile retrieval
@@ -133,7 +133,7 @@ The following diagram illustrates the detailed sequence of interactions across s
 
 ### 🚀 Deployment View
 
--  ![Deployment Diagram](.\frontend\docs\dynamic.png)
+-  ![Deployment Diagram](./frontend/docs/dynamic.png)
 
 **Deployment Topology:**
 - All services are containerized via **Docker Compose**
@@ -259,7 +259,7 @@ We use labels to classify, prioritize, and track issues effectively:
 ---
 
 #### Gitgraph Diagram
-![Deployment Diagram](.\frontend\docs\dia.png)
+![Deployment Diagram](./frontend/docs/dia.png)
 
 ### Secrets management
 All secrets (API keys, DB passwords, etc.) are stored in `.env` files, which are **never committed** to version control. In CI, secrets are managed via GitLab CI/CD variables. For deployment, secrets are injected as environment variables via Docker Compose.
@@ -283,7 +283,7 @@ Use the provided `Makefile` for ease of setup:
 
 ## ✅ Quality Assurance
 ### Quality attribute scenarios
-Quality scenarios are described here: [quality-attribute-scenarios.md](./docs/quality-assurance/quality-attribute-scenarios.md)
+Quality scenarios are described here: [quality-attribute-scenarios.md](./quality-attribute-scenarios.md)
 
 ### Automated tests
 #### Test tools
@@ -293,17 +293,17 @@ Quality scenarios are described here: [quality-attribute-scenarios.md](./docs/qu
 - **ESLint** + **Prettier** – static analysis
 
 #### Test types
-- Unit: `frontend/tests/unit/`
-- Integration: `frontend/tests/integration/`
+- Unit: `frontend/__tests__/unit.test.js`
+- Integration: `frontend/__tests__/integration.test.js`
   
 All tests are run in CI
 ### User acceptance tests
-Acceptance testing scenarios are described here: [user-acceptance-tests.md](./docs/quality-assurance/user-acceptance-tests.md)
+Acceptance testing scenarios are described here: [user-acceptance-tests.md](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/tree/main/frontend/__tests__?ref_type=heads)
 
 
 ## 📦 Build and Deployment
 
-📄 **[CI pipeline](./.gitlab-ci.yml)**
+📄 **[CI pipeline](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/blob/main/.gitlab-ci.yml)**
 
 ### **CI/CD**
 - If CI on `main` is successful, Runner pushes Docker image to server
