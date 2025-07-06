@@ -24,9 +24,11 @@ type GenerateTokenRequest struct {
 }
 
 type Circuit struct {
-	UserID             int      `json:"user_id"`
-	Name               string   `json:"circuit_name"`
-	CircuitDescription [][3]any `json:"circuit_description"`
+	UserId             int      `json:"user_id"`
+	CircuitName        string   `json:"circuit_name"`
+	Circuit            [][3]any `json:"circuit_description"`
+	CircuitInputs      []int    `json:"circuit_inputs"`
+	CircuitCoordinates [][]any  `json:"circuit_coordinates"`
 }
 
 func writeCORS(w http.ResponseWriter, r *http.Request) {
@@ -251,7 +253,7 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case len(parts) == 3: // "/api/circuits
-		CircuitsHandler(w, r, response.UserID)
+		CircuitsHandler(w, r, response.UserId)
 	case len(parts) == 4 && parts[3] == "simulate": // "/api/circuits/simulate
 		StartSimulationHandler(w, r)
 	case len(parts) == 4: // "/api/circuits/{id}
@@ -260,7 +262,7 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		GetCircuitByIDHandler(w, r, response.UserID, circuitID)
+		GetCircuitByIDHandler(w, r, response.UserId, circuitID)
 	default:
 		config.APILogger.Println("Error while processing request: " + r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
@@ -376,7 +378,7 @@ func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
 		return
 	}
 
-	response.UserID = userID
+	response.UserId = userID
 
 	newBody, _ := json.Marshal(response)
 
@@ -407,5 +409,7 @@ func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
 
 func StartSimulationHandler(w http.ResponseWriter, r *http.Request) {
 	config.APILogger.Println("Redirected to StartSimulationHandler")
+
+	writeCORS(w, r)
 
 }
