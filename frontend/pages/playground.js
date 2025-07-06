@@ -129,7 +129,7 @@ export default function Page() {
                             <div
                                 className="draggable-item"
                                 draggable="true"
-                                datatype="INPUT"
+                                data-type="INPUT"
                                 data-icon="/Icons/Inputs&Outputs/Input-0.svg"
                             >
                                 <Image src="/Icons/Inputs&Outputs/Input-0.svg" width={60} height={60} alt="Input" className="component-icon"/>
@@ -138,7 +138,7 @@ export default function Page() {
                             <div
                                 className="draggable-item"
                                 draggable="true"
-                                datatype="OUTPUT"
+                                data-type="OUTPUT"
                                 data-icon="/Icons/Inputs&Outputs/Output-0.svg"
                             >
                                 <Image src="/Icons/Inputs&Outputs/Output-0.svg" width={60} height={60} alt="Output" className="component-icon"/>
