@@ -358,15 +358,31 @@ async function loadCircuit(id) {
         return;
     }
 
-    const res = await fetch(`http://${window.location.host}:8052/api/circuits/${id}`);
-    if (!res.ok) {
-        alert('Не удалось загрузить схему');
-        return;
+    const headers = {};
+
+    if (TOKEN) {
+        headers['Authorization'] = `Bearer ${TOKEN}`;
     }
 
-    const data = await res.json();
-    const {circuit_description, circuit_inputs, circuit_coordinates} = data;
-    renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
+    try {
+        const res = await fetch(`${API_URL}/${id}`, {
+            method: 'GET',
+            headers
+        });
+
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+        }
+
+        const data = await res.json();
+        const { circuit_description, circuit_inputs, circuit_coordinates } = data;
+        renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
+
+    } catch (err) {
+        console.error('Ошибка загрузки схемы:', err);
+        alert('Не удалось загрузить схему');
+    }
 }
 
 function renderCircuit(circuit, inputs = [], coordinates = []) {
