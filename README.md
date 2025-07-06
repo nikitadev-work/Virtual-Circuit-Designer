@@ -303,8 +303,6 @@ All tests are run in CI
 Acceptance testing scenarios here:
 For Front-end:
 [user-acceptance-tests.Front-end](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/tree/main/frontend/__tests__?ref_type=heads)
-For Back-end:
-[user-acceptance-tests.Back-end](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/tree/main/frontend/__tests__?ref_type=heads)
 
 
 ## 📦 Build and Deployment
