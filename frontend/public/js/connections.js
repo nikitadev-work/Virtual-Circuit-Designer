@@ -123,8 +123,16 @@ let isCanvasDrag = false, startX, startY;
 canvas.parentElement.addEventListener('wheel', e => {
     if (e.target.closest('.playground-left-bar, .playground-right-bar')) return;
     e.preventDefault();
+
+    const {x: mouseX, y: mouseY} = clientToWorkspace(e.clientX, e.clientY);
+
+    const prevScale = scale;
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     scale = Math.min(Math.max(0.5, scale * delta), 3);
+
+    posX -= (mouseX * scale - mouseX * prevScale);
+    posY -= (mouseY * scale - mouseY * prevScale);
+
     updateTransform();
 });
 
@@ -148,14 +156,10 @@ function centerCanvas() {
     const viewH = canvas.parentElement.clientHeight;
     const workW = workspace.offsetWidth * scale;
     const workH = workspace.offsetHeight * scale;
-    posX = (viewW  - workW) / 2;
-    posY = (viewH  - workH) / 2;
+    posX = (viewW - workW) / 2;
+    posY = (viewH - workH) / 2;
     updateTransform();
 }
-
-window.addEventListener('load', () => {
-    requestAnimationFrame(centerCanvas);
-});
 
 
 window.addEventListener('mouseup', () => {
@@ -184,24 +188,32 @@ function handleDrop(e) {
     e.preventDefault();
     if (e.dataTransfer.getData('source') !== 'sidebar') return;
 
-    const type = (e.dataTransfer.getData('type') || '')
+    const type = (e.dataTransfer.getData('type') || '').toUpperCase();
     const icon = e.dataTransfer.getData('icon');
+
     const el = document.createElement('div');
     el.className = 'workspace-element';
     el.dataset.type = type;
     el.dataset.angle = 0;
     el.dataset.scaleX = 1;
     el.dataset.scaleY = 1;
+
     const img = document.createElement('img');
     img.src = icon;
-    img.style.transform = 'rotate(90deg)';
-    el.appendChild(img);
 
+    const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
+    if (logicTypes.includes(type)) {
+        img.style.transform = 'rotate(90deg)';
+    }
+
+    el.appendChild(img);
+    addPorts(el);
     addPorts(el);
 
-    const rect = workspace.getBoundingClientRect();
-    el.style.left = snap(e.clientX - rect.left) + 'px';
-    el.style.top = snap(e.clientY - rect.top) + 'px';
+    const pt = clientToWorkspace(e.clientX, e.clientY);
+    el.style.left = snap(pt.x) + 'px';
+    el.style.top = snap(pt.y) + 'px';
+
 
     enableElementDrag(el);
     workspace.appendChild(el);
@@ -332,7 +344,6 @@ async function loadCircuit(id) {
 }
 
 function renderCircuit(circuit) {
-    // Очистка рабочей области
     document.querySelectorAll('.workspace-element').forEach(e => e.remove());
     connections = [];
 
@@ -396,6 +407,7 @@ function getTypeName(id) {
 }
 
 
+
 document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
 document.getElementById('export-btn')
@@ -427,10 +439,11 @@ function addPorts(el) {
         p.className = 'port input-port';
 
         if (type === 'OUTPUT') {
-            p.style.left = '-12px';
-            p.style.top = '50%';
+            p.style.left = '-3px';
+            p.style.top = '49%';
             p.style.transform = 'translateY(-50%)';
-        } else {
+        }
+        else {
             p.style.left = '-17px';
             p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '35%' : '64%');
             p.style.transform = 'translateY(-50%)';
@@ -444,10 +457,11 @@ function addPorts(el) {
         p.className = 'port output-port';
 
         if (type === 'INPUT') {
-            p.style.right = '-12px';
-            p.style.top = '50%';
+            p.style.right = '-3px';
+            p.style.top = '49%';
             p.style.transform = 'translateY(-50%)';
-        } else {
+        }
+        else {
             p.style.right = '-17px';
             p.style.top = '50%';
             p.style.transform = 'translateY(-50%)';
@@ -456,6 +470,7 @@ function addPorts(el) {
         el.appendChild(p);
     }
 }
+
 
 workspace.addEventListener('contextmenu', e => {
     e.preventDefault();
@@ -516,7 +531,7 @@ function applyTransform(el, action) {
             break;
     }
 
-    el.dataset.angle = angle;   // ← только число
+    el.dataset.angle = angle;
     el.dataset.scaleX = scaleX;
     el.dataset.scaleY = scaleY;
 
@@ -740,13 +755,11 @@ function updateTransform() {
     const workW = workspace.offsetWidth * scale;
     const workH = workspace.offsetHeight * scale;
 
-    // Вычисление пределов сдвига
     const minX = Math.min(0, viewW - workW);
     const minY = Math.min(0, viewH - workH);
     const maxX = 0;
     const maxY = 0;
 
-    // Ограничение posX и posY
     posX = Math.min(maxX, Math.max(minX, posX));
     posY = Math.min(maxY, Math.max(minY, posY));
 
@@ -1010,3 +1023,13 @@ document.getElementById('back-dashboard')
     .addEventListener('click', () => {
         window.location.href = '/dashboard';
     });
+function tryCenterCanvas(attempts = 10) {
+    if (attempts <= 0) return;
+    if (!canvas || !workspace) return;
+    if (workspace.offsetWidth > 0 && workspace.offsetHeight > 0) {
+        centerCanvas();
+    } else {
+        setTimeout(() => tryCenterCanvas(attempts - 1), 100);
+    }
+}
+tryCenterCanvas();
