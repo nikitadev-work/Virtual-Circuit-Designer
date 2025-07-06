@@ -18,10 +18,12 @@ type User struct {
 }
 
 type Circuit struct {
-	ID          int      `json:"id"`
-	UserID      int      `json:"user_id"`
-	CircuitName string   `json:"name"`
-	Circuit     [][3]any `json:"circuit"`
+	ID                 int      `json:"id"`
+	UserId             int      `json:"user_id"`
+	CircuitName        string   `json:"circuit_name"`
+	Circuit            [][3]any `json:"circuit_description"`
+	CircuitInputs      []int    `json:"circuit_inputs"`
+	CircuitCoordinates [][]any  `json:"circuit_coordinates"`
 }
 
 type PostgresDB struct {
@@ -57,7 +59,9 @@ func (db *PostgresDB) CreateTables() error {
 			"(id SERIAL PRIMARY KEY, " +
 			"user_id INTEGER NOT NULL, " +
 			"name VARCHAR(100) NOT NULL, " +
-			"circuit JSONB NOT NULL)")
+			"circuit_description JSONB NOT NULL, " +
+			"circuit_inputs JSONB NOT NULL, " +
+			"circuit_coordinates JSONB NOT NULL)")
 	if err != nil {
 		return err
 	}
@@ -109,17 +113,33 @@ func (db *PostgresDB) GetUser(email, password string) (int, string, error) {
 	}
 }
 
-func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any) error {
+func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any, circuitInputs []int, circuitCoordinates [][]any) error {
 	config.DbLogger.Println("Saving circuits")
+
+	config.DbLogger.Printf("circuitInputs: %v", circuitInputs)
+	config.DbLogger.Printf("circuitCoordinates: %v", circuitCoordinates)
 
 	circuitJSON, err := json.Marshal(circuit)
 	if err != nil {
+		config.DbLogger.Println("Error marshaling circuit:", err)
+		return err
+	}
+
+	circuitInputsJSON, err := json.Marshal(circuitInputs)
+	if err != nil {
+		config.DbLogger.Println("Error marshaling circuit_inputs:", err)
+		return err
+	}
+
+	circuitCoordinatesJSON, err := json.Marshal(circuitCoordinates)
+	if err != nil {
+		config.DbLogger.Println("Error marshaling circuit_coordinates:", err)
 		return err
 	}
 
 	_, err = db.conn.Exec(
-		"Insert into Circuits (user_id, name, circuit)"+
-			" values ($1, $2, $3)", userId, circuitName, string(circuitJSON))
+		"Insert into Circuits (user_id, name, circuit_description, circuit_inputs, circuit_coordinates)"+
+			" values ($1, $2, $3, $4, $5)", userId, circuitName, string(circuitJSON), string(circuitInputsJSON), string(circuitCoordinatesJSON))
 	if err != nil {
 		config.DbLogger.Println("Error while saving circuits: ", err)
 		return err
@@ -142,8 +162,10 @@ func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
 	for rows.Next() {
 		var c Circuit
 		var circuitJSON []byte
+		var circuitInputsJSON []byte
+		var circuitCoordinatesJSON []byte
 
-		err := rows.Scan(&c.ID, &c.UserID, &c.CircuitName, &circuitJSON)
+		err := rows.Scan(&c.ID, &c.UserId, &c.CircuitName, &circuitJSON, &circuitInputsJSON, &circuitCoordinatesJSON)
 		if err != nil {
 			config.DbLogger.Println("Error scanning circuit:", err)
 			return []Circuit{}, err
@@ -153,11 +175,16 @@ func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
 			config.DbLogger.Println("Error unmarshaling circuit JSON:", err)
 			return []Circuit{}, err
 		}
-		circuitsFound = append(circuitsFound, c)
-	}
+		if err := json.Unmarshal(circuitInputsJSON, &c.CircuitInputs); err != nil {
+			config.DbLogger.Println("Error unmarshaling circuit inputs JSON:", err)
+			return []Circuit{}, err
+		}
+		if err := json.Unmarshal(circuitCoordinatesJSON, &c.CircuitCoordinates); err != nil {
+			config.DbLogger.Println("Error unmarshaling circuit coordinates JSON:", err)
+			return []Circuit{}, err
+		}
 
-	if circuitsFound == nil {
-		circuitsFound = []Circuit{}
+		circuitsFound = append(circuitsFound, c)
 	}
 
 	circuitsJSON, err := json.MarshalIndent(circuitsFound, "", "  ")
@@ -177,12 +204,16 @@ func (db *PostgresDB) GetCircuit(userId, circuitId int) (Circuit, error) {
 
 	var c Circuit
 	var circuitJSON []byte
+	var circuitInputsJSON []byte
+	var circuitCoordinatesJSON []byte
 
 	err := db.conn.QueryRow(query, userId, circuitId).Scan(
 		&c.ID,
-		&c.UserID,
+		&c.UserId,
 		&c.CircuitName,
 		&circuitJSON,
+		&circuitInputsJSON,
+		&circuitCoordinatesJSON,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -197,6 +228,15 @@ func (db *PostgresDB) GetCircuit(userId, circuitId int) (Circuit, error) {
 		config.DbLogger.Println("Error unmarshaling circuit JSON:", err)
 		return Circuit{}, err
 	}
+	if err := json.Unmarshal(circuitInputsJSON, &c.CircuitInputs); err != nil {
+		config.DbLogger.Println("Error unmarshaling circuit inputs JSON:", err)
+		return Circuit{}, err
+	}
+	if err := json.Unmarshal(circuitCoordinatesJSON, &c.CircuitCoordinates); err != nil {
+		config.DbLogger.Println("Error unmarshaling circuit coordinates JSON:", err)
+		return Circuit{}, err
+	}
+
 	config.DbLogger.Println("Got circuit")
 	return c, nil
 }

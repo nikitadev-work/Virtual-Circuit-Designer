@@ -31,9 +31,11 @@ type LoginRequest struct {
 }
 
 type CircuitPostRequest struct {
-	UserId      int      `json:"user_id"`
-	CircuitName string   `json:"circuit_name"`
-	Circuit     [][3]any `json:"circuit_description"`
+	UserId             int      `json:"user_id"`
+	CircuitName        string   `json:"circuit_name"`
+	Circuit            [][3]any `json:"circuit_description"`
+	CircuitInputs      []int    `json:"circuit_inputs"`
+	CircuitCoordinates [][]any  `json:"circuit_coordinates"`
 }
 
 type CircuitGetRequest struct {
@@ -112,19 +114,19 @@ func (h *DBHandler) LoginHandler(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request) {
-	config.DbLogger.Println("User circuits request")
-
 	switch req.Method {
 	case http.MethodPost:
+		config.DbLogger.Println("Circuit save request")
 		var circuitPostReq CircuitPostRequest
 		err := json.NewDecoder(req.Body).Decode(&circuitPostReq)
 		if err != nil {
-			config.DbLogger.Println("Circuit save request: " + err.Error())
+			config.DbLogger.Println("Error while circuit save request: " + err.Error())
 			http.Error(resp, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		err = h.db.SaveCircuits(circuitPostReq.UserId, circuitPostReq.CircuitName, circuitPostReq.Circuit)
+		err = h.db.SaveCircuits(circuitPostReq.UserId, circuitPostReq.CircuitName, circuitPostReq.Circuit,
+			circuitPostReq.CircuitInputs, circuitPostReq.CircuitCoordinates)
 		if err != nil {
 			config.DbLogger.Println("Circuit saving request: " + err.Error())
 			http.Error(resp, err.Error(), http.StatusBadRequest)
@@ -156,6 +158,11 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 		config.DbLogger.Println("Circuits getting request completed")
 		resp.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(resp).Encode(circuits)
+		if err != nil {
+			config.DbLogger.Println("Error while writing response for circuits get request")
+			http.Error(resp, "Error while writing response for circuits get request", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -185,7 +192,18 @@ func (h *DBHandler) CircuitByIDHandler(resp http.ResponseWriter, req *http.Reque
 	}
 
 	circuit, err := h.db.GetCircuit(userID, circuitID)
+	if err != nil {
+		config.DbLogger.Println("Error while getting circuit by ID from DB")
+		http.Error(resp, "Error while getting circuit by ID from DB", http.StatusInternalServerError)
+		return
+	}
+
 	config.DbLogger.Println("Circuits getting request completed")
 	resp.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(resp).Encode(circuit)
+	if err != nil {
+		config.DbLogger.Println("Error while writing response for circuit by ID get request")
+		http.Error(resp, "Error while writing response for circuit by ID get request", http.StatusInternalServerError)
+		return
+	}
 }
