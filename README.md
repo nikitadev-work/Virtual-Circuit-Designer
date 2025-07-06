@@ -54,9 +54,11 @@ Visual feedback and dynamic connections provide clarity and accuracy in design, 
 - Load Previously Saved Designs
 - Save Schematics to User Account
 
-📹 [Video demo v2](https://youtu.be/...)
+📹 [Video demo v2](https://www.dropbox.com/scl/fi/kcxxc5cz42887zjii5ldx/1751819213849975.mov?rlkey=f76pp6tpqy4gins6vws7u9juk&st=sq0ln26u&dl=0)
 
-📘 [Product Roadmap](https://docs.google.com/spreadsheets/d/1SGbc4nW3ZNP6p4rJFL7kns3ftsbBbcRCNFcaKKOpOF8/edit?usp=sharing)
+📘 [Product Roadmap](https://docs.google.com/spreadsheets/d/1SGbc4nW3ZNP6p4rJFL7kns3ftsbBbcRCNFcaKKOpOF8/edit?gid=725595302#gid=725595302)
+
+🤖 [Access instruction](./frontend/docs/quality-attribute-scenarios.md)
 
 ---
 
@@ -283,7 +285,7 @@ Use the provided `Makefile` for ease of setup:
 
 ## ✅ Quality Assurance
 ### Quality attribute scenarios
-Quality scenarios are described here: [quality-attribute-scenarios.md](./quality-attribute-scenarios.md)
+Quality scenarios are described here: [quality-attribute-scenarios.md](frontend/docs/quality-attribute-scenarios.md)
 
 ### Automated tests
 #### Test tools
@@ -298,7 +300,11 @@ Quality scenarios are described here: [quality-attribute-scenarios.md](./quality
   
 All tests are run in CI
 ### User acceptance tests
-Acceptance testing scenarios are described here: [user-acceptance-tests.md](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/tree/main/frontend/__tests__?ref_type=heads)
+Acceptance testing scenarios here:
+For Front-end:
+[user-acceptance-tests.Front-end](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/tree/main/frontend/__tests__?ref_type=heads)
+For Back-end:
+[user-acceptance-tests.Back-end](https://gitlab.pg.innopolis.university/team-45/visual-circuit-designer/-/tree/main/frontend/__tests__?ref_type=heads)
 
 
 ## 📦 Build and Deployment

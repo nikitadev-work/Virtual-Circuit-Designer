@@ -12,7 +12,7 @@ describe('Workspace integration', () => {
         `;
         workspace = document.getElementById('workspace');
     });
-
+    // 1 test
     test('adds an element to workspace on drop', () => {
         const el = document.createElement('div');
         el.className = 'workspace-element';
@@ -20,7 +20,7 @@ describe('Workspace integration', () => {
 
         expect(workspace.querySelector('.workspace-element')).not.toBeNull();
     });
-
+    // 2 test
     test('element is positioned using snap logic', () => {
         const GRID = 25;
         const scale = 1;
@@ -36,7 +36,7 @@ describe('Workspace integration', () => {
         expect(el.style.left).toBe('50px');
         expect(el.style.top).toBe('75px');
     });
-
+    // 3 test
     test('copied element is cloned and appended', () => {
         const workspace = document.createElement('div');
         workspace.id = 'workspace';
@@ -57,7 +57,7 @@ describe('Workspace integration', () => {
         const elements = workspace.querySelectorAll('.workspace-element');
         expect(elements.length).toBe(2);
     });
-
+    // 4 test
     test('select and deselect works correctly', () => {
         const el = document.createElement('div');
         el.className = 'workspace-element';
@@ -73,7 +73,7 @@ describe('Workspace integration', () => {
         deselect(el);
         expect(el.classList.contains('selected')).toBe(false);
     });
-
+    // 5 test
     test('element drag moves element with correct snapping', () => {
         const GRID = 25;
         const snap = (v) => Math.round(v / GRID) * GRID;
@@ -83,14 +83,13 @@ describe('Workspace integration', () => {
         el.style.top = '0px';
         workspace.appendChild(el);
 
-        // simulate move by 48 px, should snap to 50
         el.style.left = `${snap(48)}px`;
         el.style.top = `${snap(48)}px`;
 
         expect(el.style.left).toBe('50px');
         expect(el.style.top).toBe('50px');
     });
-
+    // 6 test
     test('adding INPUT element collects input values', () => {
         const el = document.createElement('div');
         el.className = 'workspace-element';
@@ -106,7 +105,7 @@ describe('Workspace integration', () => {
 
         expect(collectInputs()).toEqual([1]);
     });
-
+    // 7 test
     test('collectCoordinates returns correct positions', () => {
         const el1 = document.createElement('div');
         el1.className = 'workspace-element';
@@ -136,7 +135,7 @@ describe('Workspace integration', () => {
             [1, [40, 80]],
         ]);
     });
-
+    // 8 test
     test('drop event creates new workspace element', () => {
         const event = new Event('drop', { bubbles: true });
         event.dataTransfer = {
