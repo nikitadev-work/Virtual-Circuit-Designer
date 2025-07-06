@@ -412,4 +412,42 @@ func StartSimulationHandler(w http.ResponseWriter, r *http.Request) {
 
 	writeCORS(w, r)
 
+	body, _ := io.ReadAll(r.Body)
+	reqSim, err := http.NewRequest("POST", config.RunningNodeServiceURL, bytes.NewReader(body))
+	if err != nil {
+		config.APILogger.Println("Error while creating request: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := config.Client.Do(reqSim)
+
+	if err != nil {
+		config.APILogger.Println("Error making request: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		config.APILogger.Println("Error reading response: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var respSim struct {
+		SimulationResult []int `json:"simulation_result"`
+	}
+
+	err = json.Unmarshal(body, &respSim)
+	if err != nil {
+		config.APILogger.Println("Error unmarshaling response: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(respSim)
 }

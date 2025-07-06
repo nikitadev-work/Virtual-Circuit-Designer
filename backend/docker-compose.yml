@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   database:
     image: postgres
@@ -17,8 +19,9 @@ services:
       - my_shared_network
 
   database-service:
-    build:
-      context: ./backend/Database_service
+    build: ./Database_service
+    ports:
+    - "8082:8082"
     depends_on:
       database:
         condition: service_healthy
@@ -26,8 +29,7 @@ services:
       - my_shared_network
 
   auth-service:
-    build:
-      context: ./backend/Authentication_service
+    build: ./Authentication_service
     depends_on:
       database:
         condition: service_healthy
@@ -35,18 +37,9 @@ services:
         condition: service_started
     networks:
       - my_shared_network
-    
-  runningnode-service:
-    build:
-      context: ./backend/RunningNode_service
-    ports:
-      - "8084:8084"
-    networks:
-      - my_shared_network
 
   api-service:
-    build:
-      context: ./backend/API_service
+    build: ./API_service
     ports:
       - "8052:8080"
     depends_on:
@@ -59,15 +52,6 @@ services:
     networks:
       my_shared_network:
         ipv4_address: 172.18.0.10
-
-  frontend:
-    build:
-      context: ./frontend
-    restart: always
-    ports:
-      - "3001:3000"
-    networks:
-      - my_shared_network
 
 networks:
   my_shared_network:
