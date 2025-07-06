@@ -254,6 +254,29 @@ function exportSchemeAsList() {
     return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
 }
 
+// Сбор данных по координатам и инпутам
+
+function collectInputs() {
+    const inputs = [...document.querySelectorAll('.workspace-element')]
+        .filter(el => (el.dataset.type || '').toUpperCase() === 'INPUT');
+
+    return inputs.map(el => {
+        const value = el.dataset.value;
+        return value === '1' ? 1 : 0;
+    });
+}
+
+function collectCoordinates() {
+    const nodes = [...document.querySelectorAll('.workspace-element')];
+    return nodes.map((el, i) => {
+        const id = i;
+        const x = parseFloat(el.style.left) || 0;
+        const y = parseFloat(el.style.top) || 0;
+        return [id, [x, y]];
+    });
+}
+
+
 // Импорт
 
 const TOKEN = localStorage.getItem('token');
@@ -278,7 +301,9 @@ async function sendCircuit() {
 
     const payload = {
         circuit_name: circuitName,
-        circuit_description: gates
+        circuit_description: gates,
+        circuit_inputs: collectInputs(),
+        circuit_coordinates: collectCoordinates()
     };
 
     const headers = {
@@ -340,10 +365,11 @@ async function loadCircuit(id) {
     }
 
     const data = await res.json();
-    renderCircuit(data.circuit);
+    const {circuit_description, circuit_inputs, circuit_coordinates} = data;
+    renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
 }
 
-function renderCircuit(circuit) {
+function renderCircuit(circuit, inputs = [], coordinates = []) {
     document.querySelectorAll('.workspace-element').forEach(e => e.remove());
     connections = [];
 
@@ -356,13 +382,31 @@ function renderCircuit(circuit) {
         el.dataset.angle = 0;
         el.dataset.scaleX = 1;
         el.dataset.scaleY = 1;
-        el.style.left = `${100 + i * 100}px`;
-        el.style.top = '100px';
+
+        const match = coordinates.find(([id]) => id === i);
+        const coords = match?.[1];
+        el.style.left = coords ? `${coords[0]}px` : `${100 + i * 100}px`;
+        el.style.top = coords ? `${coords[1]}px` : `100px`;
 
         const img = document.createElement('img');
         img.src = `path/to/icon-${getTypeName(type).toLowerCase()}.svg`;
         el.appendChild(img);
+
         addPorts(el);
+
+        if (getTypeName(type) === 'INPUT') {
+            const inputControl = document.createElement('input');
+            inputControl.type = 'number';
+            inputControl.min = '0';
+            inputControl.max = '1';
+            inputControl.value = inputs.shift() ?? 0;
+            inputControl.className = 'input-control';
+            inputControl.addEventListener('change', () => {
+                el.dataset.value = inputControl.value;
+            });
+            el.dataset.value = inputControl.value;
+            el.appendChild(inputControl);
+        }
         enableElementDrag(el);
         workspace.appendChild(el);
         elements.push(el);
@@ -407,7 +451,6 @@ function getTypeName(id) {
 }
 
 
-
 document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
 document.getElementById('export-btn')
@@ -442,8 +485,7 @@ function addPorts(el) {
             p.style.left = '-3px';
             p.style.top = '49%';
             p.style.transform = 'translateY(-50%)';
-        }
-        else {
+        } else {
             p.style.left = '-17px';
             p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '35%' : '64%');
             p.style.transform = 'translateY(-50%)';
@@ -460,8 +502,7 @@ function addPorts(el) {
             p.style.right = '-3px';
             p.style.top = '49%';
             p.style.transform = 'translateY(-50%)';
-        }
-        else {
+        } else {
             p.style.right = '-17px';
             p.style.top = '50%';
             p.style.transform = 'translateY(-50%)';
@@ -1023,6 +1064,7 @@ document.getElementById('back-dashboard')
     .addEventListener('click', () => {
         window.location.href = '/dashboard';
     });
+
 function tryCenterCanvas(attempts = 10) {
     if (attempts <= 0) return;
     if (!canvas || !workspace) return;
@@ -1032,4 +1074,5 @@ function tryCenterCanvas(attempts = 10) {
         setTimeout(() => tryCenterCanvas(attempts - 1), 100);
     }
 }
+
 tryCenterCanvas();
