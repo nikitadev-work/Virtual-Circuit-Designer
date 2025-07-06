@@ -340,7 +340,15 @@ async function sendCircuit() {
             res.headers.get('content-type')?.includes('application/json');
 
         if (hasBody && isJson) {
-            data = await res.json();
+            const data = await res.json();
+            const id = data.id;
+
+            if (typeof id === 'number') {
+                console.log(`Схема сохранена с ID: ${id}`);
+                window.savedCircuitId = id;
+            } else {
+                console.warn('Сервер не вернул числовой ID схемы');
+            }
         }
         console.log('Saved successfully:', data);
         alert('Схема сохранена');
@@ -405,7 +413,16 @@ function renderCircuit(circuit, inputs = [], coordinates = []) {
         el.style.top = coords ? `${coords[1]}px` : `100px`;
 
         const img = document.createElement('img');
-        img.src = `path/to/icon-${getTypeName(type).toLowerCase()}.svg`;
+        const typeName = getTypeName(type).toUpperCase();
+
+        let iconPath;
+        if (typeName === 'INPUT' || typeName === 'OUTPUT') {
+            const value = el.dataset.value ?? '0';
+            iconPath = `/Icons/Inputs&Outputs/${typeName}-${value}.svg`;
+        } else {
+            iconPath = `/Icons/LogicBlocks/${typeName.toLowerCase()}.svg`;
+        }
+        img.src = iconPath;
         el.appendChild(img);
 
         addPorts(el);
@@ -471,10 +488,9 @@ document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
 document.getElementById('export-btn')
     .addEventListener('click', () => {
-        const searchParams = new URLSearchParams(window.location.search);
-        const id = searchParams.get('projectId');
+        const id = window.savedCircuitId;
         if (id) loadCircuit(id);
-        else alert("ID схемы не найден");
+        else alert("ID схемы не найден. Сначала сохраните схему.");
     });
 
 
