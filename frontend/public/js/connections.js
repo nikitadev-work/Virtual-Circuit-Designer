@@ -344,8 +344,8 @@ async function sendCircuit() {
             const id = data.id;
 
             if (typeof id === 'number') {
-                console.log(`Схема сохранена с ID: ${id}`);
                 window.savedCircuitId = id;
+                console.log(`Схема сохранена с ID: ${id}`);
             } else {
                 console.warn('Сервер не вернул числовой ID схемы');
             }
@@ -487,10 +487,13 @@ function getTypeName(id) {
 document.getElementById('save-btn')
     .addEventListener('click', sendCircuit);
 document.getElementById('export-btn')
-    .addEventListener('click', () => {
+    .addEventListener('click', async () => {
         const id = window.savedCircuitId;
-        if (id) loadCircuit(id);
-        else alert("ID схемы не найден. Сначала сохраните схему.");
+        if (typeof id === 'number') {
+            await loadCircuit(id);
+        } else {
+            alert("ID схемы не найден. Сначала сохраните схему.");
+        }
     });
 
 
