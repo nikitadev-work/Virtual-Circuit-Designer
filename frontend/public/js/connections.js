@@ -66,7 +66,7 @@ ctxMenu.innerHTML = `
 document.body.appendChild(ctxMenu);
 let ctxTarget = null;
 
-const selection = new Set();
+let selection = new Set();
 
 function select(el) {
     if (!selection.has(el)) {
