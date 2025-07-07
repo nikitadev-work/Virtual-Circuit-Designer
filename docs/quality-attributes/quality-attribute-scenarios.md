@@ -1,10 +1,8 @@
-# Quality Attribute Scenarios
-
-This document describes the most important quality attributes (ISO 25010) for the Visual Circuit Designer project. The chosen sub-characteristics are grouped by **Front-end** and **Back-end**, with detailed scenarios and test plans for each.
+# <div align="center"> Quality Attribute Scenarios </div>
 
 ---
 
-## Front-end
+## <div align="center"> Front-end </div>
 
 ### 1. Modularity
 
@@ -73,7 +71,7 @@ For every new user flow (e.g., "create a diagram → add a D-trigger → downloa
 
 ---
 
-## Back-end
+## <div align="center"> Back-end </div>
 
 ### 1. Performance Efficiency
 
