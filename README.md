@@ -1,4 +1,4 @@
-<p align="center">
+<p style="text-align: center;">
   <img src="./frontend/public/Icons/Logos/Logo.svg" alt="Logo" /><br>
   <strong style="font-size:2em">Visual Circuit Designer</strong><br>
   <em>Visual Circuit Designer</em> – is a web-based tool for designing, simulating, and managing digital logic circuits in the browser. It features a drag-and-drop interface, real-time manipulation, and cloud saving, making it ideal for engineers, students, and developers.<br><br>
