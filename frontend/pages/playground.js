@@ -157,7 +157,18 @@ export default function Page() {
 
             <footer className="footer"></footer>
 
-            <Script src="/js/connections.js" strategy="afterInteractive"/>
+            {typeof window !== "undefined" && (
+                <Script
+                    src="/js/connections.js"
+                    strategy="lazyOnload"
+                    onLoad={() => {
+                        console.log("connections.js loaded");
+                        if (typeof window.initPlayground === "function") {
+                            window.initPlayground();
+                        }
+                    }}
+                />
+            )}
         </>
     );
 }
