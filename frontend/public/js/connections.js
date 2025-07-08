@@ -363,7 +363,7 @@ window.initPlayground = function () {
 
 
     // Экспорт
-    async function loadCircuit(id) {
+    window.loadCircuit = async function (id) {
         if (!id) {
             alert("Не передан ID схемы");
             return;
