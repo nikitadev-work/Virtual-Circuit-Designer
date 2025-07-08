@@ -345,8 +345,9 @@ window.initPlayground = function () {
                 const data = await res.json();
                 const id = data.id;
 
-                if (typeof id === 'number') {
+                if (typeof id === 'string' || typeof id === 'number') {
                     window.savedCircuitId = id;
+                    localStorage.setItem('savedCircuitId', id);
                     console.log(`Схема сохранена с ID: ${id}`);
                 } else {
                     console.warn('Сервер не вернул числовой ID схемы');
@@ -423,6 +424,10 @@ window.initPlayground = function () {
                 iconPath = `/Icons/Inputs&Outputs/${typeName}-${value}.svg`;
             } else {
                 iconPath = `/Icons/LogicBlocks/${typeName.toLowerCase()}.svg`;
+                const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
+                if (logicTypes.includes(typeName)) {
+                    img.style.transform = 'rotate(90deg)';
+                }
             }
             img.src = iconPath;
             el.appendChild(img);
@@ -490,8 +495,8 @@ window.initPlayground = function () {
         .addEventListener('click', sendCircuit);
     document.getElementById('export-btn')
         .addEventListener('click', async () => {
-            const id = window.savedCircuitId;
-            if (typeof id === 'number') {
+            let id = window.savedCircuitId || localStorage.getItem('savedCircuitId');
+            if (id) {
                 await loadCircuit(id);
             } else {
                 alert("ID схемы не найден. Сначала сохраните схему.");
