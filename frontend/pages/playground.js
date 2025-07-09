@@ -5,14 +5,16 @@
 import {useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { BackToDashboardButton } from "../src/components/BackToDashboardButton";
+
 import Head from 'next/head';
 import Script from 'next/script';
 import Image from 'next/image';
 
 
 export default function Page() {
-    const searcParams = useSearchParams();
-    const circuitId = searcParams.get("projectId");
+    const searchParams = useSearchParams();
+    const circuitId = searchParams.get("projectId");
     const [token, setToken] = useState(null);
     const [circuit, setCircuit] = useState(null);
 
@@ -45,6 +47,49 @@ export default function Page() {
         }
     }, [circuitId]);
 
+    useEffect(() => {
+        if (circuit || !token || !circuitId) return;
+
+        function parseJwt(token) {
+            try {
+                return JSON.parse(atob(token.split('.')[1]));
+            } catch {
+                return null;
+            }
+        }
+
+        const parsed = parseJwt(token);
+        const userId = parsed?.user_id ?? "guest";
+        const key = `projects-${userId}`;
+        const saved = localStorage.getItem(key);
+
+        if (saved) {
+            try {
+                const list = JSON.parse(saved);
+                const found = list.find(p => p.id === circuitId);
+                if (found) {
+                    setCircuit(found);
+                }
+            } catch (e) {
+                console.error("Ошибка чтения схемы из localStorage", e);
+            }
+        }
+    }, [circuit, token, circuitId]);
+
+    useEffect(() => {
+        if (!circuit || typeof window === "undefined") return;
+
+        const gates = circuit.gates ?? circuit.circuit_description;
+        const coordinates = circuit.coordinates ?? circuit.circuit_coordinates ?? [];
+        const inputs = circuit.inputs ?? circuit.circuit_inputs ?? [];
+
+        if (Array.isArray(gates) && typeof window.renderFromLocal === "function") {
+            window.renderFromLocal(gates, inputs, coordinates);
+        } else {
+            console.warn("renderFromLocal is not available or gates missing");
+        }
+    }, [circuit]);
+
     return (
         <>
             <Head>
@@ -62,10 +107,7 @@ export default function Page() {
 
             <header className="header">
                 <div className="left-controls">
-                    <button id="back-dashboard" button className="settings-btn">
-                        <Image src="/Icons/Logos/home.svg" width={40} height={40} className="home-vec"
-                               alt="home"/>
-                    </button>
+                    <BackToDashboardButton />
                     <button id="leftbar-toggle" button className="components-btn">
                         <Image src="/Icons/Logos/components-vec.svg" width={25} height={25} className="components-vec"
                                alt="component"/>
@@ -73,9 +115,6 @@ export default function Page() {
                     </button>
                 </div>
 
-                {circuit && (
-                    <pre className="circuit-debug">{JSON.stringify(circuit, null, 2)}</pre>
-                )}
 
                 <div className="logo-wrapper">
                     <Image

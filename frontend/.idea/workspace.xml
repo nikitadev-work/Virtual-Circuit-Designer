@@ -4,11 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="ww" />
+    <list default="true" id="a8324de2-a545-440a-9468-9f94cc169daa" name="Changes" comment="ww">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pages/dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/pages/dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pages/playground.js" beforeDir="false" afterPath="$PROJECT_DIR$/pages/playground.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/connections.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/connections.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/dots-animation.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/BackToDashboardButton.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/app-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/app-sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/nav-user.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/nav-user.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/register-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/register-form.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -96,6 +112,9 @@
       <workItem from="1751659637408" duration="2670000" />
       <workItem from="1751706474360" duration="2117000" />
       <workItem from="1751815086681" duration="700000" />
+      <workItem from="1751878996339" duration="5904000" />
+      <workItem from="1751887798434" duration="27035000" />
+      <workItem from="1752062687886" duration="3300000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />

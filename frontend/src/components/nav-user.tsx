@@ -30,6 +30,8 @@ import {
   useSidebar,
 } from "@components/sidebar"
 
+import { router } from 'next/client';
+
 export function NavUser({
   user,
 }: {
@@ -40,6 +42,13 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const handleLogout = () => {
+    // можно сначала очистить токен:
+    localStorage.removeItem("token");
+
+    // затем редирект:
+    router.push("/login");
+  };
 
   return (
     <SidebarMenu>
@@ -51,7 +60,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">US</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -102,7 +111,9 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOut />
+              <LogOut
+                onClick={handleLogout}
+              />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

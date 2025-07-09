@@ -67,7 +67,20 @@ export function RegisterForm({ className, ...props }: React.ComponentProps<"div"
                 return;
             }
 
-            router.push('/login')
+            try {
+                const token = response.headers.get("Authorization") || response.headers.get("authorization");
+                console.log("Токен из хедера:", token);
+                if (token) {
+                    const pureToken = token.startsWith("Bearer ") ? token.slice(7) : token;
+                    localStorage.setItem('token', pureToken);
+                    router.push('/dashboard')
+                } else {
+                    setError("Token not found in response headers")
+                }
+            } catch (e) {
+                console.error("Error while handling token", e);
+                setError("Invalid server response");
+            }
 
             
         } catch {
