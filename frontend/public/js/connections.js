@@ -32,9 +32,19 @@ window.initPlayground = function () {
     });
 
     window.addEventListener('keydown', e => {
-        if (e.key === 'Delete' && selectedLine) {
-            removeConnection(selectedLine);
-            selectedLine = null;
+        // не мешаем редактированию <input> и <textarea>
+        if (['Delete','Backspace'].includes(e.key) &&
+            !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            if (selection.size > 0) {
+                deleteItems([...selection]);
+                clearSelection();
+                return;
+            }
+            if (selectedLine) {
+                removeConnection(selectedLine);
+                selectedLine = null;
+            }
         }
     });
 
@@ -315,7 +325,6 @@ window.initPlayground = function () {
         if (TOKEN) {
             headers['Authorization'] = `Bearer ${TOKEN}`;
         }
-
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
@@ -338,6 +347,8 @@ window.initPlayground = function () {
 
             const isJson =
                 res.headers.get('content-type')?.includes('application/json');
+
+            let data = null;
 
             if (hasBody && isJson) {
                 const data = await res.json();
