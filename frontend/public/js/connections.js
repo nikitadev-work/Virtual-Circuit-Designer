@@ -1,4 +1,3 @@
-
 window.initPlayground = function () {
     /* eslint-disable @typescript-eslint/no-unused-expressions */
 
@@ -33,8 +32,8 @@ window.initPlayground = function () {
 
     window.addEventListener('keydown', e => {
         // не мешаем редактированию <input> и <textarea>
-        if (['Delete','Backspace'].includes(e.key) &&
-            !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+        if (['Delete', 'Backspace'].includes(e.key) &&
+            !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
             e.preventDefault();
             if (selection.size > 0) {
                 deleteItems([...selection]);
@@ -352,21 +351,13 @@ window.initPlayground = function () {
 
             if (hasBody && isJson) {
                 const data = await res.json();
-
                 const idNum = Number(data.id);
                 if (Number.isNaN(idNum)) {
                     console.warn('Сервер вернул некорректный ID схемы:', data.id);
                 } else {
                     window.savedCircuitId = idNum;
                     localStorage.setItem('savedCircuitId', String(idNum));
-                }
-
-                if (!Number.isNaN(idNum) && idNum > 0) {
-                    window.savedCircuitId = idNum;
-                    localStorage.setItem('savedCircuitId', String(idNum));
                     console.log(`Схема сохранена с ID: ${idNum}`);
-                } else {
-                    console.warn('Сервер не вернул корректный ID схемы:', data.id);
                 }
             }
             console.log('Saved successfully:', data);
