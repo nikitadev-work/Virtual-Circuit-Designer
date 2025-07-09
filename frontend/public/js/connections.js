@@ -361,12 +361,12 @@ window.initPlayground = function () {
                     localStorage.setItem('savedCircuitId', String(idNum));
                 }
 
-                if (typeof id === 'string' || typeof id === 'number') {
-                    window.savedCircuitId = id;
-                    localStorage.setItem('savedCircuitId', id);
-                    console.log(`Схема сохранена с ID: ${id}`);
+                if (!Number.isNaN(idNum) && idNum > 0) {
+                    window.savedCircuitId = idNum;
+                    localStorage.setItem('savedCircuitId', String(idNum));
+                    console.log(`Схема сохранена с ID: ${idNum}`);
                 } else {
-                    console.warn('Сервер не вернул числовой ID схемы');
+                    console.warn('Сервер не вернул корректный ID схемы:', data.id);
                 }
             }
             console.log('Saved successfully:', data);
