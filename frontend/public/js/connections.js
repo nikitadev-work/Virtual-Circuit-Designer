@@ -328,8 +328,6 @@ window.initPlayground = function () {
                 throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
             }
 
-            let data = null;
-
             const contentLength =
                 res.headers.get('content-length');
 
@@ -501,13 +499,18 @@ window.initPlayground = function () {
     document.getElementById('save-btn')
         .addEventListener('click', sendCircuit);
     document.getElementById('export-btn').addEventListener('click', async () => {
-        const rawId = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
-        const id = Number(rawId);
-        if (!id || Number.isNaN(id)) {
+        const raw = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+        const id = Number(raw);
+        if (Number.isNaN(id) || id <= 0) {
             alert("ID схемы не найден или имеет неверный формат. Сначала сохраните схему.");
             return;
         }
-        await loadCircuit(id);
+        try {
+            await loadCircuit(id);
+        } catch (err) {
+            console.error(err);
+            alert("Не удалось загрузить схему");
+        }
     });
 
 
