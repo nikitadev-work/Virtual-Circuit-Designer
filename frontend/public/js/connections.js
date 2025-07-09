@@ -500,20 +500,11 @@ window.initPlayground = function () {
 
     document.getElementById('save-btn')
         .addEventListener('click', sendCircuit);
-    document.getElementById('export-btn').addEventListener('click', async () => {
-        const raw = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
-        const id = Number(raw);
-        if (Number.isNaN(id) || id <= 0) {
-            alert("ID схемы не найден или имеет неверный формат. Сначала сохраните схему.");
-            return;
-        }
-        try {
-            await loadCircuit(id);
-        } catch (err) {
-            console.error(err);
-            alert("Не удалось загрузить схему");
-        }
-    });
+    document.getElementById('export-btn')
+        .addEventListener('click', () => {
+            const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+            loadCircuit(id).then();
+        });
 
 
     function addPorts(el) {
