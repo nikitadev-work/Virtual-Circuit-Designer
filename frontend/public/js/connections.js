@@ -370,38 +370,54 @@ window.initPlayground = function () {
 
 
     // Экспорт
-    window.loadCircuit = async function (id) {
-        if (!id) {
-            alert("Не передан ID схемы");
+    // ⬇︎ Исправленная функция загрузки схемы
+    window.loadCircuit = async function loadCircuit(id) {
+        /* 1. Проверяем, что аргумент вообще передан */
+        if (id == null || id === '') {
+            alert('Не передан ID схемы');
             return;
         }
 
-        const headers = {};
+        /* 2. Нормализуем */
+        id = String(id).trim();
 
-        if (TOKEN) {
-            headers['Authorization'] = `Bearer ${TOKEN}`;
+        /* 3. Простейшая валидация (цифры) — уберите, если нужны UUID и т.-п. */
+        if (!/^\d+$/.test(id)) {
+            alert(`Некорректный ID схемы: «${id}»`);
+            return;
         }
+
+        const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
 
         try {
             const res = await fetch(`${API_URL}/${id}`, {
-                method: 'GET',
-                headers
+                method : 'GET',
+                headers,
             });
 
             if (!res.ok) {
-                const text = await res.text();
+                /* читаем текст ответа, чтобы показать подробности */
+                const text = await res.text().catch(() => '');
                 throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
             }
 
-            const data = await res.json();
-            const {circuit_description, circuit_inputs, circuit_coordinates} = data;
-            renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
+            /* если тело пустое, res.json() кинет SyntaxError — ловим и сообщаем */
+            const data = await res.json().catch(() => {
+                throw new Error('Ответ сервера без тела');
+            });
 
+            const {
+                circuit_description = [],
+                circuit_inputs      = [],
+                circuit_coordinates = [],
+            } = data;
+
+            renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
         } catch (err) {
             console.error('Ошибка загрузки схемы:', err);
-            alert('Не удалось загрузить схему');
+            alert('Не удалось загрузить схемы: ' + err.message);
         }
-    }
+    };
 
     function renderCircuit(circuit, inputs = [], coordinates = []) {
         document.querySelectorAll('.workspace-element').forEach(e => e.remove());
