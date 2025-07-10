@@ -291,7 +291,7 @@ window.initPlayground = function () {
     // Импорт
 
     const TOKEN = localStorage.getItem('token');
-    const HOST = window.location.host;
+    const HOST = window.location.hostname;
     const API_URL = `http://${HOST}:8052/api/circuits`;
 
     async function sendCircuit() {
@@ -381,17 +381,18 @@ window.initPlayground = function () {
         /* 2. Нормализуем */
         id = String(id).trim();
 
-        /* 3. Простейшая валидация (цифры) — уберите, если нужны UUID и т.-п. */
-        if (!/^\d+$/.test(id)) {
+        const isNumber = /^\d+$/.test(id);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        if (!isNumber && !isUUID) {
             alert(`Некорректный ID схемы: «${id}»`);
             return;
         }
 
-        const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
+        const headers = TOKEN ? {Authorization: `Bearer ${TOKEN}`} : {};
 
         try {
             const res = await fetch(`${API_URL}/${id}`, {
-                method : 'GET',
+                method: 'GET',
                 headers,
             });
 
@@ -408,7 +409,7 @@ window.initPlayground = function () {
 
             const {
                 circuit_description = [],
-                circuit_inputs      = [],
+                circuit_inputs = [],
                 circuit_coordinates = [],
             } = data;
 
@@ -516,11 +517,16 @@ window.initPlayground = function () {
 
     document.getElementById('save-btn')
         .addEventListener('click', sendCircuit);
-    document.getElementById('export-btn')
-        .addEventListener('click', () => {
-            const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
-            loadCircuit(id).then();
-        });
+    document.getElementById('export-btn').addEventListener('click', () => {
+        const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+
+        if (!id) {
+            alert('Сначала сохраните схему или откройте существующий проект.');
+            return;
+        }
+
+        loadCircuit(id);
+    });
 
 
     function addPorts(el) {
