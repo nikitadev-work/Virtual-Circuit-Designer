@@ -1,63 +1,47 @@
-"use client";
+"use client"
 
 /* eslint-disable @next/next/no-page-custom-font */
 
-import { useEffect, useState } from "react";
+import {useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import Head   from "next/head";
-import Script from "next/script";
-import Image  from "next/image";
-
-import { API_URL } from "@/config";
+import Head from 'next/head';
+import Script from 'next/script';
+import Image from 'next/image';
 
 
 export default function Page() {
-    /* ────────────────────────────────
-     Пара-метры URL
-  ─────────────────────────────────── */
-    const searchParams = useSearchParams();
-    const circuitId    = searchParams.get("projectId");   // исправлена опечатка searcParams → searchParams
-
-    /* ────────────────────────────────
-       Состояние
-    ─────────────────────────────────── */
-    const [token,   setToken]   = useState<string | null>(null);
-    const [userId,  setUserId]  = useState<string | null>(null);
-    const [circuit, setCircuit] = useState<any>(null);
+    const searcParams = useSearchParams();
+    const circuitId = searcParams.get("projectId");
+    const [token, setToken] = useState(null);
+    const [circuit, setCircuit] = useState(null);
 
     useEffect(() => {
-        const storedToken  = localStorage.getItem("token");
-        const storedUserId = localStorage.getItem("user_id");   // используйте тот ключ, под которым вы кладёте id
+        const stored = localStorage.getItem("token")
+        if (stored) setToken(stored)
+    }, [])
 
-        if (storedToken)  setToken(storedToken);
-        if (storedUserId) setUserId(storedUserId);
-    }, []);
-
-    /* ────────────────────────────────
-       2. Загружаем схему только когда есть ВСЁ
-    ─────────────────────────────────── */
     useEffect(() => {
-        if (!token || !userId || !circuitId) return;
+        if (!token || !circuitId) return;
 
-        fetch(`${API_URL}/api/circuits/${circuitId}?user_id=${userId}`, {
+        const HOST = window.location.hostname;
+        const userId = localStorage.getItem("user_id");
+
+        fetch(`http://${HOST}:8052/api/circuits/${circuitId}?user_id=${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
         })
-            .then((res) => {
-                if (!res.ok) throw new Error("Не удалось загрузить схему");
-                return res.json();
+            .then((res) => res.json())
+            .then((data) => {
+                setCircuit(data);
             })
-            .then(setCircuit)
-            .catch((err) => alert(err.message));
-    }, [token, userId, circuitId]);
+            .catch(console.error);
+    }, [token, circuitId]);
 
-    /* ────────────────────────────────
-       3. Запоминаем открытый circuitId
-    ─────────────────────────────────── */
+
     useEffect(() => {
         if (circuitId) {
-            window.savedCircuitId = circuitId;            // для текущей вкладки
-            localStorage.setItem("savedCircuitId", circuitId);     // между перезагрузками
+            window.savedCircuitId = circuitId;
+            localStorage.setItem('savedCircuitId', circuitId);
         }
     }, [circuitId]);
 
