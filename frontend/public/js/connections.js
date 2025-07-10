@@ -294,36 +294,39 @@ window.initPlayground = function () {
     const HOST = window.location.hostname;
     const API_URL = `http://${HOST}:8052/api/circuits`;
 
+
+    const USER_ID = Number(localStorage.getItem('user_id') || '');
+    if (Number.isNaN(USER_ID) || USER_ID < 1) {
+        alert('user_id не найден или некорректен');      // критическая ошибка
+        throw new Error('Invalid user_id');
+    }
+
     async function sendCircuit() {
-
         const gates = exportSchemeAsList();
-
-        if (!gates || gates.length === 0) {
-            alert("Схема пуста, сохранять нечего");
+        if (!gates.length) {
+            alert('Схема пуста, сохранять нечего');
             return;
         }
 
-        const nameInput = document.getElementById('scheme-name');
-        const circuitName =
-            nameInput?.value.trim() ||
+        /* имя схемы */
+        const nameInput   = document.getElementById('scheme-name');
+        const circuitName = nameInput?.value.trim() ||
             prompt('Имя схемы', 'Scheme 1')?.trim();
-
         if (!circuitName) return;
 
+        /* тело запроса: добавили user_id */
         const payload = {
-            circuit_name: circuitName,
+            user_id:            USER_ID,
+            circuit_name:       circuitName,
             circuit_description: gates,
-            circuit_inputs: collectInputs(),
+            circuit_inputs:      collectInputs(),
             circuit_coordinates: collectCoordinates()
         };
 
-        const headers = {
-            'Content-Type': 'application/json',
-        };
+        /* заголовки */
+        const headers = { 'Content-Type': 'application/json' };
+        if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
 
-        if (TOKEN) {
-            headers['Authorization'] = `Bearer ${TOKEN}`;
-        }
         try {
             const res = await fetch(API_URL, {
                 method: 'POST',
@@ -336,89 +339,78 @@ window.initPlayground = function () {
                 throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
             }
 
-            const contentLength =
-                res.headers.get('content-length');
-
-            const hasBody =
-                contentLength &&
-                contentLength !== '0' &&
-                (res.status !== 204);
-
-            const isJson =
-                res.headers.get('content-type')?.includes('application/json');
-
+            /* читаем JSON только если он есть */
             let data = null;
+            const hasBody = res.headers.get('content-length') !== '0' &&
+                res.status !== 204;
+            const isJson  = res.headers.get('content-type')?.includes('json');
 
             if (hasBody && isJson) {
-                const data = await res.json();
-                const idNum = Number(data.id);
-                if (Number.isNaN(idNum)) {
-                    console.warn('Сервер вернул некорректный ID схемы:', data.id);
-                } else {
-                    window.savedCircuitId = idNum;
-                    localStorage.setItem('savedCircuitId', String(idNum));
-                    console.log(`Схема сохранена с ID: ${idNum}`);
+                data = await res.json();           // { id: 4, ... }
+
+                const numericId = data.id;
+                if (typeof numericId !== 'number') {
+                    console.error('Сервер не прислал числовой ID!', data);
+                    alert('Сервер не вернул числовой ID схемы');
+                    return;
                 }
+                window.savedCircuitId = numericId;
+                localStorage.setItem('savedCircuitId', String(numericId));
             }
+
             console.log('Saved successfully:', data);
             alert('Схема сохранена');
         } catch (err) {
             console.error('Не удалось сохранить схему:', err);
-            alert("Произошла ошибка при сохранении схемы");
+            alert('Произошла ошибка при сохранении схемы');
         }
     }
 
 
-    // Экспорт
-    // ⬇︎ Исправленная функция загрузки схемы
     window.loadCircuit = async function loadCircuit(id) {
-        /* 1. Проверяем, что аргумент вообще передан */
+        /* проверяем аргумент */
         if (id == null || id === '') {
             alert('Не передан ID схемы');
             return;
         }
-
-        /* 2. Нормализуем */
         id = String(id).trim();
-
-        const isNumber = /^\d+$/.test(id);
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-        if (!isNumber && !isUUID) {
-            alert(`Некорректный ID схемы: «${id}»`);
+        if (!/^\d+$/.test(id)) {                    // только число
+            alert(`ID схемы должен быть целым числом: «${id}»`);
             return;
         }
 
-        const headers = TOKEN ? {Authorization: `Bearer ${TOKEN}`} : {};
+        const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
+
+        /* добавляем user_id в query-строку */
+        const url = new URL(`${API_URL}/${id}`);
+        url.searchParams.set('user_id', USER_ID);
 
         try {
-            const res = await fetch(`${API_URL}/${id}`, {
-                method: 'GET',
-                headers,
-            });
+            const res = await fetch(url, { method: 'GET', headers });
 
             if (!res.ok) {
-                /* читаем текст ответа, чтобы показать подробности */
                 const text = await res.text().catch(() => '');
                 throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
             }
 
-            /* если тело пустое, res.json() кинет SyntaxError — ловим и сообщаем */
+            /* тело должно быть JSON */
             const data = await res.json().catch(() => {
                 throw new Error('Ответ сервера без тела');
             });
 
             const {
                 circuit_description = [],
-                circuit_inputs = [],
+                circuit_inputs      = [],
                 circuit_coordinates = [],
             } = data;
 
             renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
         } catch (err) {
             console.error('Ошибка загрузки схемы:', err);
-            alert('Не удалось загрузить схемы: ' + err.message);
+            alert('Не удалось загрузить схему: ' + err.message);
         }
     };
+
 
     function renderCircuit(circuit, inputs = [], coordinates = []) {
         document.querySelectorAll('.workspace-element').forEach(e => e.remove());
@@ -518,15 +510,16 @@ window.initPlayground = function () {
     document.getElementById('save-btn')
         .addEventListener('click', sendCircuit);
     document.getElementById('export-btn').addEventListener('click', () => {
-        const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+        const raw = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+        const id  = Number(raw);
 
         if (!id) {
             alert('Сначала сохраните схему или откройте существующий проект.');
             return;
         }
-
         loadCircuit(id);
     });
+
 
 
     function addPorts(el) {
