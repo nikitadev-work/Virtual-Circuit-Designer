@@ -191,7 +191,7 @@ func (h *DBHandler) CircuitByIDHandler(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	circuit, err := h.db.GetCircuit(userID, circuitID)
+	circuit, err := h.db.GetCircuitByID(userID, circuitID)
 	if err != nil {
 		config.DbLogger.Println("Error while getting circuit by ID from DB")
 		http.Error(resp, "Error while getting circuit by ID from DB", http.StatusInternalServerError)
