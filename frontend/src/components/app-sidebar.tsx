@@ -1,14 +1,12 @@
 import * as React from "react"
 import { jwtDecode } from 'jwt-decode'
 import {
-  Frame,
   Settings2,
   SquareTerminal,
 } from "lucide-react"
 
 
 import { NavMain } from "./nav-main"
-import { NavProjects } from "./nav-projects"
 import { NavUser } from "./nav-user"
 import {
   Sidebar,
@@ -51,13 +49,6 @@ const data = {
       ],
     },
   ],
-  projects: [
-    {
-      name: "Circuit 1",
-      url: "/playground",
-      icon: Frame,
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -87,14 +78,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
     }
   }, [])
-  console.log("user state:", user)  // Логи
 
   return (
     <Sidebar collapsible="icon" {...props}>
 
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         {user ? <NavUser user={user} /> : <div className="px-4 py-2 text-xs text-muted-foreground">Loading user...</div>}

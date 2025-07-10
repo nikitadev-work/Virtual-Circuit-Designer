@@ -303,18 +303,16 @@ window.initPlayground = function () {
 
     async function sendCircuit() {
         const gates = exportSchemeAsList();
-        if (!gates.length) {
-            alert('Схема пуста, сохранять нечего');
+        if (!gates || gates.length === 0) {
+            alert("Схема пуста, сохранять нечего");
             return;
         }
 
-        /* имя схемы */
-        const nameInput   = document.getElementById('scheme-name');
-        const circuitName = nameInput?.value.trim() ||
-            prompt('Имя схемы', 'Scheme 1')?.trim();
-        if (!circuitName) return;
+        const url = new URL(window.location.href);
+        const projectId = url.searchParams.get("projectId");
+        const circuitName = decodeURIComponent(url.searchParams.get("title") || "Untitled");
 
-        /* тело запроса: добавили user_id */
+        const userId = getUserIdFromToken(TOKEN);
         const payload = {
             user_id:            USER_ID,
             circuit_name:       circuitName,
@@ -323,9 +321,10 @@ window.initPlayground = function () {
             circuit_coordinates: collectCoordinates()
         };
 
-        /* заголовки */
-        const headers = { 'Content-Type': 'application/json' };
-        if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(TOKEN && { Authorization: `Bearer ${TOKEN}` })
+        };
 
         try {
             const res = await fetch(API_URL, {
@@ -338,27 +337,29 @@ window.initPlayground = function () {
                 const text = await res.text();
             }
 
-            /* читаем JSON только если он есть */
-            let data = null;
-            const hasBody = res.headers.get('content-length') !== '0' &&
-                res.status !== 204;
-            const isJson  = res.headers.get('content-type')?.includes('json');
-
-            if (hasBody && isJson) {
-                data = await res.json();           // { id: 4, ... }
-
-                const numericId = data.id;
-                if (typeof numericId !== 'number') {
-                    console.error('Сервер не прислал числовой ID!', data);
-                    alert('Сервер не вернул числовой ID схемы');
-                    return;
+            const isJson = res.headers.get('content-type')?.includes('application/json');
+            if (isJson) {
+                const data = await res.json();
+                const idNum = Number(data.id);
+                if (!Number.isNaN(idNum)) {
+                    window.savedCircuitId = idNum;
+                    localStorage.setItem('savedCircuitId', String(idNum));
+                    console.log(`Схема сохранена с ID: ${idNum}`);
                 }
                 window.savedCircuitId = numericId;
                 localStorage.setItem('savedCircuitId', String(numericId));
             }
 
-            console.log('Saved successfully:', data);
-            alert('Схема сохранена');
+            // Удаление черновика из localStorage
+            if (projectId && userId) {
+                const key = `projects-${userId}`;
+                const stored = JSON.parse(localStorage.getItem(key) || '[]');
+                const updated = stored.filter(p => String(p.id) !== String(projectId));
+                localStorage.setItem(key, JSON.stringify(updated));
+                console.log(`Черновик с id=${projectId} удалён из localStorage`);
+            }
+
+            alert("Схема сохранена");
         } catch (err) {
             console.error('Не удалось сохранить схему:', err);
             alert('Произошла ошибка при сохранении схемы');
@@ -366,6 +367,18 @@ window.initPlayground = function () {
     }
 
 
+    function getUserIdFromToken(token) {
+        if (!token) return null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.user_id;
+        } catch {
+            return null;
+        }
+    }
+
+    // Экспорт
+    // ⬇︎ Исправленная функция загрузки схемы
     window.loadCircuit = async function loadCircuit(id) {
         /* проверяем аргумент */
         if (id == null || id === '') {
@@ -508,17 +521,12 @@ window.initPlayground = function () {
 
     document.getElementById('save-btn')
         .addEventListener('click', sendCircuit);
-    document.getElementById('export-btn').addEventListener('click', () => {
-        const raw = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
-        const id  = Number(raw);
 
-        if (!id) {
-            alert('Сначала сохраните схему или откройте существующий проект.');
-            return;
-        }
-        loadCircuit(id);
-    });
-
+    document.getElementById('export-btn')
+        .addEventListener('click', () => {
+            const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+            loadCircuit(id).then();
+        });
 
 
     function addPorts(el) {
