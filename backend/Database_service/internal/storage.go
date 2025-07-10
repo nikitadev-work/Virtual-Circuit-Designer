@@ -61,7 +61,8 @@ func (db *PostgresDB) CreateTables() error {
 			"name VARCHAR(100) NOT NULL, " +
 			"circuit_description JSONB NOT NULL, " +
 			"circuit_inputs JSONB NOT NULL, " +
-			"circuit_coordinates JSONB NOT NULL)")
+			"circuit_coordinates JSONB NOT NULL, " +
+			"CONSTRAINT circuits_user_name_unique UNIQUE (user_id, name))")
 	if err != nil {
 		return err
 	}
@@ -137,11 +138,17 @@ func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]
 		return err
 	}
 
-	_, err = db.conn.Exec(
-		"Insert into Circuits (user_id, name, circuit_description, circuit_inputs, circuit_coordinates)"+
-			" values ($1, $2, $3, $4, $5)", userId, circuitName, string(circuitJSON), string(circuitInputsJSON), string(circuitCoordinatesJSON))
+	_, err = db.conn.Exec(`
+        INSERT INTO circuits (user_id, name, circuit_description, circuit_inputs, circuit_coordinates)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (user_id, name) DO UPDATE SET
+            circuit_description = EXCLUDED.circuit_description,
+            circuit_inputs = EXCLUDED.circuit_inputs,
+            circuit_coordinates = EXCLUDED.circuit_coordinates
+    `, userId, circuitName, string(circuitJSON), string(circuitInputsJSON), string(circuitCoordinatesJSON))
+
 	if err != nil {
-		config.DbLogger.Println("Error while saving circuits: ", err)
+		config.DbLogger.Println("Error while saving circuits/updating: ", err)
 		return err
 	}
 
@@ -198,7 +205,7 @@ func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
 	return circuitsFound, nil
 }
 
-func (db *PostgresDB) GetCircuit(userId, circuitId int) (Circuit, error) {
+func (db *PostgresDB) GetCircuitByID(userId, circuitId int) (Circuit, error) {
 	config.DbLogger.Println("Getting one circuit for user_id: ", userId)
 	query := "Select * FROM Circuits WHERE id = $1 AND user_id = $2"
 
