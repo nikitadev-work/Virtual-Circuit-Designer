@@ -14,12 +14,10 @@ window.initPlayground = function () {
             if (match) lineEl.remove();
             return !match;
         });
-        saveToLocalStorage()
     }
 
     svg.addEventListener('dblclick', e => {
         if (e.target.tagName === 'line') removeConnection(e.target);
-        saveToLocalStorage()
     });
 
     let selectedLine = null;
@@ -33,9 +31,19 @@ window.initPlayground = function () {
     });
 
     window.addEventListener('keydown', e => {
-        if (e.key === 'Delete' && selectedLine) {
-            removeConnection(selectedLine);
-            selectedLine = null;
+        // не мешаем редактированию <input> и <textarea>
+        if (['Delete', 'Backspace'].includes(e.key) &&
+            !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            e.preventDefault();
+            if (selection.size > 0) {
+                deleteItems([...selection]);
+                clearSelection();
+                return;
+            }
+            if (selectedLine) {
+                removeConnection(selectedLine);
+                selectedLine = null;
+            }
         }
     });
 
@@ -220,7 +228,6 @@ window.initPlayground = function () {
 
         enableElementDrag(el);
         workspace.appendChild(el);
-        saveToLocalStorage()
     }
 
     function exportSchemeAsList() {
@@ -331,8 +338,6 @@ window.initPlayground = function () {
                 const text = await res.text();
             }
 
-            let data = null;
-
             const contentLength =
                 res.headers.get('content-length');
 
@@ -344,15 +349,17 @@ window.initPlayground = function () {
             const isJson =
                 res.headers.get('content-type')?.includes('application/json');
 
+            let data = null;
+
             if (hasBody && isJson) {
                 const data = await res.json();
-                const id = data.id;
-
-                if (typeof id === 'number') {
-                    window.savedCircuitId = id;
-                    console.log(`Схема сохранена с ID: ${id}`);
+                const idNum = Number(data.id);
+                if (Number.isNaN(idNum)) {
+                    console.warn('Сервер вернул некорректный ID схемы:', data.id);
                 } else {
-                    console.warn('Сервер не вернул числовой ID схемы');
+                    window.savedCircuitId = idNum;
+                    localStorage.setItem('savedCircuitId', String(idNum));
+                    console.log(`Схема сохранена с ID: ${idNum}`);
                 }
                 window.savedCircuitId = numericId;
                 localStorage.setItem('savedCircuitId', String(numericId));
@@ -412,13 +419,13 @@ window.initPlayground = function () {
     };
 
 
-    function renderCircuit(circuit, inputsList = [], coordinates = []) {
+    function renderCircuit(circuit, inputs = [], coordinates = []) {
         document.querySelectorAll('.workspace-element').forEach(e => e.remove());
         connections = [];
 
         const elements = [];
 
-        circuit.forEach(([type, ins = [], outs = []], i) => {
+        circuit.forEach(([type, inputs = [], outputs = []], i) => {
             const el = document.createElement('div');
             el.className = 'workspace-element';
             el.dataset.type = getTypeName(type);
@@ -440,19 +447,22 @@ window.initPlayground = function () {
                 iconPath = `/Icons/Inputs&Outputs/${typeName}-${value}.svg`;
             } else {
                 iconPath = `/Icons/LogicBlocks/${typeName.toLowerCase()}.svg`;
+                const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
+                if (logicTypes.includes(typeName)) {
+                    img.style.transform = 'rotate(90deg)';
+                }
             }
-
             img.src = iconPath;
             el.appendChild(img);
 
             addPorts(el);
 
-            if (typeName === 'INPUT') {
+            if (getTypeName(type) === 'INPUT') {
                 const inputControl = document.createElement('input');
                 inputControl.type = 'number';
                 inputControl.min = '0';
                 inputControl.max = '1';
-                inputControl.value = inputsList.shift() ?? 0;
+                inputControl.value = inputs.shift() ?? 0;
                 inputControl.className = 'input-control';
                 inputControl.addEventListener('change', () => {
                     el.dataset.value = inputControl.value;
@@ -460,16 +470,15 @@ window.initPlayground = function () {
                 el.dataset.value = inputControl.value;
                 el.appendChild(inputControl);
             }
-
             enableElementDrag(el);
             workspace.appendChild(el);
             elements.push(el);
         });
 
-        circuit.forEach(([_, ins = []], targetIndex) => {
-            ins.forEach(sourceIndex => {
-                const from = elements[sourceIndex]?.querySelector('.output-port');
-                const to = elements[targetIndex]?.querySelector('.input-port');
+        circuit.forEach(([_, inputs = []], targetIndex) => {
+            inputs.forEach(sourceIndex => {
+                const from = elements[sourceIndex].querySelector('.output-port');
+                const to = elements[targetIndex].querySelector('.input-port');
                 if (from && to) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('stroke', 'black');
@@ -490,7 +499,6 @@ window.initPlayground = function () {
         centerCanvas();
     }
 
-
     function getTypeName(id) {
         return {
             0: 'INPUT',
@@ -510,18 +518,10 @@ window.initPlayground = function () {
         .addEventListener('click', sendCircuit);
 
     document.getElementById('export-btn')
-        .addEventListener('click', async () => {
-            const id = window.savedCircuitId;
-            if (typeof id === 'number') {
-                await loadCircuit(id);
-            } else {
-                alert("ID схемы не найден. Сначала сохраните схему.");
-            }
+        .addEventListener('click', () => {
+            const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+            loadCircuit(id).then();
         });
-            const hasBody =
-                contentLength &&
-                contentLength !== '0' &&
-                (res.status !== 204);
 
 
     function addPorts(el) {
@@ -552,6 +552,7 @@ window.initPlayground = function () {
                 p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '35%' : '64%');
                 p.style.transform = 'translateY(-50%)';
             }
+
             el.appendChild(p);
         }
 
@@ -638,7 +639,6 @@ window.initPlayground = function () {
         el.dataset.scaleY = scaleY;
 
         el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
-        saveToLocalStorage()
     }
 
 
@@ -681,7 +681,6 @@ window.initPlayground = function () {
             });
 
             updateConnections();
-            saveToLocalStorage()
         }
 
         function onUp() {
@@ -689,7 +688,6 @@ window.initPlayground = function () {
             drag = false;
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
-            saveToLocalStorage()
         }
 
         el.addEventListener('dblclick', () => {
@@ -702,7 +700,6 @@ window.initPlayground = function () {
             });
             el.remove();
         });
-        saveToLocalStorage()
     }
 
     let connections = [];
@@ -755,7 +752,6 @@ window.initPlayground = function () {
             }
         });
         return best;
-        saveToLocalStorage()
     }
 
     function dragTempLine(e) {
@@ -773,7 +769,6 @@ window.initPlayground = function () {
             currentLine.setAttribute('x2', pos.x);
             currentLine.setAttribute('y2', pos.y);
         }
-        saveToLocalStorage()
     }
 
     svg.style.overflow = 'visible';
@@ -839,7 +834,6 @@ window.initPlayground = function () {
             c.line.setAttribute('x2', b.x);
             c.line.setAttribute('y2', b.y);
         });
-        saveToLocalStorage()
     }
 
     function portCenter(port) {
@@ -873,7 +867,6 @@ window.initPlayground = function () {
         posY = Math.min(maxY, Math.max(minY, posY));
 
         canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
-        saveToLocalStorage()
     }
 
 
@@ -898,7 +891,6 @@ window.initPlayground = function () {
             dx: (parseFloat(el.style.left) || 0) - minX,
             dy: (parseFloat(el.style.top) || 0) - minY,
         }));
-        saveToLocalStorage()
     }
 
     function cut(src = null) {
@@ -907,7 +899,6 @@ window.initPlayground = function () {
         copy(src);
         deleteItems(items);
         clearSelection();
-        saveToLocalStorage()
     }
 
     function paste(x, y) {
@@ -930,9 +921,7 @@ window.initPlayground = function () {
         });
 
         updateConnections();
-        centerCanvas();
     }
-
 
     function deleteItems(list) {
         list.forEach(el => {
@@ -946,7 +935,6 @@ window.initPlayground = function () {
             el.remove();
             selection.delete(el);
         });
-        saveToLocalStorage()
     }
 
 
@@ -975,7 +963,6 @@ window.initPlayground = function () {
         });
 
         updateConnections();
-        saveToLocalStorage()
     }
 
     ctxMenu.addEventListener('click', e => {
@@ -1025,7 +1012,7 @@ window.initPlayground = function () {
     });
 
 
-        const cursorPos = {x: 0, y: 0};
+    const cursorPos = {x: 0, y: 0};
     workspace.addEventListener('mousemove', e => {
         const {x, y} = clientToWorkspace(e.clientX, e.clientY);
         cursorPos.x = x;
@@ -1132,9 +1119,13 @@ window.initPlayground = function () {
             selecting = false;
             band.remove();
             window.removeEventListener('mousemove', onMove);
-            saveToLocalStorage()
         }
     })();
+
+    document.getElementById('back-dashboard')
+        .addEventListener('click', () => {
+            window.location.href = '/dashboard';
+        });
 
     function tryCenterCanvas(attempts = 10) {
         if (attempts <= 0) return;
@@ -1147,71 +1138,4 @@ window.initPlayground = function () {
     }
 
     tryCenterCanvas();
-
-    function saveToLocalStorage() {
-        const scheme = exportSchemeAsList();
-        const coordinates = collectCoordinates();
-        const inputs = collectInputs();
-        console.log("Saving to localStorage:", scheme);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectId = urlParams.get("projectId");
-
-        const token = localStorage.getItem("token");
-        if (!token || !projectId) return;
-
-        function parseJwt(token) {
-            try {
-                return JSON.parse(atob(token.split('.')[1]));
-            } catch {
-                return null;
-            }
-        }
-
-        const userId = parseJwt(token)?.user_id ?? "guest";
-        const key = `projects-${userId}`;
-        const savedProjects = JSON.parse(localStorage.getItem(key) || "[]");
-
-        const updateProjects = savedProjects.map((p) =>
-            p.id === projectId ? {
-                ...p,
-                circuit_description: scheme,
-                circuit_coordinates: coordinates,
-                circuit_inputs: inputs
-            } : p
-        );
-
-        localStorage.setItem(key, JSON.stringify(updateProjects));
-    }
-
-    // Render
-
-    window.renderFromLocal = function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectId = urlParams.get("projectId");
-
-        const token = localStorage.getItem("token");
-        if (!token || !projectId) return;
-
-        function parseJwt(token) {
-            try {
-                return JSON.parse(atob(token.split('.')[1]));
-            } catch {
-                return null;
-            }
-        }
-
-        const userId = parseJwt(token)?.user_id ?? "guest";
-        const key = `projects-${userId}`;
-        const savedProjects = JSON.parse(localStorage.getItem(key) || "[]");
-        const project = savedProjects.find(p => p.id === projectId);
-
-        if (!project || !project.gates) return;
-
-        const gates = project.circuit_description;
-        const inputs = project.circuit_inputs ?? [];
-        const coordinates = project.circuit_coordinates ?? [];
-
-        renderCircuit(gates, inputs, coordinates);
-    };
-}
+};
