@@ -52,10 +52,13 @@ export default function Dashboard() {
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
+  const [backendCircuits, setBackendCircuits] = useState<Project[]>([]);
+  const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null)
-  const filteredProjects = (projects || []).filter((project) =>
+  const allProjects = [...backendCircuits, ...projects];
+  const filteredProjects = allProjects.filter((project) =>
       project.title.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  );
 
   const router = useRouter();
 
@@ -74,11 +77,33 @@ export default function Dashboard() {
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
+      setToken(storedToken);
       const parsed = parseJwt(storedToken);
       setUserId(parsed?.user_id ?? null);
     }
     setInitialized(true)
   }, []);
+
+  // GET projects from backend
+  useEffect(() => {
+    if (!userId || !token) return;
+
+    const HOST = window.location.hostname;
+    fetch(`http://${HOST}:8052/api/circuits`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+        .then((res) => res.json())
+        .then((data) => {
+          const parsed = data.map((circuit: Project) => ({
+            id: circuit.id,
+            title: circuit.title || "Untitled",
+            createdAt: circuit.createdAt,
+            updatedAt: circuit.updatedAt,
+          }));
+          setBackendCircuits(parsed);
+        })
+        .catch(console.error);
+  }, [userId, token]);
 
   // Загружаем проекты после инициализации
   useEffect(() => {

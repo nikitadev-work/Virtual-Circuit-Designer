@@ -43,10 +43,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar()
   const handleLogout = () => {
-    // можно сначала очистить токен:
     localStorage.removeItem("token");
-
-    // затем редирект:
     router.push("/login");
   };
 
