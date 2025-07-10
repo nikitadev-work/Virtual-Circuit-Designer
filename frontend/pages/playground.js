@@ -37,8 +37,8 @@ export default function Page() {
 
     useEffect(() => {
         if (circuitId) {
-            window.savedCircuitId = circuitId;
-            localStorage.setItem('savedCircuitId', circuitId);
+            window.savedCircuitId = circuitId;            // для текущей сессии
+            localStorage.setItem('savedCircuitId', circuitId); // между перезагрузками
         }
     }, [circuitId]);
 
