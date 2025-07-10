@@ -9,7 +9,13 @@
       <change beforePath="$PROJECT_DIR$/public/js/connections.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/connections.js" afterDir="false" />
 =======
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< HEAD
 >>>>>>> 13f74bcb (ww)
+=======
+      <change beforePath="$PROJECT_DIR$/pages/dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/pages/dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pages/playground.js" beforeDir="false" afterPath="$PROJECT_DIR$/pages/playground.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/connections.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/connections.js" afterDir="false" />
+>>>>>>> 2da19389 (Saving projects and parsing them from the Database)
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,6 +119,7 @@
       <workItem from="1751887798434" duration="27035000" />
       <workItem from="1752062687886" duration="3300000" />
       <workItem from="1752141830832" duration="1287000" />
+      <workItem from="1752169902285" duration="7277000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -240,6 +247,7 @@
     <MESSAGE value="Important bugs fixed1" />
     <MESSAGE value="Eslint" />
     <MESSAGE value="ww" />
-    <option name="LAST_COMMIT_MESSAGE" value="ww" />
+    <MESSAGE value="connections export" />
+    <option name="LAST_COMMIT_MESSAGE" value="connections export" />
   </component>
 </project>

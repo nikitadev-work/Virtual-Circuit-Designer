@@ -124,7 +124,9 @@ export default function Page() {
                         height={75}
                         className="logo-img"
                     />
-                    <span className="page-name">{circuit?.title || "Untitled"}</span>
+                    <span className="page-name">
+                        {decodeURIComponent(searchParams.get('title') || circuit?.circuit_name || "Untitled")}
+                    </span>
                 </div>
 
                 <div className="right-controls">

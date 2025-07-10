@@ -38,7 +38,7 @@ import {ChevronsUpDown, Edit2, Trash} from "lucide-react";
 
 type Project = {
   id: string
-  title: string
+  circuit_name: string
   createdAt: string
   updatedAt: string
 }
@@ -55,9 +55,14 @@ export default function Dashboard() {
   const [backendCircuits, setBackendCircuits] = useState<Project[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null)
-  const allProjects = [...backendCircuits, ...projects];
+  const allProjects = [
+    ...backendCircuits,
+    ...projects.filter(localProj =>
+        !backendCircuits.some(backendProj => backendProj.id === localProj.id)
+    )
+  ];
   const filteredProjects = allProjects.filter((project) =>
-      project.title.toLowerCase().includes(searchQuery.toLowerCase())
+      project.circuit_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const router = useRouter();
@@ -94,9 +99,10 @@ export default function Dashboard() {
     })
         .then((res) => res.json())
         .then((data) => {
+          console.log('Данные с сервера:', data);  // <- вот сюда добавь
           const parsed = data.map((circuit: Project) => ({
             id: circuit.id,
-            title: circuit.title || "Untitled",
+            circuit_name: circuit.circuit_name || "Untitled",
             createdAt: circuit.createdAt,
             updatedAt: circuit.updatedAt,
           }));
@@ -111,13 +117,17 @@ export default function Dashboard() {
     const saved = localStorage.getItem(getStorageKey(userId))
     if (saved) {
       try {
-        const parsed = JSON.parse(saved)
+        const parsed = JSON.parse(saved);
+        const filteredProjects = parsed.filter(
+            (proj: Project) => !backendCircuits.some((backendProj: Project) => backendProj.id === proj.id)
+        );
         setProjects(parsed)
+        localStorage.setItem(getStorageKey(userId), JSON.stringify(filteredProjects));
       } catch (e) {
         console.error("Invalid project data in localStorage", e)
       }
     }
-  }, [initialized, userId])
+  }, [initialized, userId, backendCircuits])
 
 
   // Сохраняем проекты
@@ -148,13 +158,14 @@ export default function Dashboard() {
     const now = new Date().toISOString()
     const newProject: Project = {
       id: uuid(),
-      title: newTitle.trim(),
+      circuit_name: newTitle.trim(),
       createdAt: now,
       updatedAt: now,
     }
 
     setProjects(prev => [...prev, newProject])
     setNewTitle("")
+    router.push(`/playground?projectId=${newProject.id}&title=${encodeURIComponent(newProject.circuit_name)}`);
   }
 
 
@@ -250,7 +261,7 @@ export default function Dashboard() {
                   {filteredProjects.map((proj) => (
                       <div
                           key={proj.id}
-                          onClick={() => router.push(`/playground?projectId=${proj.id}`)}
+                          onClick={() => router.push(`/playground?projectId=${proj.id}&title=${encodeURIComponent(proj.circuit_name)}`)}
                           className={
                             viewMode === "grid"
                                 ? "border rounded-lg p-4 hover:shadow transition"
@@ -263,7 +274,7 @@ export default function Dashboard() {
                                 <span className="text-sm text-gray-400">Empty</span>
                               </div>
                               <div className="mt-2 w-full">
-                                <p className="font-medium text-sm pt-3">{proj.title}</p>
+                                <p className="font-medium text-sm pt-3">{proj.circuit_name}</p>
                                 <div className="flex items-center justify-between w-full">
                                   <p className="text-xs text-gray-500">
                                     Created {new Date(proj.createdAt).toLocaleString()} · Edited {new Date(proj.updatedAt).toLocaleString()}
@@ -312,7 +323,7 @@ export default function Dashboard() {
                         ) : (
                             <>
                               <div className="flex flex-col">
-                                <p className="font-medium text-base">{proj.title}</p>
+                                <p className="font-medium text-base">{proj.circuit_name}</p>
                                 <p className="text-xs text-gray-500">
                                   Created {new Date(proj.createdAt).toLocaleString()} · Edited {new Date(proj.updatedAt).toLocaleString()}
                                 </p>
