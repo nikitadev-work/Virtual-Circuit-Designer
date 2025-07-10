@@ -35,6 +35,13 @@ export default function Page() {
             .catch(console.error)
     }, [token, circuitId])
 
+    useEffect(() => {
+        if (circuitId) {
+            window.savedCircuitId = circuitId;
+            localStorage.setItem('savedCircuitId', circuitId);
+        }
+    }, [circuitId]);
+
     return (
         <>
             <Head>
