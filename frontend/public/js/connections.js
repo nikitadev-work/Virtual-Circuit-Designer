@@ -336,7 +336,6 @@ window.initPlayground = function () {
 
             if (!res.ok) {
                 const text = await res.text();
-                throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
             }
 
             /* читаем JSON только если он есть */
