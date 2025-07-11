@@ -2,7 +2,6 @@
 
 import {useEffect, useState} from "react"
 //import { useSearchParams } from "next/navigation";
-import {v4 as uuid} from "uuid";
 import {AppSidebar} from "../src/components/app-sidebar"
 import {
     Breadcrumb,
