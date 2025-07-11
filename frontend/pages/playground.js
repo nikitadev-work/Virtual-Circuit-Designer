@@ -2,10 +2,10 @@
 
 /* eslint-disable @next/next/no-page-custom-font */
 
-import {useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import {useEffect, useState} from "react";
+import {useSearchParams} from "next/navigation";
 
-import { BackToDashboardButton } from "../src/components/BackToDashboardButton";
+import {BackToDashboardButton} from "../src/components/BackToDashboardButton";
 
 import Head from 'next/head';
 import Script from 'next/script';
@@ -27,15 +27,18 @@ export default function Page() {
         if (!token || !circuitId) return;
 
         const HOST = window.location.hostname;
-        const userId = localStorage.getItem("user_id");
+        const userId = getUserId(token);          // ← берём корректный ID
 
-        fetch(`http://${HOST}:8052/api/circuits/${circuitId}?user_id=${userId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                setCircuit(data);
+        const url = userId
+            ? `http://${HOST}:8052/api/circuits/${circuitId}?user_id=${userId}`
+            : `http://${HOST}:8052/api/circuits/${circuitId}`;  // когда ID ещё нет
+
+        fetch(url, {headers: {Authorization: `Bearer ${token}`}})
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`); // защита от 400/500
+                return res.json();
             })
+            .then(setCircuit)
             .catch(console.error);
     }, [token, circuitId]);
 
@@ -50,29 +53,28 @@ export default function Page() {
     useEffect(() => {
         if (circuit || !token || !circuitId) return;
 
-        function parseJwt(token) {
+        function parseJwt(token: string | null) {
+            if (!token) return null;
             try {
-                return JSON.parse(atob(token.split('.')[1]));
+                return JSON.parse(atob(token.split(".")[1]));
             } catch {
                 return null;
             }
         }
 
-        const parsed = parseJwt(token);
-        const userId = parsed?.user_id ?? "guest";
-        const key = `projects-${userId}`;
-        const saved = localStorage.getItem(key);
+        /** Возвращает user_id.
+         + *  1) если уже лежит в localStorage — берём его;
+         + *  2) иначе вытаскиваем из токена и одновременно кешируем. */
+        function getUserId(token: string | null) {
+            const cached = localStorage.getItem("user_id");
+            if (cached) return cached;
 
-        if (saved) {
-            try {
-                const list = JSON.parse(saved);
-                const found = list.find(p => p.id === circuitId);
-                if (found) {
-                    setCircuit(found);
-                }
-            } catch (e) {
-                console.error("Ошибка чтения схемы из localStorage", e);
+            const payload = parseJwt(token);
+            if (payload?.user_id) {
+                localStorage.setItem("user_id", payload.user_id.toString());
+                return payload.user_id;
             }
+            return null;
         }
     }, [circuit, token, circuitId]);
 
@@ -93,11 +95,11 @@ export default function Page() {
     return (
         <>
             <Head>
-                <meta charSet="UTF-8" />
+                <meta charSet="UTF-8"/>
                 <title>VCD | Playground</title>
 
                 {/* Favicon */}
-                <link rel="shortcut icon" href="/Icons/Logos/favicon-black.png" type="image/png" />
+                <link rel="shortcut icon" href="/Icons/Logos/favicon-black.png" type="image/png"/>
                 {/* Fonts */}
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
@@ -107,7 +109,7 @@ export default function Page() {
 
             <header className="header">
                 <div className="left-controls">
-                    <BackToDashboardButton />
+                    <BackToDashboardButton/>
                     <button id="leftbar-toggle" button className="components-btn">
                         <Image src="/Icons/Logos/components-vec.svg" width={25} height={25} className="components-vec"
                                alt="component"/>
@@ -151,27 +153,41 @@ export default function Page() {
                         <div className="logic-components">Logic Components</div>
                         <div className="components-grid">
 
-                            <div className="draggable-item" draggable="true" data-type="NOT" data-icon="/Icons/LogicBlocks/not.svg">
-                                <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="NOT"
+                                 data-icon="/Icons/LogicBlocks/not.svg">
+                                <Image src="/Icons/LogicBlocks/not.svg" width={60} height={60} alt="NOT"
+                                       className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="AND" data-icon="/Icons/LogicBlocks/and.svg">
-                                <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="AND" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="AND"
+                                 data-icon="/Icons/LogicBlocks/and.svg">
+                                <Image src="/Icons/LogicBlocks/and.svg" width={60} height={60} alt="AND"
+                                       className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="OR" data-icon="/Icons/LogicBlocks/or.svg">
-                                <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="OR" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="OR"
+                                 data-icon="/Icons/LogicBlocks/or.svg">
+                                <Image src="/Icons/LogicBlocks/or.svg" width={60} height={60} alt="OR"
+                                       className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="NAND" data-icon="/Icons/LogicBlocks/nand.svg">
-                                <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NAND" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="NAND"
+                                 data-icon="/Icons/LogicBlocks/nand.svg">
+                                <Image src="/Icons/LogicBlocks/nand.svg" width={60} height={60} alt="NAND"
+                                       className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="NOR" data-icon="/Icons/LogicBlocks/nor.svg">
-                                <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOR" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="NOR"
+                                 data-icon="/Icons/LogicBlocks/nor.svg">
+                                <Image src="/Icons/LogicBlocks/nor.svg" width={60} height={60} alt="NOR"
+                                       className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="XNOR" data-icon="/Icons/LogicBlocks/xnor.svg">
+                            <div className="draggable-item" draggable="true" data-type="XNOR"
+                                 data-icon="/Icons/LogicBlocks/xnor.svg">
 
-                                <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor" className="component-icon"/>
+                                <Image src="/Icons/LogicBlocks/xnor.svg" width={60} height={60} alt="xnor"
+                                       className="component-icon"/>
                             </div>
-                            <div className="draggable-item" draggable="true" data-type="XOR" data-icon="/Icons/LogicBlocks/xor.svg">
-                                <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="XOR" className="component-icon"/>
+                            <div className="draggable-item" draggable="true" data-type="XOR"
+                                 data-icon="/Icons/LogicBlocks/xor.svg">
+                                <Image src="/Icons/LogicBlocks/xor.svg" width={60} height={60} alt="XOR"
+                                       className="component-icon"/>
                             </div>
                         </div>
                         {/* --- I/O -------------------------------------------------------------- */}
@@ -183,7 +199,8 @@ export default function Page() {
                                 data-type="INPUT"
                                 data-icon="/Icons/Inputs&Outputs/Input-0.svg"
                             >
-                                <Image src="/Icons/Inputs&Outputs/Input-0.svg" width={60} height={60} alt="Input" className="component-icon"/>
+                                <Image src="/Icons/Inputs&Outputs/Input-0.svg" width={60} height={60} alt="Input"
+                                       className="component-icon"/>
                             </div>
 
                             <div
@@ -192,7 +209,8 @@ export default function Page() {
                                 data-type="OUTPUT"
                                 data-icon="/Icons/Inputs&Outputs/Output-0.svg"
                             >
-                                <Image src="/Icons/Inputs&Outputs/Output-0.svg" width={60} height={60} alt="Output" className="component-icon"/>
+                                <Image src="/Icons/Inputs&Outputs/Output-0.svg" width={60} height={60} alt="Output"
+                                       className="component-icon"/>
                             </div>
                         </div>
                     </div>
