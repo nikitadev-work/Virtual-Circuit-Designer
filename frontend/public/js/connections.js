@@ -314,16 +314,16 @@ window.initPlayground = function () {
 
         const userId = getUserIdFromToken(TOKEN);
         const payload = {
-            user_id: USER_ID,
-            circuit_name: circuitName,
+            user_id:            USER_ID,
+            circuit_name:       circuitName,
             circuit_description: gates,
-            circuit_inputs: collectInputs(),
+            circuit_inputs:      collectInputs(),
             circuit_coordinates: collectCoordinates()
         };
 
         const headers = {
             'Content-Type': 'application/json',
-            ...(TOKEN && {Authorization: `Bearer ${TOKEN}`})
+            ...(TOKEN && { Authorization: `Bearer ${TOKEN}` })
         };
 
         try {
@@ -344,21 +344,7 @@ window.initPlayground = function () {
                 if (!Number.isNaN(idNum)) {
                     window.savedCircuitId = idNum;
                     localStorage.setItem('savedCircuitId', String(idNum));
-
-                    /* <----------- ВАЖНО: обновляем запись draft-проекта в localStorage */
-                    const userId = String(USER_ID);                       // тот же, что в Dashboard
-                    const key = `projects-${userId}`;
-                    const list = JSON.parse(localStorage.getItem(key) || '[]');
-
-                    // ищем запись с временным UUID из query-строки
-                    const url = new URL(window.location.href);
-                    const tempUuid = url.searchParams.get('projectId');
-
-                    const idx = list.findIndex((p: any) => p.id === tempUuid);
-                    if (idx >= 0) {
-                        list[idx].id = String(idNum);                     // заменяем id
-                        localStorage.setItem(key, JSON.stringify(list));  // сохраняем
-                    }
+                    console.log(`Схема сохранена с ID: ${idNum}`);
                 }
             }
 
@@ -403,14 +389,14 @@ window.initPlayground = function () {
             return;
         }
 
-        const headers = TOKEN ? {Authorization: `Bearer ${TOKEN}`} : {};
+        const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
 
         /* добавляем user_id в query-строку */
         const url = new URL(`${API_URL}/${id}`);
         url.searchParams.set('user_id', USER_ID);
 
         try {
-            const res = await fetch(url, {method: 'GET', headers});
+            const res = await fetch(url, { method: 'GET', headers });
 
             if (!res.ok) {
                 const text = await res.text().catch(() => '');
@@ -424,7 +410,7 @@ window.initPlayground = function () {
 
             const {
                 circuit_description = [],
-                circuit_inputs = [],
+                circuit_inputs      = [],
                 circuit_coordinates = [],
             } = data;
 
