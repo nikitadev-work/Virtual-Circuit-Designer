@@ -182,9 +182,9 @@ export default function Dashboard() {
 
         const {id} = await res.json();  // ← тут уже число
 
-        // 2. формируем объект проекта
+
         const newProject: Project = {
-            id: Number(id),        // держим строкой, чтобы тип Project не менять
+            id: String(id),
             circuit_name: newTitle.trim(),
             createdAt: now,
             updatedAt: now
