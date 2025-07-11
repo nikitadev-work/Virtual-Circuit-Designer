@@ -404,7 +404,14 @@ func SaveNewCircuitHandler(w http.ResponseWriter, r *http.Request, userID int) {
 	}
 
 	config.APILogger.Println("Successfully saved new circuit")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		config.APILogger.Println("Error while copying response body: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func StartSimulationHandler(w http.ResponseWriter, r *http.Request) {

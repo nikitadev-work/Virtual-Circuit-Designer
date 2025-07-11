@@ -125,7 +125,7 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 			return
 		}
 
-		err = h.db.SaveCircuits(circuitPostReq.UserId, circuitPostReq.CircuitName, circuitPostReq.Circuit,
+		circuitId, userId, err := h.db.SaveCircuits(circuitPostReq.UserId, circuitPostReq.CircuitName, circuitPostReq.Circuit,
 			circuitPostReq.CircuitInputs, circuitPostReq.CircuitCoordinates)
 		if err != nil {
 			config.DbLogger.Println("Circuit saving request: " + err.Error())
@@ -133,8 +133,18 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 			return
 		}
 
+		var apiResp struct {
+			CircuitID int `json:"circuit_id"`
+			CserID    int `json:"user_id"`
+		}
+
+		apiResp.CircuitID = circuitId
+		apiResp.CserID = userId
+
 		config.DbLogger.Println("Circuit saving request completed")
+		resp.Header().Set("Content-Type", "applicatin/json")
 		resp.WriteHeader(http.StatusCreated)
+		json.NewEncoder(resp).Encode(apiResp)
 
 	case http.MethodGet:
 		userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
