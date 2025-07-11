@@ -184,7 +184,7 @@ export default function Dashboard() {
 
         // 2. формируем объект проекта
         const newProject: Project = {
-            id: String(id),        // держим строкой, чтобы тип Project не менять
+            id: Number(id),        // держим строкой, чтобы тип Project не менять
             circuit_name: newTitle.trim(),
             createdAt: now,
             updatedAt: now
