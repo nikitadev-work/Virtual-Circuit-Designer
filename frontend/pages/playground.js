@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-page-custom-font */
 
 import {useEffect, useState} from "react";
-import {useSearchParams} from "next/navigation";
+import {useSearchParams, useRouter} from "next/navigation";
 
 import {BackToDashboardButton} from "../src/components/BackToDashboardButton";
 
@@ -14,31 +14,49 @@ import Image from 'next/image';
 
 export default function Page() {
     const searchParams = useSearchParams();
-    const circuitId = searchParams.get("projectId");
     const [token, setToken] = useState(null);
     const [circuit, setCircuit] = useState(null);
+    const router = useRouter();
+    const idParam = searchParams.get("projectId");
+    const circuitId = idParam ? Number(idParam) : NaN;
 
+    // ▸ редиректим, если ID некорректный
     useEffect(() => {
-        const stored = localStorage.getItem("token")
-        if (stored) setToken(stored)
+        if (Number.isNaN(circuitId)) {
+            router.replace("/dashboard?err=bad_id");
+        }
+    }, [router, circuitId]);
+
+    // ▸ до редиректа ничего не отображаем
+    if (Number.isNaN(circuitId)) return null;
+    useEffect(() => {
+        const stored = localStorage.getItem("token");
+        if (stored) {
+            setToken(stored);
+
+            const payload = JSON.parse(atob(stored.split(".")[1] || ""));
+            if (payload?.user_id) {
+                localStorage.setItem("user_id", String(payload.user_id));
+            }
+        }
     }, [])
 
     useEffect(() => {
-        if (!token || !circuitId) return;
+        if (!token || !Number.isFinite(circuitId)) return;
 
+        const userIdRaw = localStorage.getItem("user_id");
+        const userId    = userIdRaw ? Number(userIdRaw) : NaN;
+        if (!Number.isFinite(userId)) return;
         const HOST = window.location.hostname;
-        const userId = getUserId(token);          // ← берём корректный ID
 
-        const url = userId
-            ? `http://${HOST}:8052/api/circuits/${circuitId}?user_id=${userId}`
-            : `http://${HOST}:8052/api/circuits/${circuitId}`;  // когда ID ещё нет
 
-        fetch(url, {headers: {Authorization: `Bearer ${token}`}})
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP ${res.status}`); // защита от 400/500
-                return res.json();
+        fetch(`http://${HOST}:8052/api/circuits/${circuitId}?user_id=${userId}`, {
+            headers: {Authorization: `Bearer ${token}`},
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                setCircuit(data);
             })
-            .then(setCircuit)
             .catch(console.error);
     }, [token, circuitId]);
 
@@ -46,35 +64,36 @@ export default function Page() {
     useEffect(() => {
         if (circuitId) {
             window.savedCircuitId = circuitId;
-            localStorage.setItem('savedCircuitId', circuitId);
+            localStorage.setItem('savedCircuitId', String(circuitId));
         }
     }, [circuitId]);
 
     useEffect(() => {
         if (circuit || !token || !circuitId) return;
 
-        function parseJwt(token: string | null) {
-            if (!token) return null;
+        function parseJwt(token) {
             try {
-                return JSON.parse(atob(token.split(".")[1]));
+                return JSON.parse(atob(token.split('.')[1]));
             } catch {
                 return null;
             }
         }
 
-        /** Возвращает user_id.
-         + *  1) если уже лежит в localStorage — берём его;
-         + *  2) иначе вытаскиваем из токена и одновременно кешируем. */
-        function getUserId(token: string | null) {
-            const cached = localStorage.getItem("user_id");
-            if (cached) return cached;
+        const parsed = parseJwt(token);
+        const userId = parsed?.user_id ?? "guest";
+        const key = `projects-${userId}`;
+        const saved = localStorage.getItem(key);
 
-            const payload = parseJwt(token);
-            if (payload?.user_id) {
-                localStorage.setItem("user_id", payload.user_id.toString());
-                return payload.user_id;
+        if (saved) {
+            try {
+                const list = JSON.parse(saved);
+                const found = list.find(p => Number(p.id) === circuitId);
+                if (found) {
+                    setCircuit(found);
+                }
+            } catch (e) {
+                console.error("Ошибка чтения схемы из localStorage", e);
             }
-            return null;
         }
     }, [circuit, token, circuitId]);
 
