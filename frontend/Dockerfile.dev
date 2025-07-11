@@ -1,0 +1,18 @@
+FROM node:20
+
+WORKDIR /app
+
+# Копируем только package.json и lock-файл
+COPY package*.json ./
+
+# Устанавливаем все зависимости, включая dev
+RUN npm install
+
+# Копируем исходники
+COPY . .
+
+# Экспонируем порт
+EXPOSE 3000
+
+# Запуск dev-сервера
+CMD ["npm", "run", "dev"]

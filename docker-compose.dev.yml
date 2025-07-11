@@ -63,11 +63,17 @@ services:
   frontend:
     build:
       context: ./frontend
-    restart: always
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3001:3000"
+    command: npm run dev
+    restart: always
     networks:
       - my_shared_network
+
 
 networks:
   my_shared_network:
