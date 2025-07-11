@@ -19,16 +19,12 @@ export default function Page() {
     const router = useRouter();
     const idParam = searchParams.get("projectId");
     const circuitId = idParam ? Number(idParam) : NaN;
+    const invalidId = Number.isNaN(circuitId);
 
-    // ▸ редиректим, если ID некорректный
     useEffect(() => {
-        if (Number.isNaN(circuitId)) {
-            router.replace("/dashboard?err=bad_id");
-        }
-    }, [router, circuitId]);
+        if (invalidId) router.replace("/dashboard?err=bad_id");
+    }, [invalidId, router]);
 
-    // ▸ до редиректа ничего не отображаем
-    if (Number.isNaN(circuitId)) return null;
     useEffect(() => {
         const stored = localStorage.getItem("token");
         if (stored) {
@@ -42,10 +38,10 @@ export default function Page() {
     }, [])
 
     useEffect(() => {
-        if (!token || !Number.isFinite(circuitId)) return;
+        if (invalidId || !token) return;
 
         const userIdRaw = localStorage.getItem("user_id");
-        const userId    = userIdRaw ? Number(userIdRaw) : NaN;
+        const userId = userIdRaw ? Number(userIdRaw) : NaN;
         if (!Number.isFinite(userId)) return;
         const HOST = window.location.hostname;
 
@@ -69,7 +65,7 @@ export default function Page() {
     }, [circuitId]);
 
     useEffect(() => {
-        if (circuit || !token || !circuitId) return;
+        if (invalidId || circuit || !token) return;
 
         function parseJwt(token) {
             try {
@@ -110,6 +106,8 @@ export default function Page() {
             console.warn("renderFromLocal is not available or gates missing");
         }
     }, [circuit]);
+
+    if (invalidId) return null;
 
     return (
         <>
