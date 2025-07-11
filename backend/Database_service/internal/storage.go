@@ -114,7 +114,7 @@ func (db *PostgresDB) GetUser(email, password string) (int, string, error) {
 	}
 }
 
-func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any, circuitInputs []int, circuitCoordinates [][]any) error {
+func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]any, circuitInputs []int, circuitCoordinates [][]any) (int, int, error) {
 	config.DbLogger.Println("Saving circuits")
 
 	config.DbLogger.Printf("circuitInputs: %v", circuitInputs)
@@ -123,36 +123,39 @@ func (db *PostgresDB) SaveCircuits(userId int, circuitName string, circuit [][3]
 	circuitJSON, err := json.Marshal(circuit)
 	if err != nil {
 		config.DbLogger.Println("Error marshaling circuit:", err)
-		return err
+		return 0, 0, err
 	}
 
 	circuitInputsJSON, err := json.Marshal(circuitInputs)
 	if err != nil {
 		config.DbLogger.Println("Error marshaling circuit_inputs:", err)
-		return err
+		return 0, 0, err
 	}
 
 	circuitCoordinatesJSON, err := json.Marshal(circuitCoordinates)
 	if err != nil {
 		config.DbLogger.Println("Error marshaling circuit_coordinates:", err)
-		return err
+		return 0, 0, err
 	}
 
-	_, err = db.conn.Exec(`
+	var circuitId int
+
+	err = db.conn.QueryRow(`
         INSERT INTO circuits (user_id, name, circuit_description, circuit_inputs, circuit_coordinates)
         VALUES ($1, $2, $3, $4, $5)
         ON CONFLICT (user_id, name) DO UPDATE SET
             circuit_description = EXCLUDED.circuit_description,
             circuit_inputs = EXCLUDED.circuit_inputs,
             circuit_coordinates = EXCLUDED.circuit_coordinates
-    `, userId, circuitName, string(circuitJSON), string(circuitInputsJSON), string(circuitCoordinatesJSON))
+        RETURNING id
+    `, userId, circuitName, string(circuitJSON), string(circuitInputsJSON), string(circuitCoordinatesJSON)).Scan(&circuitId)
 
 	if err != nil {
 		config.DbLogger.Println("Error while saving circuits/updating: ", err)
-		return err
+		return 0, 0, err
 	}
 
-	return nil
+	return circuitId, userId, nil
 }
 
 func (db *PostgresDB) GetCircuits(userId int) ([]Circuit, error) {
