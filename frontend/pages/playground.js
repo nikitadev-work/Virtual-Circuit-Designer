@@ -207,9 +207,9 @@ export default function Page() {
                                 className="draggable-item"
                                 draggable="true"
                                 data-type="INPUT"
-                                data-icon="/Icons/Inputs&Outputs/Input-0.svg"
+                                data-icon="/Icons/Inputs&Outputs/INPUT-0.svg"
                             >
-                                <Image src="/Icons/Inputs&Outputs/Input-0.svg" width={60} height={60} alt="Input"
+                                <Image src="/Icons/Inputs&Outputs/INPUT-0.svg" width={60} height={60} alt="Input"
                                        className="component-icon"/>
                             </div>
 
@@ -217,9 +217,9 @@ export default function Page() {
                                 className="draggable-item"
                                 draggable="true"
                                 data-type="OUTPUT"
-                                data-icon="/Icons/Inputs&Outputs/Output-0.svg"
+                                data-icon="/Icons/Inputs&Outputs/OUTPUT-0.svg"
                             >
-                                <Image src="/Icons/Inputs&Outputs/Output-0.svg" width={60} height={60} alt="Output"
+                                <Image src="/Icons/Inputs&Outputs/OUTPUT-0.svg" width={60} height={60} alt="Output"
                                        className="component-icon"/>
                             </div>
                         </div>

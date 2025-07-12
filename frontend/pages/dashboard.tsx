@@ -44,6 +44,11 @@ type Project = {
 
 const getStorageKey = (userId: string | null) => `projects-${userId ?? "guest"}`
 
+declare global {
+    interface Window {
+        savedCircuitId?: string | null;
+    }
+}
 
 export default function Dashboard() {
     const [projects, setProjects] = useState<Project[]>([])
@@ -180,8 +185,9 @@ export default function Dashboard() {
             return;
         }
 
-        const {id} = await res.json();  // ← тут уже число
-
+        const { circuit_id: id } = await res.json();  // ← тут уже число
+        localStorage.setItem('savedCircuitId', String(id));
+        window.savedCircuitId = String(id); // на всякий случай
 
         const newProject: Project = {
             id: String(id),
@@ -195,6 +201,7 @@ export default function Dashboard() {
         setNewTitle("");
         setOpen(false);                   // закрыть диалог
 
+        console.log("project при генерации ссылки:", id);
         // 4. переходим в playground с numeric id
         router.push(
             `/playground?projectId=${id}&title=${encodeURIComponent(newProject.circuit_name)}`
