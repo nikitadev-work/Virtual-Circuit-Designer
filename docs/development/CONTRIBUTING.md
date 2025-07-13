@@ -123,7 +123,7 @@ We use labels to classify, prioritize, and track issues effectively:
 
 The diagram below illustrates our development flow using branches for features and fixes, each merged into `main` via Merge Requests (MR):
 
-![Deployment Diagram](./docs/development/dia.png)
+![Deployment Diagram](./dia.png)
 
 ####  Legend
 
