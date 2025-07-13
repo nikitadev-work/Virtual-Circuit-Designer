@@ -10,7 +10,7 @@
 
 <p align="center">
   This diagram shows the core modules and their relationships at design time.  
-  <img src="./docs/architecture/static.png" alt="Static View Diagram" style="max-width:80%;" />
+  <img src="./static.png" alt="Static View Diagram" style="max-width:80%;" />
 </p>
 
 <p>
@@ -44,8 +44,8 @@ In the static view, we separate responsibilities into two main tiers:
 ## <div align="center"> 🔄 Dynamic View 🔄 </div>
 
 <p align="center">
-  The dynamic view traces a typical user operation from login through simulation.  
-  <img src="./docs/architecture/dynamic.png" alt="Dynamic View Diagram" style="max-width:80%;" />
+  The dynamic view a typical user operation from login through simulation.
+  <img src="./dynamic.png" alt="Dynamic View Diagram" style="max-width:80%;" />
 </p>
 
 <p>
@@ -68,7 +68,7 @@ When a user interacts with the editor, a sequence of events unfolds:
 
 <p align="center">
   Shows how services are deployed, networked, and monitored in production.  
-  <img src="./docs/architecture/sequence.png" alt="Deployment Diagram" style="max-width:80%;" />
+  <img src="./sequence.png" alt="Deployment Diagram" style="max-width:80%;" />
 </p>
 
 <p>
