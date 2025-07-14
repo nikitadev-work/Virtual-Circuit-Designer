@@ -420,7 +420,7 @@ func StartSimulationHandler(w http.ResponseWriter, r *http.Request) {
 	writeCORS(w, r)
 
 	body, _ := io.ReadAll(r.Body)
-	reqSim, err := http.NewRequest("POST", config.RunningNodeServiceURL, bytes.NewReader(body))
+	reqSim, err := http.NewRequest("POST", config.RunningNodeServiceURL+"/circuits/simulate", bytes.NewReader(body))
 	if err != nil {
 		config.APILogger.Println("Error while creating request: " + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
