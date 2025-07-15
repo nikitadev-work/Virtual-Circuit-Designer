@@ -69,6 +69,25 @@
 
 ---
 
+## 6) Удаление схемы
+- **Type:** DELETE  
+- **Path:** `/api/circuits/{id}`  
+- **Authorization:** JWT Token
+
+### Response:
+- **Status:** 
+  - `204` - No Content (успешное удаление)
+  - `401` - Unauthorized (неавторизованный доступ)
+  - `404` - Not Found (схема с указанным ID не найдена)
+  - `400` - Bad Request (неверный ID)
+
+### Пример запроса:
+```http
+DELETE /api/circuits/12345 HTTP/1.1
+Authorization: Bearer {token}
+
+---
+
 ## Possible improvements:
 - JWT token update logic
 - Log out logic
