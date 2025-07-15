@@ -85,29 +85,3 @@
 ```http
 DELETE /api/circuits/12345 HTTP/1.1
 Authorization: Bearer {token}
-
----
-
-## Possible improvements:
-- JWT token update logic
-- Log out logic
-
----
-
-# Потоки запросов
-
-## Регистрация (POST /user/register):
-1. Клиент отправляет запрос на API Gateway с данными (например, `{"first_name":"John","last_name":"Doe","email":"john@example.com","password":"secret"}`).
-2. API Gateway:
-   - Отправляет запрос в Database-service для создания пользователя (`/db/users/create`), получая `userID`.
-   - Если пользователь успешно создан, отправляет запрос в Auth-service для генерации JWT-токена (`/auth/generate-token`) с `userID`.
-   - Возвращает клиенту JWT-токен (например, `{"token":"eyJ..."}`).
-   - Если возникает ошибка (например, email уже существует), возвращается ошибка (например, `400 Bad Request`).
-
-## Логин (POST /user/login):
-1. Клиент отправляет запрос на API Gateway с данными (например, `{"email":"john@example.com","password":"secret"}`).
-2. API Gateway:
-   - Отправляет запрос в Database-service для проверки учетных данных (`/db/users/verify`), получая `userID`, если данные верны.
-   - Если проверка прошла, отправляет запрос в Auth-service для генерации JWT-токена (`/auth/generate-token`) с `userID`.
-   - Возвращает клиенту JWT-токен.
-   - Если данные неверны, возвращается ошибка (например, `401 Unauthorized`).
