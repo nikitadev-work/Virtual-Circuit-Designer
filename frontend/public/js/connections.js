@@ -15,6 +15,8 @@ window.initPlayground = function () {
             return !match;
         });
     }
+    
+    window.snapToGridEnabled = true;
 
     svg.addEventListener('dblclick', e => {
         if (e.target.tagName === 'line') removeConnection(e.target);
@@ -48,6 +50,7 @@ window.initPlayground = function () {
 
     const GRID = 25;
     const snap = (v) => {
+        if (window.snapToGridEnabled === false) return v;
         const step = GRID;
         return Math.round(v / step) * step;
     };
@@ -674,15 +677,16 @@ window.initPlayground = function () {
         function onMove(e) {
             if (!drag) return;
             const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
-            const dx = snap(curX - startMouseX);
-            const dy = snap(curY - startMouseY);
-
-
+            let dx = curX - startMouseX;
+            let dy = curY - startMouseY;
+            if (window.snapToGridEnabled !== false) {
+                dx = snap(dx);
+                dy = snap(dy);
+            }
             dragItems.forEach(item => {
-                item.style.left = snap(item.__startLeft + dx) + 'px';
-                item.style.top = snap(item.__startTop + dy) + 'px';
+                item.style.left = (item.__startLeft + dx) + 'px';
+                item.style.top = (item.__startTop + dy) + 'px';
             });
-
             updateConnections();
         }
 

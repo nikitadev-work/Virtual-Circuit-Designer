@@ -16,6 +16,7 @@ export default function Page() {
     const circuitId = searchParams.get("projectId");
     const [token, setToken] = useState(null);
     const [circuit, setCircuit] = useState(null);
+    const [snapEnabled, setSnapEnabled] = useState(true);
 
     useEffect(() => {
         const stored = localStorage.getItem("token")
@@ -116,6 +117,10 @@ export default function Page() {
             document.body.removeChild(script);
         };
     }, []);
+
+    useEffect(() => {
+        window.snapToGridEnabled = snapEnabled;
+    }, [snapEnabled]);
 
     return (
         <>
@@ -241,7 +246,26 @@ export default function Page() {
                     </div>
                 </div>
 
-                <div className="playground-right-bar is-collapsed"></div>
+                <div className="playground-right-bar is-collapsed">
+                    <div className="sidebar-tail">
+                        <button
+                            className={`export-btn${snapEnabled ? '' : ' disabled'}`}
+                            style={{
+                                backgroundColor: snapEnabled ? '#0099FF' : '#f3f3f3',
+                                color: snapEnabled ? 'white' : 'black',
+                                border: snapEnabled ? '2px solid #0099FF' : '2px solid #ccc',
+                                margin: 16,
+                                width: 'auto',
+                                minWidth: 120,
+                                fontWeight: 500,
+                                fontSize: 15
+                            }}
+                            onClick={() => setSnapEnabled(v => !v)}
+                        >
+                            Snap to grid: {snapEnabled ? 'ON' : 'OFF'}
+                        </button>
+                    </div>
+                </div>
 
 
                 <div className="canvas-container" id="workspace">
