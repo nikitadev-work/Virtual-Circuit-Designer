@@ -31,7 +31,6 @@ window.initPlayground = function () {
     });
 
     window.addEventListener('keydown', e => {
-        // не мешаем редактированию <input> и <textarea>
         if (['Delete', 'Backspace'].includes(e.key) &&
             !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
             e.preventDefault();
@@ -514,14 +513,18 @@ window.initPlayground = function () {
     }
 
 
-    document.getElementById('save-btn')
-        .addEventListener('click', sendCircuit);
+    const saveBtn = document.getElementById('save-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', sendCircuit);
+    }
 
-    document.getElementById('export-btn')
-        .addEventListener('click', () => {
+    const exportBtn = document.getElementById('export-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
             const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
             loadCircuit(id).then();
         });
+    }
 
 
     function addPorts(el) {
@@ -1044,19 +1047,30 @@ window.initPlayground = function () {
         }
     });
 
-    document.getElementById('leftbar-toggle')
-        .addEventListener('click', () => {
+    const leftbarToggle = document.getElementById('leftbar-toggle');
+    if (leftbarToggle) {
+        leftbarToggle.addEventListener('click', () => {
             document
                 .querySelector('.playground-left-bar')
                 .classList.toggle('is-collapsed');
         });
+    }
 
-    document.getElementById('rightbar-toggle')
-        .addEventListener('click', () => {
+    const rightbarToggle = document.getElementById('rightbar-toggle');
+    if (rightbarToggle) {
+        rightbarToggle.addEventListener('click', () => {
             document
                 .querySelector('.playground-right-bar')
                 .classList.toggle('is-collapsed');
         });
+    }
+
+    const backDashboard = document.getElementById('back-dashboard');
+    if (backDashboard) {
+        backDashboard.addEventListener('click', () => {
+            window.location.href = '/dashboard';
+        });
+    }
 
     (() => {
         const band = document.createElement('div');
@@ -1121,11 +1135,6 @@ window.initPlayground = function () {
             window.removeEventListener('mousemove', onMove);
         }
     })();
-
-    document.getElementById('back-dashboard')
-        .addEventListener('click', () => {
-            window.location.href = '/dashboard';
-        });
 
     function tryCenterCanvas(attempts = 10) {
         if (attempts <= 0) return;
