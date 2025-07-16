@@ -11,10 +11,16 @@ window.initPlayground = function () {
     function removeConnection(lineEl) {
         connections = connections.filter(c => {
             const match = c.line === lineEl;
-            if (match) lineEl.remove();
+            if (match) {
+                lineEl.remove();
+                c.from.port.dataset.connected = 'false';
+                c.to.port.dataset.connected = 'false';
+            }
             return !match;
         });
     }
+    
+    window.snapToGridEnabled = true;
 
     svg.addEventListener('dblclick', e => {
         if (e.target.tagName === 'line') removeConnection(e.target);
@@ -44,10 +50,31 @@ window.initPlayground = function () {
                 selectedLine = null;
             }
         }
+        if (e.key.toLowerCase() === 'e' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            document.querySelectorAll('.workspace-element.selected').forEach(el => {
+                const type = (el.dataset.type || '').toUpperCase();
+                if (type === "INPUT" || type === "OUTPUT") {
+                    if (type === "INPUT") {
+                        el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                        const inputControl = el.querySelector('input[type=number]');
+                        if (inputControl) {
+                            inputControl.value = el.dataset.value;
+                        }
+                        const img = el.querySelector('img');
+                        if (img) {
+                            img.src = `/Icons/Inputs&Outputs/${type}-${el.dataset.value}.svg`;
+                        }
+                    }
+                } else {
+                    el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                }
+            });
+        }
     });
 
     const GRID = 25;
     const snap = (v) => {
+        if (window.snapToGridEnabled === false) return v;
         const step = GRID;
         return Math.round(v / step) * step;
     };
@@ -72,6 +99,7 @@ window.initPlayground = function () {
       <button data-action="r180">Turn 180°</button>
       <button data-action="flipH">Flip horiz.</button>
       <button data-action="flipV">Flip vert.</button>
+      <button data-action="auto-io">Add IO</button>
     `;
     document.body.appendChild(ctxMenu);
     let ctxTarget = null;
@@ -98,7 +126,10 @@ window.initPlayground = function () {
     workspace.addEventListener('click', e => {
         if (e.target.classList.contains('port')) return;
 
-        const el = e.target.closest('.workspace-element');
+        let el = e.target.closest('.workspace-element');
+        if (el && (el.dataset.type === "INPUT" || el.dataset.type === "OUTPUT")) {
+            if (!e.target.classList.contains('hitbox')) return;
+        }
 
         if (!el) {
             if (!e.ctrlKey && !e.metaKey) clearSelection();
@@ -171,7 +202,6 @@ window.initPlayground = function () {
         updateTransform();
     }
 
-
     window.addEventListener('mouseup', () => {
         isCanvasDrag = false;
         canvas.style.cursor = 'grab';
@@ -207,6 +237,9 @@ window.initPlayground = function () {
         el.dataset.angle = 0;
         el.dataset.scaleX = 1;
         el.dataset.scaleY = 1;
+        if (type === "INPUT") {
+            el.dataset.value = '0';
+        }
 
         const img = document.createElement('img');
         img.src = icon;
@@ -218,12 +251,27 @@ window.initPlayground = function () {
 
         el.appendChild(img);
         addPorts(el);
-        addPorts(el);
+
+        if (type === "INPUT") {
+            const inputControl = document.createElement('input');
+            inputControl.type = 'number';
+            inputControl.min = '0';
+            inputControl.max = '1';
+            inputControl.value = '0';
+            inputControl.className = 'input-control';
+            inputControl.addEventListener('change', () => {
+                el.dataset.value = inputControl.value;
+                const img = el.querySelector('img');
+                if (img) {
+                    img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
+                }
+            });
+            el.appendChild(inputControl);
+        }
 
         const pt = clientToWorkspace(e.clientX, e.clientY);
         el.style.left = snap(pt.x) + 'px';
         el.style.top = snap(pt.y) + 'px';
-
 
         enableElementDrag(el);
         workspace.appendChild(el);
@@ -232,7 +280,6 @@ window.initPlayground = function () {
     function exportSchemeAsList() {
         const nodes = [...document.querySelectorAll('.workspace-element')];
         const nodeIndex = new Map(nodes.map((el, i) => [el, i]));
-
 
         const typeMap = {
             INPUT: 0,
@@ -264,8 +311,6 @@ window.initPlayground = function () {
         return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
     }
 
-    // Сбор данных по координатам и инпутам
-
     function collectInputs() {
         const inputs = [...document.querySelectorAll('.workspace-element')]
             .filter(el => (el.dataset.type || '').toUpperCase() === 'INPUT');
@@ -286,17 +331,13 @@ window.initPlayground = function () {
         });
     }
 
-
-    // Импорт
-
     const TOKEN = localStorage.getItem('token');
     const HOST = window.location.hostname;
     const API_URL = `http://${HOST}:8052/api/circuits`;
 
-
     const USER_ID = Number(localStorage.getItem('user_id') || '');
     if (Number.isNaN(USER_ID) || USER_ID < 1) {
-        alert('user_id не найден или некорректен');      // критическая ошибка
+        alert('user_id не найден или некорректен');
         throw new Error('Invalid user_id');
     }
 
@@ -313,10 +354,10 @@ window.initPlayground = function () {
 
         const userId = getUserIdFromToken(TOKEN);
         const payload = {
-            user_id:            USER_ID,
-            circuit_name:       circuitName,
+            user_id: USER_ID,
+            circuit_name: circuitName,
             circuit_description: gates,
-            circuit_inputs:      collectInputs(),
+            circuit_inputs: collectInputs(),
             circuit_coordinates: collectCoordinates()
         };
 
@@ -347,7 +388,6 @@ window.initPlayground = function () {
                 }
             }
 
-            // Удаление черновика из localStorage
             if (projectId && userId) {
                 const key = `projects-${userId}`;
                 const stored = JSON.parse(localStorage.getItem(key) || '[]');
@@ -363,7 +403,6 @@ window.initPlayground = function () {
         }
     }
 
-
     function getUserIdFromToken(token) {
         if (!token) return null;
         try {
@@ -374,14 +413,13 @@ window.initPlayground = function () {
         }
     }
 
-    // Экспорт
     window.loadCircuit = async function loadCircuit(id) {
         if (id == null || id === '') {
             alert('Не передан ID схемы');
             return;
         }
         id = String(id).trim();
-        if (!/^\d+$/.test(id)) {                   
+        if (!/^\d+$/.test(id)) {
             alert(`ID схемы должен быть целым числом: «${id}»`);
             return;
         }
@@ -399,14 +437,13 @@ window.initPlayground = function () {
                 throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
             }
 
-            /* тело должно быть JSON */
             const data = await res.json().catch(() => {
                 throw new Error('Ответ сервера без тела');
             });
 
             const {
                 circuit_description = [],
-                circuit_inputs      = [],
+                circuit_inputs = [],
                 circuit_coordinates = [],
             } = data;
 
@@ -416,7 +453,6 @@ window.initPlayground = function () {
             alert('Не удалось загрузить схему: ' + err.message);
         }
     };
-
 
     function renderCircuit(circuit, inputs = [], coordinates = []) {
         document.querySelectorAll('.workspace-element').forEach(e => e.remove());
@@ -431,7 +467,6 @@ window.initPlayground = function () {
             el.dataset.angle = 0;
             el.dataset.scaleX = 1;
             el.dataset.scaleY = 1;
-            // Необходимо изменить
             const match = coordinates.find(([id]) => id === i);
             const coords = match?.[1];
             el.style.left = coords ? `${coords[0]}px` : `100px`;
@@ -442,7 +477,8 @@ window.initPlayground = function () {
 
             let iconPath;
             if (typeName === 'INPUT' || typeName === 'OUTPUT') {
-                const value = el.dataset.value ?? '0';
+                const value = typeName === 'INPUT' ? (inputs.shift() ?? '0') : '0';
+                el.dataset.value = value;
                 iconPath = `/Icons/Inputs&Outputs/${typeName}-${value}.svg`;
             } else {
                 iconPath = `/Icons/LogicBlocks/${typeName.toLowerCase()}.svg`;
@@ -456,19 +492,23 @@ window.initPlayground = function () {
 
             addPorts(el);
 
-            if (getTypeName(type) === 'INPUT') {
+            if (typeName === 'INPUT') {
                 const inputControl = document.createElement('input');
                 inputControl.type = 'number';
                 inputControl.min = '0';
                 inputControl.max = '1';
-                inputControl.value = inputs.shift() ?? 0;
+                inputControl.value = el.dataset.value;
                 inputControl.className = 'input-control';
                 inputControl.addEventListener('change', () => {
                     el.dataset.value = inputControl.value;
+                    const img = el.querySelector('img');
+                    if (img) {
+                        img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
+                    }
                 });
-                el.dataset.value = inputControl.value;
                 el.appendChild(inputControl);
             }
+
             enableElementDrag(el);
             workspace.appendChild(el);
             elements.push(el);
@@ -476,14 +516,17 @@ window.initPlayground = function () {
 
         circuit.forEach(([_, inputs = []], targetIndex) => {
             inputs.forEach(sourceIndex => {
-                const from = elements[sourceIndex].querySelector('.output-port');
-                const to = elements[targetIndex].querySelector('.input-port');
+                const from = elements[sourceIndex].querySelector('.output-port:not([data-connected="true"])');
+                const to = elements[targetIndex].querySelector('.input-port:not([data-connected="true"])');
                 if (from && to) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('stroke', 'black');
                     line.setAttribute('stroke-width', '3');
                     line.setAttribute('stroke-linecap', 'round');
                     svg.appendChild(line);
+
+                    from.dataset.connected = 'true';
+                    to.dataset.connected = 'true';
 
                     connections.push({
                         from: {element: elements[sourceIndex], port: from},
@@ -512,6 +555,71 @@ window.initPlayground = function () {
         }[id] || 'INPUT';
     }
 
+    async function simulateCircuit() {
+        const circuit_description = exportSchemeAsList();
+        const circuit_inputs = collectInputs();
+
+        if (!circuit_description.length) {
+            alert("Схема пуста, нечего симулировать");
+            return;
+        }
+
+        const HOST = window.location.hostname;
+        const API_URL = `http://${HOST}:8052/api/circuits/simulate`;
+        const TOKEN = localStorage.getItem('token');
+
+        const headers = {
+            'Content-type': 'application/json',
+            ...(TOKEN && { Authorization: `Bearer ${TOKEN}` })
+        };
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    circuit_description,
+                    circuit_inputs
+                })
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Ошибка симуляции: ${text}`);
+            }
+
+            const data = await res.json();
+            const outputs = document.querySelectorAll('.workspace-element[data-type="OUTPUT"]');
+            console.log('simulation_result:', data.simulation_result);
+            console.log('OUTPUT elements:', outputs);
+
+            data.simulation_result.forEach((val, idx) => {
+                const el = outputs[idx];
+                console.log('Updating OUTPUT', idx, 'to', val, el);
+                if (el) {
+                    el.dataset.value = String(val);
+                    const img = el.querySelector('img');
+                    if (img) {
+                        img.src = `/Icons/Inputs&Outputs/OUTPUT-${val}.svg`;
+                        console.log('Updated img src:', img.src);
+                    } else {
+                        console.log('No img found in OUTPUT', idx);
+                    }
+                } else {
+                    console.log('No OUTPUT element at index', idx);
+                }
+            });
+
+            const resultDiv = document.getElementById('simulation-result');
+            if (resultDiv) {
+                resultDiv.textContent = "Simulation result: " + JSON.stringify(data.simulation_result);
+            }
+
+            alert("Simulation result: " + JSON.stringify(data.simulation_result));
+        } catch (err) {
+            console.error('Ошибка симуляции:', err);
+            alert('Произошла ошибка при симуляции схемы: ' + err.message);
+        }
+    }
 
     const saveBtn = document.getElementById('save-btn');
     if (saveBtn) {
@@ -525,7 +633,11 @@ window.initPlayground = function () {
             loadCircuit(id).then();
         });
     }
-
+    
+    const playBtn = document.getElementById('play-btn');
+    if (playBtn) {
+        playBtn.addEventListener('click', simulateCircuit);
+    }
 
     function addPorts(el) {
         const type = el.dataset.type?.toUpperCase();
@@ -545,14 +657,15 @@ window.initPlayground = function () {
         for (let i = 0; i < cfg.ins; i++) {
             const p = document.createElement('div');
             p.className = 'port input-port';
+            p.dataset.connected = 'false';
 
             if (type === 'OUTPUT') {
-                p.style.left = '-3px';
-                p.style.top = '49%';
+                p.style.left = '12px';
+                p.style.top = '50%';
                 p.style.transform = 'translateY(-50%)';
             } else {
-                p.style.left = '-17px';
-                p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '35%' : '64%');
+                p.style.left = '1px';
+                p.style.top = cfg.ins === 1 ? '50%' : (i === 0 ? '29%' : '70%');
                 p.style.transform = 'translateY(-50%)';
             }
 
@@ -562,27 +675,33 @@ window.initPlayground = function () {
         for (let i = 0; i < cfg.outs; i++) {
             const p = document.createElement('div');
             p.className = 'port output-port';
+            p.dataset.connected = 'false';
 
             if (type === 'INPUT') {
-                p.style.right = '-3px';
-                p.style.top = '49%';
+                p.style.right = '12px';
+                p.style.top = '50%';
                 p.style.transform = 'translateY(-50%)';
             } else {
-                p.style.right = '-17px';
+                p.style.right = '1px';
                 p.style.top = '50%';
                 p.style.transform = 'translateY(-50%)';
             }
 
             el.appendChild(p);
         }
-    }
 
+        if (type === "INPUT" || type === "OUTPUT") {
+            const hitbox = document.createElement('div');
+            hitbox.className = 'hitbox';
+            el.appendChild(hitbox);
+        }
+    }
 
     workspace.addEventListener('contextmenu', e => {
         e.preventDefault();
         ctxTarget = e.target.closest('.workspace-element');
 
-        const needEl = ['duplicate', 'cut', 'delete', 'r90', 'r180', 'flipH', 'flipV'];
+        const needEl = ['duplicate', 'cut', 'delete', 'r90', 'r180', 'flipH', 'flipV', 'auto-io'];
         ctxMenu.querySelectorAll('button').forEach(btn => {
             btn.disabled = !ctxTarget && needEl.includes(btn.dataset.action);
         });
@@ -644,7 +763,6 @@ window.initPlayground = function () {
         el.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY})`;
     }
 
-
     if (!ctxMenu.classList.contains('hidden')) {
         hideCtxMenu();
     }
@@ -674,15 +792,16 @@ window.initPlayground = function () {
         function onMove(e) {
             if (!drag) return;
             const {x: curX, y: curY} = clientToWorkspace(e.clientX, e.clientY);
-            const dx = snap(curX - startMouseX);
-            const dy = snap(curY - startMouseY);
-
-
+            let dx = curX - startMouseX;
+            let dy = curY - startMouseY;
+            if (window.snapToGridEnabled !== false) {
+                dx = snap(dx);
+                dy = snap(dy);
+            }
             dragItems.forEach(item => {
-                item.style.left = snap(item.__startLeft + dx) + 'px';
-                item.style.top = snap(item.__startTop + dy) + 'px';
+                item.style.left = (item.__startLeft + dx) + 'px';
+                item.style.top = (item.__startTop + dy) + 'px';
             });
-
             updateConnections();
         }
 
@@ -697,6 +816,8 @@ window.initPlayground = function () {
             connections = connections.filter(c => {
                 if (c.from.element === el || c.to.element === el) {
                     c.line.remove();
+                    c.from.port.dataset.connected = 'false';
+                    c.to.port.dataset.connected = 'false';
                     return false;
                 }
                 return true;
@@ -721,6 +842,8 @@ window.initPlayground = function () {
         startElement = e.target.parentElement;
         startPort = e.target;
 
+        if (startPort.dataset.connected === 'true') return;
+
         currentLine = document.createElementNS(
             'http://www.w3.org/2000/svg', 'line'
         );
@@ -742,7 +865,7 @@ window.initPlayground = function () {
         let best = null, bestD2 = radius * radius;
 
         document.querySelectorAll('.port').forEach(p => {
-            if (p === startPort) return;
+            if (p === startPort || p.dataset.connected === 'true') return;
             const pr = p.getBoundingClientRect();
             const cx = pr.left - wsRect.left + pr.width / 2;
             const cy = pr.top - wsRect.top + pr.height / 2;
@@ -785,7 +908,13 @@ window.initPlayground = function () {
         snapPort?.classList.remove('highlight');
         snapPort = null;
 
-        if (!currentLine) return;
+        if (!targetPort || targetPort.dataset.connected === 'true') {
+            currentLine.remove();
+            currentLine = startElement = startPort = null;
+            document.removeEventListener('mousemove', dragTempLine);
+            document.removeEventListener('mouseup', finishLine);
+            return;
+        }
 
         const isInput = p => p?.classList.contains('input-port');
         const isOutput = p => p?.classList.contains('output-port');
@@ -805,6 +934,7 @@ window.initPlayground = function () {
             document.removeEventListener('mouseup', finishLine);
             return;
         }
+
         if (connections.some(c =>
             c.from.port === startPort && c.to.port === targetPort)) {
             currentLine.remove();
@@ -813,6 +943,9 @@ window.initPlayground = function () {
             document.removeEventListener('mouseup', finishLine);
             return;
         }
+
+        startPort.dataset.connected = 'true';
+        targetPort.dataset.connected = 'true';
 
         const toElement = targetPort.parentElement;
         connections.push({
@@ -826,7 +959,6 @@ window.initPlayground = function () {
         document.removeEventListener('mousemove', dragTempLine);
         document.removeEventListener('mouseup', finishLine);
     }
-
 
     function updateConnections() {
         connections.forEach(c => {
@@ -871,7 +1003,6 @@ window.initPlayground = function () {
 
         canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
     }
-
 
     let clipboard = null;
 
@@ -919,6 +1050,22 @@ window.initPlayground = function () {
             el.style.left = (baseX + dx) + 'px';
             el.style.top = (baseY + dy) + 'px';
 
+            el.querySelectorAll('.port').forEach(p => p.dataset.connected = 'false');
+
+            const type = el.dataset.type?.toUpperCase();
+            if (type === 'INPUT') {
+                const inputControl = el.querySelector('input[type=number]');
+                if (inputControl) {
+                    inputControl.addEventListener('change', () => {
+                        el.dataset.value = inputControl.value;
+                        const img = el.querySelector('img');
+                        if (img) {
+                            img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
+                        }
+                    });
+                }
+            }
+
             workspace.appendChild(el);
             select(el);
         });
@@ -931,6 +1078,8 @@ window.initPlayground = function () {
             connections = connections.filter(c => {
                 if (c.from.element === el || c.to.element === el) {
                     c.line.remove();
+                    c.from.port.dataset.connected = 'false';
+                    c.to.port.dataset.connected = 'false';
                     return false;
                 }
                 return true;
@@ -939,7 +1088,6 @@ window.initPlayground = function () {
             selection.delete(el);
         });
     }
-
 
     function duplicate(src = null) {
         const items = src ? [src] : [...selection];
@@ -960,12 +1108,134 @@ window.initPlayground = function () {
             clone.style.left = (left + GAP) + 'px';
             clone.style.top = (top + GAP) + 'px';
 
+            clone.querySelectorAll('.port').forEach(p => p.dataset.connected = 'false');
+
+            const type = clone.dataset.type?.toUpperCase();
+            if (type === 'INPUT') {
+                const inputControl = clone.querySelector('input[type=number]');
+                if (inputControl) {
+                    inputControl.addEventListener('change', () => {
+                        clone.dataset.value = inputControl.value;
+                        const img = clone.querySelector('img');
+                        if (img) {
+                            img.src = `/Icons/Inputs&Outputs/INPUT-${clone.dataset.value}.svg`;
+                        }
+                    });
+                }
+            }
+
             enableElementDrag(clone);
             workspace.appendChild(clone);
             select(clone);
         });
 
         updateConnections();
+    }
+
+    function autoAddIO(el) {
+        const type = el.dataset.type?.toUpperCase();
+        if (type === 'INPUT' || type === 'OUTPUT') return;
+
+        const cfg = {
+            NOT: {ins: 1, outs: 1},
+            AND: {ins: 2, outs: 1},
+            OR: {ins: 2, outs: 1},
+            XOR: {ins: 2, outs: 1},
+            NAND: {ins: 2, outs: 1},
+            NOR: {ins: 2, outs: 1},
+            XNOR: {ins: 2, outs: 1},
+        }[type];
+        if (!cfg) return;
+
+        const inputPorts = el.querySelectorAll('.input-port:not([data-connected="true"])');
+        const outputPorts = el.querySelectorAll('.output-port:not([data-connected="true"])');
+
+        inputPorts.forEach((port, i) => {
+            const input = document.createElement('div');
+            input.className = 'workspace-element';
+            input.dataset.type = 'INPUT';
+            input.dataset.value = '0';
+            input.dataset.angle = '0';
+            input.dataset.scaleX = '1';
+            input.dataset.scaleY = '1';
+            input.style.left = (parseFloat(el.style.left) - 80) + 'px';
+            input.style.top = (parseFloat(el.style.top) + i * 40) + 'px';
+            const img = document.createElement('img');
+            img.src = '/Icons/Inputs&Outputs/INPUT-0.svg';
+            input.appendChild(img);
+
+            const inputControl = document.createElement('input');
+            inputControl.type = 'number';
+            inputControl.min = '0';
+            inputControl.max = '1';
+            inputControl.value = '0';
+            inputControl.className = 'input-control';
+            inputControl.addEventListener('change', () => {
+                input.dataset.value = inputControl.value;
+                const img = input.querySelector('img');
+                if (img) {
+                    img.src = `/Icons/Inputs&Outputs/INPUT-${input.dataset.value}.svg`;
+                }
+            });
+            input.appendChild(inputControl);
+
+            addPorts(input);
+            enableElementDrag(input);
+            workspace.appendChild(input);
+
+            const from = input.querySelector('.output-port');
+            const to = port;
+            if (from && to) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('stroke', 'black');
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+                from.dataset.connected = 'true';
+                to.dataset.connected = 'true';
+                connections.push({
+                    from: {element: input, port: from},
+                    to: {element: el, port: to},
+                    line
+                });
+            }
+        });
+
+        outputPorts.forEach((port, i) => {
+            const output = document.createElement('div');
+            output.className = 'workspace-element';
+            output.dataset.type = 'OUTPUT';
+            output.dataset.value = '0';
+            output.dataset.angle = '0';
+            output.dataset.scaleX = '1';
+            output.dataset.scaleY = '1';
+            output.style.left = (parseFloat(el.style.left) + 80) + 'px';
+            output.style.top = (parseFloat(el.style.top) + i * 40) + 'px';
+            const img = document.createElement('img');
+            img.src = '/Icons/Inputs&Outputs/OUTPUT-0.svg';
+            output.appendChild(img);
+
+            addPorts(output);
+            enableElementDrag(output);
+            workspace.appendChild(output);
+
+            const from = port;
+            const to = output.querySelector('.input-port');
+            if (from && to) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('stroke', 'black');
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+                from.dataset.connected = 'true';
+                to.dataset.connected = 'true';
+                connections.push({
+                    from: {element: el, port: from},
+                    to: {element: output, port: to},
+                    line
+                });
+            }
+        });
     }
 
     ctxMenu.addEventListener('click', e => {
@@ -1009,11 +1279,14 @@ window.initPlayground = function () {
                 paste(x, y);
                 break;
             }
+            case 'auto-io':
+                items.forEach(el => autoAddIO(el));
+                updateConnections();
+                break;
         }
 
         hideCtxMenu();
     });
-
 
     const cursorPos = {x: 0, y: 0};
     workspace.addEventListener('mousemove', e => {
@@ -1112,7 +1385,6 @@ window.initPlayground = function () {
 
             Object.assign(band.style, {left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px'});
 
-            // --- проверяем пересечение с каждым .workspace-element ---
             document.querySelectorAll('.workspace-element').forEach(el => {
                 const ex = parseFloat(el.style.left) || 0;
                 const ey = parseFloat(el.style.top) || 0;
