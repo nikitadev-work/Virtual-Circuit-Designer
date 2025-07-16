@@ -543,7 +543,7 @@ button.playground {
     padding: 0;
     background-color: transparent;
     border: none;
-    border-radius: 0;
+    border-radius: 20px;
     cursor: move;
     user-select: none;
     z-index: 1;
@@ -551,6 +551,8 @@ button.playground {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 95px;
+    height: 60px;
 }
 
 
@@ -636,20 +638,20 @@ button.playground {
 .workspace-element.selected {
     box-shadow: 0 0 0 2px #008df1;
     border-radius: 20px;
-    width: 60px;
-    height: 90px;
+    width: 95px;
+    height: 60px;
 }
 
 .workspace-element.selected[data-type="INPUT"] {
     box-shadow: 0 0 0 2px #00c853; /* зеленое выделение */
     border-radius: 20px;
-    width: 60px;
-    height: 90px;
+    width: 70px;
+    height: 30px;
 }
 
 .workspace-element.selected[data-type="OUTPUT"] {
     box-shadow: 0 0 0 2px #ff9100; /* оранжевое выделение */
     border-radius: 20px;
-    width: 60px;
-    height: 90px;
+    width: 70px;
+    height: 30px;
 }

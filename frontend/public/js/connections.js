@@ -785,7 +785,14 @@ window.initPlayground = function () {
         snapPort?.classList.remove('highlight');
         snapPort = null;
 
-        if (!currentLine) return;
+        // Если не попали по порту — просто удалить временную линию и сбросить переменные
+        if (!targetPort) {
+            currentLine.remove();
+            currentLine = startElement = startPort = null;
+            document.removeEventListener('mousemove', dragTempLine);
+            document.removeEventListener('mouseup', finishLine);
+            return;
+        }
 
         const isInput = p => p?.classList.contains('input-port');
         const isOutput = p => p?.classList.contains('output-port');
