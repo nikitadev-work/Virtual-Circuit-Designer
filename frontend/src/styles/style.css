@@ -653,7 +653,7 @@ button.playground {
 }
 
 .workspace-element.selected[data-type="OUTPUT"] {
-    box-shadow: 0 0 0 2px ##008df1; /* оранжевое выделение */
+    box-shadow: 0 0 0 2px #008df1; /* оранжевое выделение */
     border-radius: 20px;
     width: 75px;
     height: 40px;

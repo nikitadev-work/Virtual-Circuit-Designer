@@ -538,7 +538,67 @@ window.initPlayground = function () {
         }[id] || 'INPUT';
     }
 
+    async function simulateCircuit() {
+        const circuit_description = exportSchemeAsList();
+        const circuit_inputs = collectInputs();
 
+        if (!circuit_description.length) {
+            alert("Схема пуста, нечего симулировать");
+            return;
+        }
+
+        const HOST = window.location.hostname;
+        const API_URL = `http://${HOST}:8052/api/circuits/simulate`;
+        const TOKEN = localStorage.getItem('token');
+
+        const headers = {
+            'Content-type': 'application/json',
+            ...(TOKEN && { Authorization: `Bearer ${TOKEN}` })
+        };
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    circuit_description,
+                    circuit_inputs
+                })
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Ошибка симуляции: ${text}`);
+            }
+
+            const data = await res.json();
+
+            // Обновляем OUTPUT-элементы
+            const outputs = document.querySelectorAll('.workspace-element[data-type="OUTPUT"]');
+            data.simulation_result.forEach((val, idx) => {
+                const el = outputs[idx];
+                if (el) {
+                    el.dataset.value = String(val); // обновляем data-value
+                    const img = el.querySelector('img');
+                    if (img) {
+                        img.src = `/Icons/Inputs&Outputs/OUTPUT-${val}.svg`;
+                    }
+                }
+            });
+
+            // (опционально) выводим результат
+            const resultDiv = document.getElementById('simulation-result');
+            if (resultDiv) {
+                resultDiv.textContent = "Simulation result: " + JSON.stringify(data.simulation_result);
+            }
+
+            alert("Simulation result: " + JSON.stringify(data.simulation_result));
+        } catch (err) {
+            console.error('Ошибка симуляции:', err);
+            alert('Произошла ошибка при симуляции схемы: ' + err.message);
+        }
+    }
+
+    // Сохранение, экспорт, симуляция схемы
     const saveBtn = document.getElementById('save-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', sendCircuit);
@@ -550,6 +610,11 @@ window.initPlayground = function () {
             const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
             loadCircuit(id).then();
         });
+    }
+    
+    const playBtn = document.getElementById('play-btn');
+    if (playBtn) {
+        playBtn.addEventListener('click', simulateCircuit);
     }
 
 
