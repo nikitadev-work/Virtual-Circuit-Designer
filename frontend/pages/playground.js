@@ -8,7 +8,6 @@ import {useSearchParams} from "next/navigation";
 import {BackToDashboardButton} from "../src/components/BackToDashboardButton";
 
 import Head from 'next/head';
-import Script from 'next/script';
 import Image from 'next/image';
 
 
