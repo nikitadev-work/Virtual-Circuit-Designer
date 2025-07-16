@@ -46,6 +46,26 @@ window.initPlayground = function () {
                 selectedLine = null;
             }
         }
+        if (e.key.toLowerCase() === 'e' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+            document.querySelectorAll('.workspace-element.selected').forEach(el => {
+                const type = (el.dataset.type || '').toUpperCase();
+                if (type === "INPUT" || type === "OUTPUT") {
+                    // Меняем data-value напрямую
+                    el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                    // Если есть inputControl, синхронизируем его
+                    const inputControl = el.querySelector('input[type=number]');
+                    if (inputControl) {
+                        inputControl.value = el.dataset.value;
+                    }
+                } else {
+                    el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                }
+                const img = el.querySelector('img');
+                if (img) {
+                    img.src = `/Icons/Inputs&Outputs/${type}-${el.dataset.value}.svg`;
+                }
+            });
+        }
     });
 
     const GRID = 25;
@@ -210,6 +230,9 @@ window.initPlayground = function () {
         el.dataset.angle = 0;
         el.dataset.scaleX = 1;
         el.dataset.scaleY = 1;
+        if (type === "INPUT") {
+            el.dataset.value = '0';
+        }
 
         const img = document.createElement('img');
         img.src = icon;
