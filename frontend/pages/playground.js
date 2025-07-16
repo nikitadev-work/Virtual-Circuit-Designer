@@ -102,6 +102,22 @@ export default function Page() {
         }
     }, [circuit]);
 
+    useEffect(() => {
+        const script = document.createElement("script");
+        script.src = "/js/connections.js";
+        script.async = true;
+        script.onload = () => {
+            console.log("connections.js loaded");
+            if (typeof window.initPlayground === "function") {
+                window.initPlayground();
+            }
+        };
+        document.body.appendChild(script);
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
+
     return (
         <>
             <Head>
@@ -236,18 +252,6 @@ export default function Page() {
 
             <footer className="footer"></footer>
 
-            {typeof window !== "undefined" && (
-                <Script
-                    src="/js/connections.js"
-                    strategy="lazyOnload"
-                    onLoad={() => {
-                        console.log("connections.js loaded");
-                        if (typeof window.initPlayground === "function") {
-                            window.initPlayground();
-                        }
-                    }}
-                />
-            )}
         </>
     );
 }

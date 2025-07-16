@@ -639,3 +639,17 @@ button.playground {
     width: 60px;
     height: 90px;
 }
+
+.workspace-element.selected[data-type="INPUT"] {
+    box-shadow: 0 0 0 2px #00c853; /* зеленое выделение */
+    border-radius: 20px;
+    width: 60px;
+    height: 90px;
+}
+
+.workspace-element.selected[data-type="OUTPUT"] {
+    box-shadow: 0 0 0 2px #ff9100; /* оранжевое выделение */
+    border-radius: 20px;
+    width: 60px;
+    height: 90px;
+}
