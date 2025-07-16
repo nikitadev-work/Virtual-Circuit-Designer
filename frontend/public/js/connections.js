@@ -571,17 +571,25 @@ window.initPlayground = function () {
             }
 
             const data = await res.json();
+            console.log('simulation_result:', data.simulation_result);
+            console.log('OUTPUT elements:', outputs);
 
             // Обновляем OUTPUT-элементы
             const outputs = document.querySelectorAll('.workspace-element[data-type="OUTPUT"]');
             data.simulation_result.forEach((val, idx) => {
                 const el = outputs[idx];
+                console.log('Updating OUTPUT', idx, 'to', val, el);
                 if (el) {
                     el.dataset.value = String(val); // обновляем data-value
                     const img = el.querySelector('img');
                     if (img) {
                         img.src = `/Icons/Inputs&Outputs/OUTPUT-${val}.svg`;
+                        console.log('Updated img src:', img.src);
+                    } else {
+                        console.log('No img found in OUTPUT', idx);
                     }
+                } else {
+                    console.log('No OUTPUT element at index', idx);
                 }
             });
 
