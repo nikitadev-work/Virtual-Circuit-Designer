@@ -163,10 +163,12 @@ export default function Page() {
 
                 <div className="right-controls">
                     <button className="user-logo">M</button>
+                    
                     <button id="rightbar-toggle" className="settings-btn">
                         <Image width={20} height={20} src="/Icons/Logos/settings.svg" alt="setting"/>
                     </button>
-                    <button className="play-btn">
+
+                    <button id="play-btn" className="play-btn">
                         <Image width={20} height={20} src="/Icons/Logos/play.svg" alt="play"/>
                     </button>
 

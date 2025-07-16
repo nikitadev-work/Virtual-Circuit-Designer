@@ -1,4 +1,4 @@
-.playground {
+playground {
     margin: 0;
     font-family: Inter, sans-serif;
     font-weight: 400;
@@ -227,7 +227,6 @@ button.playground {
     box-shadow: 0 0 40px rgb(88, 183, 255)
 }
 
-/* Playground section */
 .playground-left-bar {
     display: inline-block;
     vertical-align: top;
@@ -285,24 +284,23 @@ button.playground {
 }
 
 
-/* Свёрнутое состояние (полностью скрыто) */
 .playground-right-bar.is-collapsed {
     width: 0;
     opacity: 0;
     overflow: hidden;
 }
 
-/* Скрытие ползунка */
+
 .playground-left-bar {
-    scrollbar-width: none; /* для Firefox */
-    -ms-overflow-style: none; /* для IE и Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .playground-left-bar::-webkit-scrollbar {
-    display: none; /* для Chrome, Safari */
+    display: none;
 }
 
-/* Содержимое панели (должно оставаться внутри) */
+
 .sidebar-tail {
     width: 290px;
     padding: 16px;
@@ -310,15 +308,15 @@ button.playground {
     transition: opacity 0.3s ease;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрирует по горизонтали */
+    align-items: center;
 }
 
-/* Скрываем содержимое при сворачивании */
+
 .playground-right-bar.is-collapsed .sidebar-tail {
     opacity: 0;
 }
 
-/* Корректировка workspace при скрытии панели */
+
 .playground-right-bar + .canvas-container {
     margin-right: 290px;
     transition: margin-right 0.3s ease;
@@ -336,12 +334,11 @@ button.playground {
     place-items: center;
 }
 
-/* базовый стиль */
 .draggable-item {
     flex: 1 1 110px;
     aspect-ratio: 1 / 1;
     border-radius: 12px;
-    background: #f8f6f6; /* спокойный фон внутри панели */
+    background: #f8f6f6;
     box-shadow: 0 1px 3px rgba(255, 255, 255, 0.25);
     display: flex;
     justify-content: center;
@@ -353,14 +350,12 @@ button.playground {
     box-shadow .25s ease;
 }
 
-/* «приятная» реакция на курсор */
 .draggable-item:hover {
     background-color: #e0ffff;
     transform: translateY(-6px) scale(1.05);
     box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
 }
 
-/* небольшое «сжатие» при зажатой кнопке мыши */
 .draggable-item:active {
     transform: translateY(-2px) scale(.97);
 }
@@ -428,7 +423,6 @@ button.playground {
     animation: introTitle 6s ease forwards;
 }
 
-/* Интро */
 @keyframes introMove {
     0%   { transform: translateX(-50%); }
     100% { transform: translateX(calc(-15% - 75px)); }
@@ -540,7 +534,6 @@ button.playground {
 }
 
 
-/* Elements in workspace */
 .workspace-element {
     position: absolute;
     padding: 0;
@@ -580,7 +573,6 @@ button.playground {
     z-index: 9999;
 }
 
-/* Ports */
 .port {
     width: 10px;
     height: 10px;
@@ -610,7 +602,7 @@ button.playground {
 
 .context-menu {
     position: absolute;
-    z-index: 2000; /* выше элементов и линий */
+    z-index: 2000;
     min-width: 160px;
     padding: 4px;
     border-radius: 12px;
@@ -646,14 +638,14 @@ button.playground {
 }
 
 .workspace-element.selected[data-type="INPUT"] {
-    box-shadow: 0 0 0 2px #008df1; /* зеленое выделение */
+    box-shadow: 0 0 0 2px #008df1;
     border-radius: 20px;
     width: 75px;
     height: 40px;
 }
 
 .workspace-element.selected[data-type="OUTPUT"] {
-    box-shadow: 0 0 0 2px #008df1; /* оранжевое выделение */
+    box-shadow: 0 0 0 2px #008df1;
     border-radius: 20px;
     width: 75px;
     height: 40px;
