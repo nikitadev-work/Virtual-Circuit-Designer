@@ -376,22 +376,19 @@ window.initPlayground = function () {
     }
 
     // Экспорт
-    // ⬇︎ Исправленная функция загрузки схемы
     window.loadCircuit = async function loadCircuit(id) {
-        /* проверяем аргумент */
         if (id == null || id === '') {
             alert('Не передан ID схемы');
             return;
         }
         id = String(id).trim();
-        if (!/^\d+$/.test(id)) {                    // только число
+        if (!/^\d+$/.test(id)) {                   
             alert(`ID схемы должен быть целым числом: «${id}»`);
             return;
         }
 
         const headers = TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {};
 
-        /* добавляем user_id в query-строку */
         const url = new URL(`${API_URL}/${id}`);
         url.searchParams.set('user_id', USER_ID);
 
@@ -435,10 +432,10 @@ window.initPlayground = function () {
             el.dataset.angle = 0;
             el.dataset.scaleX = 1;
             el.dataset.scaleY = 1;
-
+            // Необходимо изменить
             const match = coordinates.find(([id]) => id === i);
             const coords = match?.[1];
-            el.style.left = coords ? `${coords[0]}px` : `${100 + i * 100}px`;
+            el.style.left = coords ? `${coords[0]}px` : `100px`;
             el.style.top = coords ? `${coords[1]}px` : `100px`;
 
             const img = document.createElement('img');
