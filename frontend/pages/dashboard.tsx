@@ -141,19 +141,44 @@ export default function Dashboard() {
     }, [projects, userId])
 
 
-    const handleDeleteProject = (projectId: string) => {
-        const saved = localStorage.getItem(getStorageKey(userId))
-        if (!saved) return
+    const handleDeleteProject = async (projectId: string) => {
+        if (!userId || !token) return;
+
+        const HOST = window.location.hostname;
 
         try {
-            const parsed = JSON.parse(saved)
-            const updated = parsed.filter((proj: Project) => proj.id !== projectId)
-            localStorage.setItem(getStorageKey(userId), JSON.stringify(updated))
-            setProjects(updated)
+            // Удаляем с бэкенда
+            const res = await fetch(`http://${HOST}:8052/api/circuits/${projectId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Ошибка при удалении проекта с сервера:", errorText);
+                alert("Не удалось удалить проект: " + errorText);
+                return;
+            }
+
+            // Удаляем из локального состояния
+            setProjects((prev) => prev.filter((proj) => proj.id !== projectId));
+            setBackendCircuits((prev) => prev.filter((proj) => proj.id !== projectId));
+
+            // Также удаляем из localStorage
+            const key = getStorageKey(userId);
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const updated = parsed.filter((proj: Project) => proj.id !== projectId);
+                localStorage.setItem(key, JSON.stringify(updated));
+            }
+
         } catch (e) {
-            console.error("Failed to delete project", e)
+            alert("Произошла ошибка при удалении проекта.");
         }
-    }
+    };
     const handleCreateProject = async () => {
         if (!newTitle.trim() || !userId || !token) return;
 
