@@ -176,6 +176,7 @@ export default function Dashboard() {
             }
 
         } catch (e) {
+            console.error("Ошибка при удалении проекта:", e);
             alert("Произошла ошибка при удалении проекта.");
         }
     };
