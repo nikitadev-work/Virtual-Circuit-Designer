@@ -177,43 +177,67 @@ func (h *DBHandler) CircuitsHandler(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *DBHandler) CircuitByIDHandler(resp http.ResponseWriter, req *http.Request) {
-	config.DbLogger.Println("User circuit by ID request")
-	if req.Method != http.MethodGet {
-		http.Error(resp, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+	switch req.Method {
+	case http.MethodGet:
+		config.DbLogger.Println("User circuit by ID request")
 
-	pathParts := strings.Split(req.URL.Path, "/")
-	if len(pathParts) < 3 {
-		http.Error(resp, "Invalid circuit ID", http.StatusBadRequest)
-		return
-	}
+		pathParts := strings.Split(req.URL.Path, "/")
+		if len(pathParts) < 3 {
+			http.Error(resp, "Invalid circuit ID", http.StatusBadRequest)
+			return
+		}
 
-	circuitID, err := strconv.Atoi(pathParts[2])
-	if err != nil {
-		http.Error(resp, "Circuit ID must be a number", http.StatusBadRequest)
-		return
-	}
+		circuitID, err := strconv.Atoi(pathParts[2])
+		if err != nil {
+			http.Error(resp, "Circuit ID must be a number", http.StatusBadRequest)
+			return
+		}
 
-	userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
-	if err != nil {
-		http.Error(resp, "Invalid user_id", http.StatusBadRequest)
-		return
-	}
+		userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
+		if err != nil {
+			http.Error(resp, "Invalid user_id", http.StatusBadRequest)
+			return
+		}
 
-	circuit, err := h.db.GetCircuitByID(userID, circuitID)
-	if err != nil {
-		config.DbLogger.Println("Error while getting circuit by ID from DB")
-		http.Error(resp, "Error while getting circuit by ID from DB", http.StatusInternalServerError)
-		return
-	}
+		circuit, err := h.db.GetCircuitByID(userID, circuitID)
+		if err != nil {
+			config.DbLogger.Println("Error while getting circuit by ID from DB")
+			http.Error(resp, "Error while getting circuit by ID from DB", http.StatusInternalServerError)
+			return
+		}
 
-	config.DbLogger.Println("Circuits getting request completed")
-	resp.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(resp).Encode(circuit)
-	if err != nil {
-		config.DbLogger.Println("Error while writing response for circuit by ID get request")
-		http.Error(resp, "Error while writing response for circuit by ID get request", http.StatusInternalServerError)
-		return
+		config.DbLogger.Println("Circuits getting request completed")
+		resp.Header().Set("Content-Type", "application/json")
+		err = json.NewEncoder(resp).Encode(circuit)
+		if err != nil {
+			config.DbLogger.Println("Error while writing response for circuit by ID get request")
+			http.Error(resp, "Error while writing response for circuit by ID get request", http.StatusInternalServerError)
+			return
+		}
+	case http.MethodDelete:
+		config.DbLogger.Println("User circuit delete request")
+		pathParts := strings.Split(req.URL.Path, "/")
+		if len(pathParts) < 3 {
+			http.Error(resp, "Invalid circuit ID", http.StatusBadRequest)
+		}
+		circuitID, err := strconv.Atoi(pathParts[2])
+		if err != nil {
+			http.Error(resp, "Circuit ID must be a number", http.StatusBadRequest)
+			return
+		}
+		userID, err := strconv.Atoi(req.URL.Query().Get("user_id"))
+		if err != nil {
+			http.Error(resp, "Invalid user_id", http.StatusBadRequest)
+			return
+		}
+		err = h.db.DeleteCircuitByID(userID, circuitID)
+		if err != nil {
+			resp.WriteHeader(http.StatusInternalServerError)
+		} else {
+			resp.WriteHeader(http.StatusOK)
+		}
+	default:
+		config.DbLogger.Println("This method is not allowed: ", req.Method)
+		resp.WriteHeader(http.StatusBadRequest)
 	}
 }

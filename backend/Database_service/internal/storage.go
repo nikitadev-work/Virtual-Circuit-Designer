@@ -250,3 +250,13 @@ func (db *PostgresDB) GetCircuitByID(userId, circuitId int) (Circuit, error) {
 	config.DbLogger.Println("Got circuit")
 	return c, nil
 }
+
+func (db *PostgresDB) DeleteCircuitByID(userID, circuitID int) error {
+	query := "Delete FROM Circuits WHERE id = $1 AND user_id = $2"
+	_, err := db.conn.Exec(query, userID, circuitID)
+	if err != nil {
+		config.DbLogger.Println("Error while deleting circuit of user: ", err)
+		return err
+	}
+	return nil
+}

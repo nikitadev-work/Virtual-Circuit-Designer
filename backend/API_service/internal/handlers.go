@@ -262,12 +262,54 @@ func RequestsWithTokenHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		GetCircuitByIDHandler(w, r, response.UserId, circuitID)
+		switch r.Method {
+		case http.MethodGet:
+			GetCircuitByIDHandler(w, r, response.UserId, circuitID)
+		case http.MethodDelete:
+			DeleteCircuitByIDHandler(w, r, response.UserId, circuitID)
+		default:
+			config.APILogger.Println("Unsupported method: " + r.URL.Path)
+			http.Error(w, "Unsupported method", http.StatusBadRequest)
+		}
+
 	default:
 		config.APILogger.Println("Error while processing request: " + r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+}
+
+func DeleteCircuitByIDHandler(w http.ResponseWriter, r *http.Request, userID int, circuitID int) {
+	config.APILogger.Println("Redirected to DeleteCircuitByIDHandler")
+
+	writeCORS(w, r)
+
+	reqURL := fmt.Sprintf(config.DatabaseServiceURL+"/circuits/%d?user_id=%d", userID, circuitID)
+
+	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
+	if err != nil {
+		config.APILogger.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := config.Client.Do(req)
+	if err != nil {
+		config.APILogger.Println("Delete circuit by ID: " + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		config.APILogger.Println("Error while deleting circuit by ID: Status " + resp.Status)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	config.APILogger.Println("Successfully deleted circuit by ID")
+	w.WriteHeader(http.StatusOK)
 }
 
 func CircuitsHandler(w http.ResponseWriter, r *http.Request, userID int) {
