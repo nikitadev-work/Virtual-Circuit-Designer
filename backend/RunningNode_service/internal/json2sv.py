@@ -134,7 +134,7 @@ def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: 
         elif gtp == GT_NOT:
             gate_in = gate[GATE_INPUTS][0][IO_GATE_WIRENO]
             gate_out = gate[GATE_OUTPUTS][0][IO_GATE_WIRENO]
-            out_file.write(f"w{gate_in} = w{gate_out}")
+            out_file.write(f"w{gate_out} = !w{gate_in}")
         else:
             gate_in1, gate_in2 = gate[GATE_INPUTS][0][IO_GATE_WIRENO], gate[GATE_INPUTS][1][IO_GATE_WIRENO]
             gate_out = gate[GATE_OUTPUTS][0][IO_GATE_WIRENO]
@@ -146,11 +146,11 @@ def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: 
             elif gtp == GT_XOR:
                 out_file.write(f"w{gate_in1} ^ w{gate_in2}")
             elif gtp == GT_NAND:
-                out_file.write(f"~(w{gate_in1} & w{gate_in2})")
+                out_file.write(f"!(w{gate_in1} & w{gate_in2})")
             elif gtp == GT_NOR:
-                out_file.write(f"~(w{gate_in1} | w{gate_in2})")
-            elif gtp == G_XNOR:
-                out_file.write(f"~(w{gate_in1} ^ w{gate_in2})")
+                out_file.write(f"!(w{gate_in1} | w{gate_in2})")
+            elif gtp == GT_XNOR:
+                out_file.write(f"!(w{gate_in1} ^ w{gate_in2})")
             else:
                 print(f"Error: incorrect gate type at the gate no. {i}: type = {gtp}")
                 exit()
@@ -160,13 +160,15 @@ def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: 
 
 
 def verify_inputs(inputs, module_inputs: list[int]):
-    if type(inputs) != list:
+    if type(inputs) != list or len(inputs) != len(module_inputs):
         print("Error: top-level object isn't an array")
         exit()
     for i in range(len(inputs)):
         if type(inputs[i]) != int or inputs[i] < 0 or inputs[i] > 1:
             print(f"Error: incorrect input value: {inputs[i]}")
             exit()
+
+
 def write_testbench(inputs: list[int], output_cnt: int, filename: str):
     try:
         out_file = open(filename + ".sv", "w")
