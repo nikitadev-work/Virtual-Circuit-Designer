@@ -639,6 +639,8 @@ window.initPlayground = function () {
         const circuit_description = exportSchemeAsList();
         const circuit_inputs = collectInputs();
 
+        console.log('simulateCircuit payload:', { circuit_description, circuit_inputs });
+
         if (!circuit_description.length) {
             alert("Схема пуста, нечего симулировать");
             return;
