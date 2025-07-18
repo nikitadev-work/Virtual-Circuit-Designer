@@ -242,41 +242,86 @@ window.initPlayground = function () {
         if (type === "INPUT") {
             el.dataset.value = '0';
         }
+        if (type === "OUTPUT") {
+            el.dataset.value = '0';
+        }
 
+        // --- Новый способ: flex-контейнер с valueDisplay и img ---
         const img = document.createElement('img');
         img.src = icon;
-
         const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
         if (logicTypes.includes(type)) {
             img.style.transform = 'rotate(90deg)';
         }
 
-        el.appendChild(img);
-        addPorts(el);
-
+        let flexContainer;
         if (type === "INPUT") {
-            const inputControl = document.createElement('input');
-            inputControl.type = 'number';
-            inputControl.min = '0';
-            inputControl.max = '1';
-            inputControl.value = '0';
-            inputControl.className = 'input-control';
-            inputControl.addEventListener('change', () => {
-                el.dataset.value = inputControl.value;
+            flexContainer = document.createElement('div');
+            flexContainer.style.display = 'flex';
+            flexContainer.style.flexDirection = 'row';
+            flexContainer.style.alignItems = 'center';
+
+            const valueDisplay = document.createElement('div');
+            valueDisplay.className = 'input-value-toggle';
+            valueDisplay.textContent = el.dataset.value;
+            valueDisplay.style.cursor = 'pointer';
+            valueDisplay.style.userSelect = 'none';
+            valueDisplay.style.padding = '2px 8px';
+            valueDisplay.style.borderRadius = '6px';
+            valueDisplay.style.background = '#eee';
+            valueDisplay.style.marginTop = '0';
+            valueDisplay.style.marginRight = '8px';
+            valueDisplay.style.display = 'inline-block';
+            valueDisplay.addEventListener('click', () => {
+                el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                valueDisplay.textContent = el.dataset.value;
                 const img = el.querySelector('img');
                 if (img) {
                     img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
                 }
             });
-            el.appendChild(inputControl);
+
+            flexContainer.appendChild(valueDisplay);
+            flexContainer.appendChild(img);
+            el.appendChild(flexContainer);
+        } else if (type === "OUTPUT") {
+            flexContainer = document.createElement('div');
+            flexContainer.style.display = 'flex';
+            flexContainer.style.flexDirection = 'row';
+            flexContainer.style.alignItems = 'center';
+
+            const valueDisplay = document.createElement('div');
+            valueDisplay.className = 'output-value-display';
+            valueDisplay.textContent = el.dataset.value;
+            valueDisplay.style.padding = '2px 8px';
+            valueDisplay.style.borderRadius = '6px';
+            valueDisplay.style.background = '#eee';
+            valueDisplay.style.marginTop = '0';
+            valueDisplay.style.marginRight = '8px';
+            valueDisplay.style.display = 'inline-block';
+
+            flexContainer.appendChild(img);
+            flexContainer.appendChild(valueDisplay);
+            el.appendChild(flexContainer);
+        } else {
+            el.appendChild(img);
         }
+        // --- конец нового способа ---
 
-        const pt = clientToWorkspace(e.clientX, e.clientY);
-        el.style.left = snap(pt.x) + 'px';
-        el.style.top = snap(pt.y) + 'px';
-
+        addPorts(el);
         enableElementDrag(el);
         workspace.appendChild(el);
+        if (type !== "INPUT" && type !== "OUTPUT") {
+            // для логических блоков позиционируем по центру
+            const pt = clientToWorkspace(e.clientX, e.clientY);
+            el.style.left = snap(pt.x) + 'px';
+            el.style.top = snap(pt.y) + 'px';
+        } else {
+            // для INPUT/OUTPUT тоже позиционируем
+            const pt = clientToWorkspace(e.clientX, e.clientY);
+            el.style.left = snap(pt.x) + 'px';
+            el.style.top = snap(pt.y) + 'px';
+        }
     }
 
     function exportSchemeAsList() {
@@ -462,7 +507,7 @@ window.initPlayground = function () {
 
         const elements = [];
 
-        circuit.forEach(([type, inputs = [], outputs = []], i) => {
+        circuit.forEach(([type, inputsArr = [], outputsArr = []], i) => {
             const el = document.createElement('div');
             el.className = 'workspace-element';
             el.dataset.type = getTypeName(type);
@@ -474,9 +519,7 @@ window.initPlayground = function () {
             el.style.left = coords ? `${coords[0]}px` : `100px`;
             el.style.top = coords ? `${coords[1]}px` : `100px`;
 
-            const img = document.createElement('img');
             const typeName = getTypeName(type).toUpperCase();
-
             let iconPath;
             if (typeName === 'INPUT' || typeName === 'OUTPUT') {
                 const value = typeName === 'INPUT' ? (inputs.shift() ?? '0') : '0';
@@ -484,33 +527,68 @@ window.initPlayground = function () {
                 iconPath = `/Icons/Inputs&Outputs/${typeName}-${value}.svg`;
             } else {
                 iconPath = `/Icons/LogicBlocks/${typeName.toLowerCase()}.svg`;
-                const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
-                if (logicTypes.includes(typeName)) {
-                    img.style.transform = 'rotate(90deg)';
-                }
             }
+            const img = document.createElement('img');
             img.src = iconPath;
-            el.appendChild(img);
+            const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
+            if (logicTypes.includes(typeName)) {
+                img.style.transform = 'rotate(90deg)';
+            }
 
-            addPorts(el);
+            let flexContainer;
+            if (typeName === "INPUT") {
+                flexContainer = document.createElement('div');
+                flexContainer.style.display = 'flex';
+                flexContainer.style.flexDirection = 'row';
+                flexContainer.style.alignItems = 'center';
 
-            if (typeName === 'INPUT') {
-                const inputControl = document.createElement('input');
-                inputControl.type = 'number';
-                inputControl.min = '0';
-                inputControl.max = '1';
-                inputControl.value = el.dataset.value;
-                inputControl.className = 'input-control';
-                inputControl.addEventListener('change', () => {
-                    el.dataset.value = inputControl.value;
+                const valueDisplay = document.createElement('div');
+                valueDisplay.className = 'input-value-toggle';
+                valueDisplay.textContent = el.dataset.value;
+                valueDisplay.style.cursor = 'pointer';
+                valueDisplay.style.userSelect = 'none';
+                valueDisplay.style.padding = '2px 8px';
+                valueDisplay.style.borderRadius = '6px';
+                valueDisplay.style.background = '#eee';
+                valueDisplay.style.marginTop = '0';
+                valueDisplay.style.marginRight = '8px';
+                valueDisplay.style.display = 'inline-block';
+                valueDisplay.addEventListener('click', () => {
+                    el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                    valueDisplay.textContent = el.dataset.value;
                     const img = el.querySelector('img');
                     if (img) {
                         img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
                     }
                 });
-                el.appendChild(inputControl);
+
+                flexContainer.appendChild(valueDisplay);
+                flexContainer.appendChild(img);
+                el.appendChild(flexContainer);
+            } else if (typeName === "OUTPUT") {
+                flexContainer = document.createElement('div');
+                flexContainer.style.display = 'flex';
+                flexContainer.style.flexDirection = 'row';
+                flexContainer.style.alignItems = 'center';
+
+                const valueDisplay = document.createElement('div');
+                valueDisplay.className = 'output-value-display';
+                valueDisplay.textContent = el.dataset.value;
+                valueDisplay.style.padding = '2px 8px';
+                valueDisplay.style.borderRadius = '6px';
+                valueDisplay.style.background = '#eee';
+                valueDisplay.style.marginTop = '0';
+                valueDisplay.style.marginRight = '8px';
+                valueDisplay.style.display = 'inline-block';
+
+                flexContainer.appendChild(img);
+                flexContainer.appendChild(valueDisplay);
+                el.appendChild(flexContainer);
+            } else {
+                el.appendChild(img);
             }
 
+            addPorts(el);
             enableElementDrag(el);
             workspace.appendChild(el);
             elements.push(el);
