@@ -565,7 +565,7 @@ window.initPlayground = function () {
         }
 
         const HOST = window.location.hostname;
-        const API_URL = `http://${HOST}:8084/api/circuits/simulate`;
+        const API_URL = `http://${HOST}:8052/api/circuits/simulate`;
         const TOKEN = localStorage.getItem('token');
 
         const headers = {
