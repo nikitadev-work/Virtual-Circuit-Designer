@@ -86,6 +86,12 @@ services:
       my_shared_network:
         ipv4_address: 172.18.0.10
 
+  runningnode-service:
+    build:
+      context: ./backend/RunningNode_service
+    networks:
+      - my_shared_network
+
   frontend:
     image: nikitakhripunkov/frontend-vcd:${FRONTEND_TAG}
     restart: always
