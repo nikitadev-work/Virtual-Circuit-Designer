@@ -54,6 +54,15 @@ build_auth:
   only:
     - main
 
+build_runnernode:
+  stage: build
+  extends: .build-with-kaniko
+  variables:
+    CONTEXT_DIR: backend/RunningNode_service
+    IMAGE_NAME: backend-runnernode-service
+  only:
+    - main
+
 build_dbsvc:
   stage: build
   extends: .build-with-kaniko
@@ -81,6 +90,7 @@ deploy_to_server:
     export API_TAG=$CI_COMMIT_SHORT_SHA
     export AUTH_TAG=$CI_COMMIT_SHORT_SHA
     export DB_TAG=$CI_COMMIT_SHORT_SHA
+    export RNND_TAG=$CI_COMMIT_SHORT_SHA
     export FRONTEND_TAG=$CI_COMMIT_SHORT_SHA
 
     ssh -i ~/.ssh/id_ed25519 root@85.198.81.168 <<EOF
@@ -98,6 +108,7 @@ deploy_to_server:
       echo "API_TAG=$API_TAG"       > .env
       echo "AUTH_TAG=$AUTH_TAG"    >> .env
       echo "DB_TAG=$DB_TAG"        >> .env
+      echo "RNND_TAG=$RNND_TAG"   >> .env
       echo "FRONTEND_TAG=$FRONTEND_TAG" >> .env
 
       docker-compose --env-file .env pull
