@@ -411,11 +411,12 @@ button.playground {
 }
 
 .logo-img {
-    width: 80px;
+    width: 90px;
     height: auto;
 }
 
 .page-name {
+    font-family: 'Nunito', sans-serif;
     font-weight: 550;
     font-size: 13px;
     transform: translateY(2px);
@@ -604,9 +605,9 @@ button.playground {
 .context-menu {
     position: absolute;
     z-index: 2000;
-    min-width: 160px;
+    min-width: 120px;
     padding: 4px;
-    border-radius: 12px;
+    border-radius: 20px;
     background: #fff;
     box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
     font-family: Inter, sans-serif;
@@ -623,12 +624,12 @@ button.playground {
     background: none;
     text-align: left;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 20px;
     font-size: 14px;
 }
 
 .context-menu button:hover {
-    background: #e7f0ff;
+    background: #b4cffd;
 }
 
 .workspace-element.selected {

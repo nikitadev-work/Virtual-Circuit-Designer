@@ -91,15 +91,17 @@ window.initPlayground = function () {
     const ctxMenu = document.createElement('div');
     ctxMenu.className = 'context-menu hidden';
     ctxMenu.innerHTML = `
+      <button data-action="auto-io">Add IO</button>
+      <hr>
       <button data-action="duplicate">Duplicate</button>
       <button data-action="cut">Cut</button>
       <button data-action="delete">Delete</button>
       <hr>
       <button data-action="r90">Turn 90°</button>
       <button data-action="r180">Turn 180°</button>
+      <hr>
       <button data-action="flipH">Flip horiz.</button>
       <button data-action="flipV">Flip vert.</button>
-      <button data-action="auto-io">Add IO</button>
     `;
     document.body.appendChild(ctxMenu);
     let ctxTarget = null;
@@ -604,6 +606,8 @@ window.initPlayground = function () {
                     } else {
                         console.log('No img found in OUTPUT', idx);
                     }
+                    const valueDisplay = el.querySelector('.output-value-display');
+                    if (valueDisplay) valueDisplay.textContent = String(val);
                 } else {
                     console.log('No OUTPUT element at index', idx);
                 }
@@ -701,6 +705,11 @@ window.initPlayground = function () {
         e.preventDefault();
         ctxTarget = e.target.closest('.workspace-element');
 
+        if ((!ctxTarget && selection.size === 0) || (ctxTarget && !document.body.contains(ctxTarget))) {
+            hideCtxMenu();
+            return;
+        }
+
         const needEl = ['duplicate', 'cut', 'delete', 'r90', 'r180', 'flipH', 'flipV', 'auto-io'];
         ctxMenu.querySelectorAll('button').forEach(btn => {
             btn.disabled = !ctxTarget && needEl.includes(btn.dataset.action);
@@ -710,11 +719,28 @@ window.initPlayground = function () {
     });
 
     function showCtxMenu(x, y) {
-        const {innerWidth: w, innerHeight: h} = window;
-        const mW = 170, mH = 180;
-        ctxMenu.style.left = Math.min(x, w - mW) + 'px';
-        ctxMenu.style.top = Math.min(y, h - mH) + 'px';
+        ctxMenu.style.left = 2000;
+        ctxMenu.style.top = 2000;
         ctxMenu.classList.remove('hidden');
+        ctxMenu.classList.remove('open-up');
+
+        const menuRect = ctxMenu.getBoundingClientRect();
+        const {innerWidth: w, innerHeight: h} = window;
+        let left = x;
+        let top = y;
+
+        if (left + menuRect.width > w) {
+            left = w - menuRect.width;
+        }
+        if (top + menuRect.height > h) {
+            top = y - menuRect.height;
+            ctxMenu.classList.add('open-up');
+        }
+        left = Math.max(0, left);
+        top = Math.max(0, top);
+    
+        ctxMenu.style.left = left + 'px';
+        ctxMenu.style.top = top + 'px';
     }
 
     function hideCtxMenu() {
@@ -1158,26 +1184,40 @@ window.initPlayground = function () {
             input.dataset.angle = '0';
             input.dataset.scaleX = '1';
             input.dataset.scaleY = '1';
-            input.style.left = (parseFloat(el.style.left) - 80) + 'px';
-            input.style.top = (parseFloat(el.style.top) + i * 40) + 'px';
+            input.style.left = (parseFloat(el.style.left) - 150) + 'px';
+            input.style.top = (parseFloat(el.style.top) + i * 60) + 'px';
             const img = document.createElement('img');
             img.src = '/Icons/Inputs&Outputs/INPUT-0.svg';
-            input.appendChild(img);
 
-            const inputControl = document.createElement('input');
-            inputControl.type = 'number';
-            inputControl.min = '0';
-            inputControl.max = '1';
-            inputControl.value = '0';
-            inputControl.className = 'input-control';
-            inputControl.addEventListener('change', () => {
-                input.dataset.value = inputControl.value;
+            const valueDisplay = document.createElement('div');
+            valueDisplay.className = 'input-value-toggle';
+            valueDisplay.textContent = input.dataset.value;
+            valueDisplay.style.cursor = 'pointer';
+            valueDisplay.style.userSelect = 'none';
+            valueDisplay.style.padding = '2px 8px';
+            valueDisplay.style.borderRadius = '6px';
+            valueDisplay.style.background = '#eee';
+            valueDisplay.style.marginTop = '0';
+            valueDisplay.style.marginRight = '8px';
+            valueDisplay.style.display = 'inline-block';
+            valueDisplay.addEventListener('click', () => {
+                input.dataset.value = input.dataset.value === '1' ? '0' : '1';
+                valueDisplay.textContent = input.dataset.value;
                 const img = input.querySelector('img');
                 if (img) {
                     img.src = `/Icons/Inputs&Outputs/INPUT-${input.dataset.value}.svg`;
                 }
             });
-            input.appendChild(inputControl);
+
+            const flexContainer = document.createElement('div');
+            flexContainer.style.display = 'flex';
+            flexContainer.style.flexDirection = 'row';
+            flexContainer.style.alignItems = 'center';
+
+            flexContainer.appendChild(valueDisplay);
+            flexContainer.appendChild(img);
+
+            input.appendChild(flexContainer);
 
             addPorts(input);
             enableElementDrag(input);
@@ -1209,11 +1249,31 @@ window.initPlayground = function () {
             output.dataset.angle = '0';
             output.dataset.scaleX = '1';
             output.dataset.scaleY = '1';
-            output.style.left = (parseFloat(el.style.left) + 80) + 'px';
-            output.style.top = (parseFloat(el.style.top) + i * 40) + 'px';
+            output.style.left = (parseFloat(el.style.left) + 150) + 'px';
+            output.style.top = (parseFloat(el.style.top) + i * 60) + 'px';
             const img = document.createElement('img');
             img.src = '/Icons/Inputs&Outputs/OUTPUT-0.svg';
-            output.appendChild(img);
+
+            const valueDisplay = document.createElement('div');
+            valueDisplay.className = 'output-value-display';
+            valueDisplay.textContent = output.dataset.value;
+            valueDisplay.style.padding = '2px 8px';
+            valueDisplay.style.borderRadius = '6px';
+            valueDisplay.style.background = '#eee';
+            valueDisplay.style.marginTop = '0';
+            valueDisplay.style.marginRight = '8px';
+            valueDisplay.style.display = 'inline-block';
+            output.appendChild(valueDisplay);
+
+            const flexContainer = document.createElement('div');
+            flexContainer.style.display = 'flex';
+            flexContainer.style.flexDirection = 'row';
+            flexContainer.style.alignItems = 'center';
+
+            flexContainer.appendChild(img);
+            flexContainer.appendChild(valueDisplay);
+
+            output.appendChild(flexContainer);
 
             addPorts(output);
             enableElementDrag(output);
@@ -1243,24 +1303,36 @@ window.initPlayground = function () {
 
         const act = (e.target.dataset.action || '').toLowerCase();
 
+        // Проверка: если элемент удалён, закрыть меню и выйти
+        if (ctxTarget && !document.body.contains(ctxTarget)) {
+            hideCtxMenu();
+            return;
+        }
+
         const items = selection.size > 1 ? [...selection] : [ctxTarget];
+
+        const validItems = items.filter(el => el && document.body.contains(el));
+        if (validItems.length === 0) {
+            hideCtxMenu();
+            return;
+        }
 
         switch (act) {
             case 'r90':
             case 'r180':
             case 'fliph':
             case 'flipv':
-                items.forEach(el => applyTransform(el, act));
+                validItems.forEach(el => applyTransform(el, act));
                 updateConnections();
                 break;
 
             case 'delete':
-                deleteItems(items);
+                deleteItems(validItems);
                 break;
 
             case 'cut':
-                copy(items);
-                deleteItems(items);
+                copy(validItems);
+                deleteItems(validItems);
                 break;
 
             case 'duplicate':
@@ -1280,7 +1352,7 @@ window.initPlayground = function () {
                 break;
             }
             case 'auto-io':
-                items.forEach(el => autoAddIO(el));
+                validItems.forEach(el => autoAddIO(el));
                 updateConnections();
                 break;
         }
