@@ -110,7 +110,7 @@ func SimulateHandler(resp http.ResponseWriter, req *http.Request) {
 	}
 	defer errFile.Close()
 
-	pyScriptPath := filepath.Join("internal", "json2sv.py")
+	pyScriptPath := filepath.Join("./internal", "json2sv.py")
 	cmd1 := exec.Command("python3", pyScriptPath, schemePath, inputsPath)
 
 	cmd1.Stdout = errFile
