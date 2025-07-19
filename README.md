@@ -14,7 +14,7 @@
 
 ---
 
-# <div align="center">💻 Usage 💻</div>
+# <div align="center">💻 Project description 💻</div>
 
 ## <div align="center">▪️ <em>Project goals and description</em> ▪️</div>
 
@@ -68,7 +68,17 @@ external systems and data flows.
 3. **API → Auth, DB, Sim, S3, Analytics**: token validation, data persistence, simulation runs, file storage, telemetry
 4. **Compose → Services & Monitoring**: container startup
 5. **Promtail → Loki → Grafana**: log pipeline; Admin views dashboards
+6. 
+## <div align="center">👥 Team Members 👥</div>
+The following team members have contributed to the development of Visual Circuit Designer as of 12:03 PM CEST on Saturday, July 19, 2025:
 
+- **Iskander Kutlakhmetov** - Runner Node
+- **Nikita Khripunkov** - Back-end Developer
+- **Amir Gabdullin** - Back-end Developer
+- **Islam Gainullin** - Front-end Developer
+- **Ernest Kudakaev** - Front-end Developer
+
+For more detailed information about their contributions, please refer to the [Development documentation](docs/development/CONTRIBUTING.md).
 ## <div align="center">▪️ <em>Feature Roadmap</em> ▪️ </div>
 
 <div style="display: table; margin: 0 auto;">
@@ -183,7 +193,7 @@ After logging in, you’ll see these sections:
 - MVP validation is minimal—feel free to use any test data.
 
 ---
-
+# <div align="center">🖨️ Usage 🖨️</div>
 ## <div align="center">▪️ <em> Project Installation & Deployment instructions </em> ▪️</div>
 
 <div style="width: fit-content; margin: 0 auto; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
@@ -229,22 +239,6 @@ If you wish to run the project locally:
 
 ---
 
-<div align="center">
-  <font size="5">
-  <strong> 📢 What's new in MVP v2 📢 </strong>
-  </font>
-</div>
-<div align="center">
-
-- Compilation error handling
-- Improved drag-and-drop UI
-- Complete API logic for saving and loading circuit data
-- Deploy project to production server with CI/CD
-- Implement saving and loading of blocks
-- Load Previously Saved Designs
-- Save Schematics to User Account
-</div>
-
 <p align="center">
   <strong style="font-size:2.5em;">Hyperlinks to the Documentation</strong>
 </p>
@@ -252,29 +246,36 @@ If you wish to run the project locally:
 <ul style="list-style:none; padding:0; text-align:center;">
 <li style="font-size:1.5em; margin:0.5em 0;">
     <a href="docs/architecture/Architecture.md" style="text-decoration:none;">Architecture</a>
-  </li>
+</li>
+
+<li style="font-size:1.5em; margin:0.5em 0;">
+  <a href="docs/development/CONTRIBUTING.md" style="text-decoration:none;">Development</a>
+</li>
+<li style="font-size:1.5em; margin:0.5em 0;">
+  <a href="./docs/quality-attributes/quality-attribute-scenarios.md" style="text-decoration:none;">
+    Quality Characteristics &amp; Attribute Scenarios
+  </a>
+</li>
+<li style="font-size:1.5em; margin:0.5em 0;">
+  <a href="./docs/quality-assurance/automated-tests.md" style="text-decoration:none;">Quality Assurance Automated tests</a>
+</li>
   <li style="font-size:1.5em; margin:0.5em 0;">
-    <a href="docs/development/CONTRIBUTING.md" style="text-decoration:none;">Development</a>
-  </li>
-  <li style="font-size:1.5em; margin:0.5em 0;">
-    <a href="./docs/quality-attributes/quality-attribute-scenarios.md" style="text-decoration:none;">
-      Quality Characteristics &amp; Attribute Scenarios
-    </a>
-  </li>
-  <li style="font-size:1.5em; margin:0.5em 0;">
-    <a href="./docs/quality-assurance/automated-tests.md" style="text-decoration:none;">Quality Assurance Automated tests</a>
-  </li>
-   <li style="font-size:1.5em; margin:0.5em 0;">
-    <a href="./docs/quality-assurance/user-acceptance-tests.md" style="text-decoration:none;">Quality Assurance User tests</a>
-  </li>
-  <li style="font-size:1.5em; margin:0.5em 0;">
-    <a href="./docs/automation/continuous-delivery.md" style="text-decoration:none;">
-      Сontinuous delivery
-    </a>
-  </li>
+  <a href="./docs/quality-assurance/user-acceptance-tests.md" style="text-decoration:none;">Quality Assurance User tests</a>
+</li>
+<li style="font-size:1.5em; margin:0.5em 0;">
+  <a href="./docs/automation/continuous-delivery.md" style="text-decoration:none;">
+    Сontinuous delivery
+  </a>
+</li>
 <li style="font-size:1.5em; margin:0.5em 0;">
     <a href="./docs/automation/continuous-integration.md" style="text-decoration:none;">
       Сontinuous integration
+    </a>
+  </li>
+</ul>
+<li style="font-size:1.5em; margin:0.5em 0;">
+    <a href="./docs/reports/" style="text-decoration:none;">
+      All reports and AI usage
     </a>
   </li>
 </ul>
