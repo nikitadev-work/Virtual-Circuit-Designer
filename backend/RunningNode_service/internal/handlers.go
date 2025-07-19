@@ -169,17 +169,24 @@ func SimulateHandler(resp http.ResponseWriter, req *http.Request) {
 	str := string(data)
 	re := regexp.MustCompile(`\[([^\]]+)\]`)
 	matches := re.FindStringSubmatch(str)
-	var value int
+	var ans []int
+
 	if len(matches) > 1 {
-		temp := strings.TrimSpace(matches[1])
-		value, _ = strconv.Atoi(temp)
+		numbers := strings.Fields(matches[1])
+
+		for _, numStr := range numbers {
+			num, err := strconv.Atoi(numStr)
+			if err != nil {
+				config.RNLogger.Printf("Error converting number: %v", err)
+				continue
+			}
+			ans = append(ans, num)
+		}
 	} else {
 		config.RNLogger.Println("No answer")
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var ans []int
-	ans = append(ans, value)
 	resp.Header().Set("Content-Type", "application/json")
 	resp.WriteHeader(http.StatusOK)
 	json.NewEncoder(resp).Encode(map[string][]int{
