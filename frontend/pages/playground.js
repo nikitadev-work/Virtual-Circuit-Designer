@@ -171,7 +171,6 @@ export default function Page() {
                         <Image width={20} height={20} src="/Icons/Logos/play.svg" alt="play"/>
                     </button>
 
-                    <button id="export-btn" className="export-btn">Export</button>
                     <button id="save-btn" className="save-btn">Save</button>
                 </div>
             </header>
