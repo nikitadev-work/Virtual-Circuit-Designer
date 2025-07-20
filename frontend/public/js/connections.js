@@ -13,7 +13,11 @@ window.initPlayground = function () {
             const match = c.line === lineEl;
             if (match) {
                 lineEl.remove();
-                c.from.port.dataset.connected = 'false';
+                const isInputOutput = c.from.port?.parentElement?.dataset.type === 'INPUT' &&
+                c.from.port?.classList.contains('output-port');
+                if (!isInputOutput) {
+                    c.from.port.dataset.connected = 'false';
+                }
                 c.to.port.dataset.connected = 'false';
             }
             return !match;
@@ -340,22 +344,38 @@ window.initPlayground = function () {
             XNOR: 8
         };
 
-        connections = connections.filter(c => c.from.element.isConnected && c.to.element.isConnected);
+        // Фильтруем соединения, не изменяя глобальную переменную
+        const validConnections = connections.filter(c => 
+            document.body.contains(c.from.element) && 
+            document.body.contains(c.to.element)
+        );
 
         const gates = nodes.map(el => {
             const code = typeMap[(el.dataset.type || '').trim().toUpperCase()] ?? 0;
-            return [code, new Set(), new Set()];
+            return [code, [], []]; // Используем массивы вместо Set для сохранения дубликатов
         });
 
-        connections.forEach(({from, to}) => {
+        console.log('Valid connections:', validConnections);
+        console.log('Nodes:', nodes.map((el, i) => `${i}: ${el.dataset.type}`));
+        
+        validConnections.forEach(({from, to}) => {
             const a = nodeIndex.get(from.element);
             const b = nodeIndex.get(to.element);
             if (a == null || b == null) return;
-            gates[a][2].add(b);
-            gates[b][1].add(a);
+            console.log(`Connection: ${from.element.dataset.type}(${a}) -> ${to.element.dataset.type}(${b})`);
+            gates[a][2].push(b); // Добавляем в массив вместо Set
+            gates[b][1].push(a); // Добавляем в массив вместо Set
         });
 
-        return gates.map(([t, ins, outs]) => [t, [...ins].sort(), [...outs].sort()]);
+        const result = gates.map(([t, ins, outs]) => [t, ins.sort(), outs.sort()]);
+        console.log('exportSchemeAsList result:', result);
+        
+        // Проверяем корректность структуры
+        result.forEach(([type, inputs, outputs], index) => {
+            console.log(`Element ${index}: type=${type}, inputs=${JSON.stringify(inputs)}, outputs=${JSON.stringify(outputs)}`);
+        });
+        
+        return result;
     }
 
     function collectInputs() {
@@ -640,6 +660,11 @@ window.initPlayground = function () {
         const circuit_inputs = collectInputs();
 
         console.log('simulateCircuit payload:', { circuit_description, circuit_inputs });
+        console.log('connections:', connections);
+        console.log('JSON.stringify result:', JSON.stringify({
+            circuit_description,
+            circuit_inputs
+        }));
 
         if (!circuit_description.length) {
             alert("Схема пуста, нечего симулировать");
@@ -922,7 +947,11 @@ window.initPlayground = function () {
             connections = connections.filter(c => {
                 if (c.from.element === el || c.to.element === el) {
                     c.line.remove();
-                    c.from.port.dataset.connected = 'false';
+                    const isInputOutput = c.from.port?.parentElement?.dataset.type === 'INPUT' &&
+                    c.from.port?.classList.contains('output-port');
+                    if (!isInputOutput) {
+                        c.from.port.dataset.connected = 'false';
+                    }
                     c.to.port.dataset.connected = 'false';
                     return false;
                 }
@@ -969,9 +998,19 @@ window.initPlayground = function () {
     function findClosestPort(xClient, yClient, radius) {
         const wsRect = workspace.getBoundingClientRect();
         let best = null, bestD2 = radius * radius;
-
+    
         document.querySelectorAll('.port').forEach(p => {
-            if (p === startPort || p.dataset.connected === 'true') return;
+            if (p === startPort) return;
+            // Разрешаем подключение к незанятым входным портам
+            if (p.classList.contains('input-port') && p.dataset.connected === 'true') {
+                // Проверяем, можно ли подключиться к этому порту
+                if (startPort?.classList.contains('output-port')) {
+                    // Если начальный порт — выходной, проверяем, что это не тот же элемент
+                    if (p.parentElement === startPort.parentElement) return;
+                } else {
+                    return; // Игнорируем занятый входной порт для других случаев
+                }
+            }
             const pr = p.getBoundingClientRect();
             const cx = pr.left - wsRect.left + pr.width / 2;
             const cy = pr.top - wsRect.top + pr.height / 2;
@@ -1007,24 +1046,25 @@ window.initPlayground = function () {
 
     function finishLine(e) {
         if (!currentLine) return;
-
+    
         const targetPort = snapPort ??
             (e.target.classList.contains('port') ? e.target : null);
-
+    
         snapPort?.classList.remove('highlight');
         snapPort = null;
-
-        if (!targetPort || targetPort.dataset.connected === 'true') {
+    
+        if (!targetPort) {
             currentLine.remove();
             currentLine = startElement = startPort = null;
             document.removeEventListener('mousemove', dragTempLine);
             document.removeEventListener('mouseup', finishLine);
             return;
         }
-
+    
         const isInput = p => p?.classList.contains('input-port');
         const isOutput = p => p?.classList.contains('output-port');
-
+    
+        // Проверяем, что соединение допустимо
         if (isInput(startPort) && isInput(targetPort)) {
             currentLine.remove();
             currentLine = startElement = startPort = null;
@@ -1032,7 +1072,7 @@ window.initPlayground = function () {
             document.removeEventListener('mouseup', finishLine);
             return;
         }
-
+    
         if (isOutput(startPort) && isOutput(targetPort)) {
             currentLine.remove();
             currentLine = startElement = startPort = null;
@@ -1040,7 +1080,8 @@ window.initPlayground = function () {
             document.removeEventListener('mouseup', finishLine);
             return;
         }
-
+    
+        // Проверяем, нет ли уже такого соединения
         if (connections.some(c =>
             c.from.port === startPort && c.to.port === targetPort)) {
             currentLine.remove();
@@ -1049,18 +1090,18 @@ window.initPlayground = function () {
             document.removeEventListener('mouseup', finishLine);
             return;
         }
-
-        startPort.dataset.connected = 'true';
+    
+        // Помечаем входной порт как занятый
         targetPort.dataset.connected = 'true';
-
         const toElement = targetPort.parentElement;
+    
         connections.push({
             from: {element: startElement, port: startPort},
             to: {element: toElement, port: targetPort},
             line: currentLine
         });
         updateConnections();
-
+    
         currentLine = startElement = startPort = null;
         document.removeEventListener('mousemove', dragTempLine);
         document.removeEventListener('mouseup', finishLine);
@@ -1184,7 +1225,11 @@ window.initPlayground = function () {
             connections = connections.filter(c => {
                 if (c.from.element === el || c.to.element === el) {
                     c.line.remove();
-                    c.from.port.dataset.connected = 'false';
+                    const isInputOutput = c.from.port?.parentElement?.dataset.type === 'INPUT' &&
+                    c.from.port?.classList.contains('output-port');
+                    if (!isInputOutput) {
+                        c.from.port.dataset.connected = 'false';
+                    }
                     c.to.port.dataset.connected = 'false';
                     return false;
                 }
@@ -1253,8 +1298,13 @@ window.initPlayground = function () {
         }[type];
         if (!cfg) return;
 
-        const inputPorts = el.querySelectorAll('.input-port:not([data-connected="true"])');
-        const outputPorts = el.querySelectorAll('.output-port:not([data-connected="true"])');
+        // Проверяем реальные соединения, а не только флаг connected
+        const inputPorts = Array.from(el.querySelectorAll('.input-port')).filter(port => {
+            return !connections.some(c => c.to.port === port);
+        });
+        const outputPorts = Array.from(el.querySelectorAll('.output-port')).filter(port => {
+            return !connections.some(c => c.from.port === port);
+        });
 
         inputPorts.forEach((port, i) => {
             const input = document.createElement('div');
@@ -1311,7 +1361,6 @@ window.initPlayground = function () {
                 line.setAttribute('stroke-width', '3');
                 line.setAttribute('stroke-linecap', 'round');
                 svg.appendChild(line);
-                from.dataset.connected = 'true';
                 to.dataset.connected = 'true';
                 connections.push({
                     from: {element: input, port: from},
