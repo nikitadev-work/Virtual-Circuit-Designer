@@ -355,26 +355,15 @@ window.initPlayground = function () {
             return [code, [], []]; // Используем массивы вместо Set для сохранения дубликатов
         });
 
-        console.log('Valid connections:', validConnections);
-        console.log('Nodes:', nodes.map((el, i) => `${i}: ${el.dataset.type}`));
-        
         validConnections.forEach(({from, to}) => {
             const a = nodeIndex.get(from.element);
             const b = nodeIndex.get(to.element);
             if (a == null || b == null) return;
-            console.log(`Connection: ${from.element.dataset.type}(${a}) -> ${to.element.dataset.type}(${b})`);
             gates[a][2].push(b); // Добавляем в массив вместо Set
             gates[b][1].push(a); // Добавляем в массив вместо Set
         });
 
         const result = gates.map(([t, ins, outs]) => [t, ins.sort(), outs.sort()]);
-        console.log('exportSchemeAsList result:', result);
-        
-        // Проверяем корректность структуры
-        result.forEach(([type, inputs, outputs], index) => {
-            console.log(`Element ${index}: type=${type}, inputs=${JSON.stringify(inputs)}, outputs=${JSON.stringify(outputs)}`);
-        });
-        
         return result;
     }
 
@@ -695,26 +684,37 @@ window.initPlayground = function () {
             }
 
             const data = await res.json();
+            
             const outputs = document.querySelectorAll('.workspace-element[data-type="OUTPUT"]');
-            console.log('simulation_result:', data.simulation_result);
+            console.log('OUTPUT elements count:', outputs.length);
             console.log('OUTPUT elements:', outputs);
+
+            // Проверяем соответствие количества результатов и OUTPUT элементов
+            if (data.simulation_result.length !== outputs.length) {
+                console.warn(`Mismatch: simulation_result has ${data.simulation_result.length} values, but found ${outputs.length} OUTPUT elements`);
+            }
 
             data.simulation_result.forEach((val, idx) => {
                 const el = outputs[idx];
-                console.log('Updating OUTPUT', idx, 'to', val, el);
+                console.log(`Updating OUTPUT ${idx} to ${val}:`, el);
                 if (el) {
                     el.dataset.value = String(val);
                     const img = el.querySelector('img');
                     if (img) {
                         img.src = `/Icons/Inputs&Outputs/OUTPUT-${val}.svg`;
-                        console.log('Updated img src:', img.src);
+                        console.log(`Updated img src for OUTPUT ${idx}:`, img.src);
                     } else {
-                        console.log('No img found in OUTPUT', idx);
+                        console.log(`No img found in OUTPUT ${idx}`);
                     }
                     const valueDisplay = el.querySelector('.output-value-display');
-                    if (valueDisplay) valueDisplay.textContent = String(val);
+                    if (valueDisplay) {
+                        valueDisplay.textContent = String(val);
+                        console.log(`Updated value display for OUTPUT ${idx}:`, String(val));
+                    } else {
+                        console.log(`No value display found in OUTPUT ${idx}`);
+                    }
                 } else {
-                    console.log('No OUTPUT element at index', idx);
+                    console.log(`No OUTPUT element at index ${idx}`);
                 }
             });
 
@@ -723,7 +723,19 @@ window.initPlayground = function () {
                 resultDiv.textContent = "Simulation result: " + JSON.stringify(data.simulation_result);
             }
 
-            alert("Simulation result: " + JSON.stringify(data.simulation_result));
+            // Показываем все OUTPUT элементы и их значения
+            let alertMessage = "Simulation results:\n";
+            
+            outputs.forEach((output, index) => {
+                const value = data.simulation_result[index] !== undefined ? data.simulation_result[index] : 'N/A';
+                alertMessage += `OUTPUT ${index + 1}: ${value}\n`;
+            });
+            
+            if (data.simulation_result.length !== outputs.length) {
+                alertMessage += `\n⚠️ Warning: Server returned ${data.simulation_result.length} values, but found ${outputs.length} OUTPUT elements`;
+            }
+            
+            alert(alertMessage);
         } catch (err) {
             console.error('Ошибка симуляции:', err);
             alert('Произошла ошибка при симуляции схемы: ' + err.message);
