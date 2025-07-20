@@ -1248,6 +1248,34 @@ window.initPlayground = function () {
 
     let clipboard = null;
 
+    function getPortIndex(el, port) {
+        const ports = Array.from(el.querySelectorAll('.port'));
+        return ports.indexOf(port);
+    }
+
+    function getPortByIndex(el, idx) {
+        return el.querySelectorAll('.port')[idx] || null;
+    }
+
+    function saveInteractiveHandlers(el) {
+        const type = el.dataset.type?.toUpperCase();
+        if (type === 'INPUT') {
+            const valueDisplay = el.querySelector('.input-value-toggle');
+            if (valueDisplay) {
+                valueDisplay.onclick = () => {
+                    el.dataset.value = el.dataset.value === '1' ? '0' : '1';
+                    valueDisplay.textContent = el.dataset.value;
+                    const img = el.querySelector('img');
+                    if (img) {
+                        img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
+                    }
+                };
+            }
+        } else if (type === 'OUTPUT') {
+            // OUTPUT обычно не кликается, но если потребуется — аналогично
+        }
+    }
+
     function copy(src = null) {
         let items;
         if (!src) {
@@ -1262,11 +1290,32 @@ window.initPlayground = function () {
         const minX = Math.min(...items.map(el => parseFloat(el.style.left) || 0));
         const minY = Math.min(...items.map(el => parseFloat(el.style.top) || 0));
 
-        clipboard = items.map(el => ({
-            tpl: el.cloneNode(true),
-            dx: (parseFloat(el.style.left) || 0) - minX,
-            dy: (parseFloat(el.style.top) || 0) - minY,
-        }));
+        // Сохраняем связи между выбранными элементами
+        const itemSet = new Set(items);
+        const portMap = new Map();
+        items.forEach(el => {
+            portMap.set(el, Array.from(el.querySelectorAll('.port')));
+        });
+        const localConnections = connections
+            .filter(c => itemSet.has(c.from.element) && itemSet.has(c.to.element))
+            .map(c => {
+                return {
+                    fromIdx: items.indexOf(c.from.element),
+                    fromPort: getPortIndex(c.from.element, c.from.port),
+                    toIdx: items.indexOf(c.to.element),
+                    toPort: getPortIndex(c.to.element, c.to.port)
+                };
+            });
+
+        clipboard = {
+            items: items.map(el => ({
+                tpl: el.cloneNode(true),
+                dx: (parseFloat(el.style.left) || 0) - minX,
+                dy: (parseFloat(el.style.top) || 0) - minY,
+                type: el.dataset.type
+            })),
+            connections: localConnections
+        };
     }
 
     function cut(src = null) {
@@ -1278,40 +1327,47 @@ window.initPlayground = function () {
     }
 
     function paste(x, y) {
-        if (!clipboard?.length) return;
+        if (!clipboard?.items?.length) return;
         const baseX = snap(x);
         const baseY = snap(y);
         clearSelection();
 
-        clipboard.forEach(({tpl, dx, dy}) => {
+        // Клонируем элементы и сохраняем соответствие старый->новый
+        const clones = clipboard.items.map(({tpl, dx, dy, type}) => {
             const el = tpl.cloneNode(true);
-
             el.classList.remove('selected');
             enableElementDrag(el);
-
             el.style.left = (baseX + dx) + 'px';
             el.style.top = (baseY + dy) + 'px';
-
             el.querySelectorAll('.port').forEach(p => p.dataset.connected = 'false');
-
-            const type = el.dataset.type?.toUpperCase();
-            if (type === 'INPUT') {
-                const inputControl = el.querySelector('input[type=number]');
-                if (inputControl) {
-                    inputControl.addEventListener('change', () => {
-                        el.dataset.value = inputControl.value;
-                        const img = el.querySelector('img');
-                        if (img) {
-                            img.src = `/Icons/Inputs&Outputs/INPUT-${el.dataset.value}.svg`;
-                        }
-                    });
-                }
-            }
-
+            // Восстановление интерактивности
+            saveInteractiveHandlers(el);
             workspace.appendChild(el);
             select(el);
+            return el;
         });
 
+        // Восстанавливаем соединения между новыми элементами
+        clipboard.connections.forEach(conn => {
+            const fromEl = clones[conn.fromIdx];
+            const toEl = clones[conn.toIdx];
+            const fromPort = getPortByIndex(fromEl, conn.fromPort);
+            const toPort = getPortByIndex(toEl, conn.toPort);
+            if (fromPort && toPort) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('stroke', 'black');
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+                fromPort.dataset.connected = 'true';
+                toPort.dataset.connected = 'true';
+                connections.push({
+                    from: {element: fromEl, port: fromPort},
+                    to: {element: toEl, port: toPort},
+                    line
+                });
+            }
+        });
         updateConnections();
     }
 
@@ -1338,44 +1394,16 @@ window.initPlayground = function () {
     function duplicate(src = null) {
         const items = src ? [src] : [...selection];
         if (!items.length) return;
-
         const GAP = 30;
         clearSelection();
-
-        items.forEach(el => {
-            if (!(el instanceof Element)) return;
-
-            const clone = el.cloneNode(true);
-            clone.classList.remove('selected');
-
-            const left = parseFloat(el.style.left) || 0;
-            const top = parseFloat(el.style.top) || 0;
-
-            clone.style.left = (left + GAP) + 'px';
-            clone.style.top = (top + GAP) + 'px';
-
-            clone.querySelectorAll('.port').forEach(p => p.dataset.connected = 'false');
-
-            const type = clone.dataset.type?.toUpperCase();
-            if (type === 'INPUT') {
-                const inputControl = clone.querySelector('input[type=number]');
-                if (inputControl) {
-                    inputControl.addEventListener('change', () => {
-                        clone.dataset.value = inputControl.value;
-                        const img = clone.querySelector('img');
-                        if (img) {
-                            img.src = `/Icons/Inputs&Outputs/INPUT-${clone.dataset.value}.svg`;
-                        }
-                    });
-                }
-            }
-
-            enableElementDrag(clone);
-            workspace.appendChild(clone);
-            select(clone);
+        // Используем copy-подобную логику для связей
+        copy(items);
+        // Смещаем координаты
+        clipboard.items.forEach(i => {
+            i.dx += GAP;
+            i.dy += GAP;
         });
-
-        updateConnections();
+        paste((parseFloat(items[0].style.left) || 0) + GAP, (parseFloat(items[0].style.top) || 0) + GAP);
     }
 
     function autoAddIO(el) {
