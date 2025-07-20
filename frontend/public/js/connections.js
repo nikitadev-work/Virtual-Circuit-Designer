@@ -774,7 +774,7 @@ window.initPlayground = function () {
             p.dataset.connected = 'false';
 
             if (type === 'OUTPUT') {
-                p.style.left = '12px';
+                p.style.left = '1px';
                 p.style.top = '50%';
                 p.style.transform = 'translateY(-50%)';
             } else {
@@ -792,7 +792,7 @@ window.initPlayground = function () {
             p.dataset.connected = 'false';
 
             if (type === 'INPUT') {
-                p.style.right = '12px';
+                p.style.right = '1px';
                 p.style.top = '50%';
                 p.style.transform = 'translateY(-50%)';
             } else {
