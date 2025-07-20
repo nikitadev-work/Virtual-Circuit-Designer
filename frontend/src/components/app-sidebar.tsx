@@ -1,10 +1,5 @@
 import * as React from "react"
 import { jwtDecode } from 'jwt-decode'
-import {
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
-
 
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
