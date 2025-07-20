@@ -115,30 +115,10 @@ export default function Dashboard() {
             .catch(console.error);
     }, [userId, token]);
 
-    // Загружаем проекты после инициализации
-    useEffect(() => {
-        if (!initialized || !userId) return
-        const saved = localStorage.getItem(getStorageKey(userId))
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                const filteredProjects = parsed.filter(
-                    (proj: Project) => !backendCircuits.some((backendProj: Project) => backendProj.id === proj.id)
-                );
-                setProjects(parsed)
-                localStorage.setItem(getStorageKey(userId), JSON.stringify(filteredProjects));
-            } catch (e) {
-                console.error("Invalid project data in localStorage", e)
-            }
-        }
-    }, [initialized, userId, backendCircuits])
 
 
-    // Сохраняем проекты
-    useEffect(() => {
-        if (!userId) return
-        localStorage.setItem(getStorageKey(userId), JSON.stringify(projects))
-    }, [projects, userId])
+
+
 
 
     const handleDeleteProject = async (projectId: string) => {
@@ -341,15 +321,19 @@ export default function Dashboard() {
                                     {viewMode === "grid" ? (
                                         <>
                                             <div
-                                                className="aspect-[4/3] bg-muted rounded-md flex items-center justify-center">
-                                                <span className="text-sm text-gray-400">Empty</span>
+                                                className="aspect-[4/3] bg-white rounded-md flex items-center justify-center">
+                                                <img
+                                                    src="/Icons/Logos/thumbnail.png"
+                                                    alt="Thumbnail"
+                                                    className=""
+                                                />
                                             </div>
                                             <div className="mt-2 w-full">
                                                 <p className="font-medium text-sm pt-3">{proj.circuit_name}</p>
                                                 <div className="flex items-center justify-between w-full">
                                                     <p className="text-xs text-gray-500">
-                                                        Created {new Date(proj.createdAt).toLocaleString()} ·
-                                                        Edited {new Date(proj.updatedAt).toLocaleString()}
+                                                        Created 20 July ·
+                                                        Edited 20 July
                                                     </p>
                                                     <div className="cursor-pointer">
                                                         <SidebarMenu>
@@ -368,14 +352,6 @@ export default function Dashboard() {
                                                                         align="end"
                                                                         sideOffset={4}
                                                                     >
-                                                                        <DropdownMenuGroup>
-                                                                            <DropdownMenuItem
-                                                                                onClick={(e) => e.stopPropagation()}>
-                                                                                <Edit2/>
-                                                                                Rename
-                                                                            </DropdownMenuItem>
-                                                                        </DropdownMenuGroup>
-                                                                        <DropdownMenuSeparator/>
                                                                         <DropdownMenuItem
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
@@ -398,8 +374,8 @@ export default function Dashboard() {
                                             <div className="flex flex-col">
                                                 <p className="font-medium text-base">{proj.circuit_name}</p>
                                                 <p className="text-xs text-gray-500">
-                                                    Created {new Date(proj.createdAt).toLocaleString()} ·
-                                                    Edited {new Date(proj.updatedAt).toLocaleString()}
+                                                    Created 20 July ·
+                                                    Edited 20 July
                                                 </p>
                                             </div>
                                             <div className="cursor-pointer">
