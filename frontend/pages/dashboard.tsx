@@ -35,6 +35,58 @@ import {
 } from "@components/dropdown-menu";
 import {ChevronsUpDown, Edit2, Trash} from "lucide-react";
 
+// SVG patterns for pixel-art backgrounds
+const PIXEL_ART_PATTERNS = [
+  // 1
+  `data:image/svg+xml;utf8,<svg width='96' height='72' xmlns='http://www.w3.org/2000/svg'><rect width='96' height='72' fill='%23fff'/><rect x='8' y='8' width='16' height='16' fill='%230099FF'/><rect x='40' y='24' width='16' height='16' fill='%2363CBFF'/><rect x='72' y='40' width='16' height='16' fill='%231C3BD5'/></svg>`,
+  // 2
+  `data:image/svg+xml;utf8,<svg width='96' height='72' xmlns='http://www.w3.org/2000/svg'><rect width='96' height='72' fill='%230099FF'/><rect x='16' y='16' width='16' height='16' fill='%23fff'/><rect x='64' y='32' width='16' height='16' fill='%2363CBFF'/></svg>`,
+  // 3
+  `data:image/svg+xml;utf8,<svg width='96' height='72' xmlns='http://www.w3.org/2000/svg'><rect width='96' height='72' fill='%2363CBFF'/><rect x='0' y='0' width='32' height='32' fill='%23fff'/><rect x='64' y='40' width='32' height='32' fill='%230099FF'/></svg>`,
+  // 4
+  `data:image/svg+xml;utf8,<svg width='96' height='72' xmlns='http://www.w3.org/2000/svg'><rect width='96' height='72' fill='%23fff'/><rect x='24' y='24' width='48' height='24' fill='%230099FF'/><rect x='40' y='8' width='16' height='16' fill='%2363CBFF'/></svg>`,
+  // 5
+  `data:image/svg+xml;utf8,<svg width='96' height='72' xmlns='http://www.w3.org/2000/svg'><rect width='96' height='72' fill='%231C3BD5'/><rect x='8' y='8' width='24' height='24' fill='%23fff'/><rect x='56' y='40' width='32' height='24' fill='%230099FF'/></svg>`,
+  // 6
+  `data:image/svg+xml;utf8,<svg width='96' height='72' xmlns='http://www.w3.org/2000/svg'><rect width='96' height='72' fill='%23fff'/><rect x='0' y='56' width='96' height='16' fill='%230099FF'/><rect x='0' y='0' width='96' height='8' fill='%2363CBFF'/></svg>`,
+];
+
+// --- PIXEL ART GENERATOR ---
+function stringToSeed(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+  }
+  return Math.abs(hash);
+}
+
+function generatePixelArtSVG(seed: string): string {
+  const size = 8; // 8x8 blocks
+  const block = 12;
+  const colors = [
+    '#0099FF', // blue
+    '#63CBFF', // light blue
+    '#1C3BD5', // dark blue
+    '#fff',    // white
+    'transparent',
+  ];
+  let s = stringToSeed(seed);
+  let svg = `<svg width='${size * block}' height='${size * block}' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' fill='%23fff'/>`;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size / 2; x++) {
+      s = (s * 9301 + 49297) % 233280;
+      const color = colors[s % colors.length];
+      if (color !== 'transparent') {
+        svg += `<rect x='${x * block}' y='${y * block}' width='${block}' height='${block}' fill='${color}'/>`;
+        // mirror horizontally
+        svg += `<rect x='${(size - 1 - x) * block}' y='${y * block}' width='${block}' height='${block}' fill='${color}'/>`;
+      }
+    }
+  }
+  svg += `</svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 type Project = {
     id: string
     circuit_name: string
@@ -208,10 +260,6 @@ export default function Dashboard() {
         setOpen(false);                   // закрыть диалог
 
         console.log("project при генерации ссылки:", id);
-        // 4. переходим в playground с numeric id
-        router.push(
-            `/playground?projectId=${id}&title=${encodeURIComponent(newProject.circuit_name)}`
-        );
     };
 
 
@@ -321,12 +369,17 @@ export default function Dashboard() {
                                     {viewMode === "grid" ? (
                                         <>
                                             <div
-                                                className="aspect-[4/3] bg-white rounded-md flex items-center justify-center">
+                                                className="aspect-[4/3] rounded-md flex items-center justify-center relative overflow-hidden group shadow-sm bg-white">
                                                 <img
-                                                    src="/Icons/Logos/thumbnail.png"
-                                                    alt="Thumbnail"
-                                                    className=""
+                                                    src="/Icons/Logos/wallpaper.png"
+                                                    alt="Project wallpaper background"
+                                                    className="absolute inset-0 w-full h-full object-cover opacity-90 transition group-hover:scale-105 duration-300"
                                                 />
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <span className="text-3xl font-extrabold text-white drop-shadow-lg text-center select-none max-w-[90%] truncate whitespace-nowrap overflow-hidden">
+                                                        {proj.circuit_name}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div className="mt-2 w-full">
                                                 <p className="font-medium text-sm pt-3">{proj.circuit_name}</p>
@@ -395,14 +448,6 @@ export default function Dashboard() {
                                                                 align="end"
                                                                 sideOffset={4}
                                                             >
-                                                                <DropdownMenuGroup>
-                                                                    <DropdownMenuItem
-                                                                        onClick={(e) => e.stopPropagation()}>
-                                                                        <Edit2/>
-                                                                        Rename
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuGroup>
-                                                                <DropdownMenuSeparator/>
                                                                 <DropdownMenuItem
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
