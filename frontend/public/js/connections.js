@@ -605,7 +605,7 @@ window.initPlayground = function () {
 
         circuit.forEach(([_, inputs = []], targetIndex) => {
             inputs.forEach(sourceIndex => {
-                const from = elements[sourceIndex].querySelector('.output-port:not([data-connected="true"])');
+                const from = elements[sourceIndex].querySelector('.output-port');
                 const to = elements[targetIndex].querySelector('.input-port:not([data-connected="true"])');
                 if (from && to) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -654,6 +654,30 @@ window.initPlayground = function () {
             circuit_description,
             circuit_inputs
         }));
+
+        // Check for unconnected inputs in logic gates
+        const nodes = [...document.querySelectorAll('.workspace-element')];
+        const logicTypes = ['NOT', 'AND', 'OR', 'XOR', 'NAND', 'NOR', 'XNOR'];
+        let hasUnconnectedInput = false;
+
+        nodes.forEach(el => {
+            const type = (el.dataset.type || '').toUpperCase();
+            if (logicTypes.includes(type)) {
+                const inputPorts = el.querySelectorAll('.input-port');
+                inputPorts.forEach(port => {
+                    // Проверяем, есть ли соединение для этого порта
+                    const isConnected = connections.some(c => c.to.port === port);
+                    if (!isConnected) {
+                        hasUnconnectedInput = true;
+                    }
+                });
+            }
+        });
+
+        if (hasUnconnectedInput) {
+            window.toast.error("One or more inputs of a logic gate are not connected.");
+            return;
+        }
 
         if (!circuit_description.length) {
             window.toast.error("The project is empty, there is nothing to simulate");
@@ -1006,14 +1030,11 @@ window.initPlayground = function () {
     
         document.querySelectorAll('.port').forEach(p => {
             if (p === startPort) return;
-            // Разрешаем подключение к незанятым входным портам
             if (p.classList.contains('input-port') && p.dataset.connected === 'true') {
-                // Проверяем, можно ли подключиться к этому порту
                 if (startPort?.classList.contains('output-port')) {
-                    // Если начальный порт — выходной, проверяем, что это не тот же элемент
                     if (p.parentElement === startPort.parentElement) return;
                 } else {
-                    return; // Игнорируем занятый входной порт для других случаев
+                    return;
                 }
             }
             const pr = p.getBoundingClientRect();
@@ -1069,8 +1090,12 @@ window.initPlayground = function () {
         const isInput = p => p?.classList.contains('input-port');
         const isOutput = p => p?.classList.contains('output-port');
     
-        // Проверяем, что соединение допустимо
         if (isInput(startPort) && isInput(targetPort)) {
+            if (window.toast && window.toast.error) {
+                window.toast.error("You can't connect input to input");
+            } else {
+                alert("You can't connect input to input");
+            }
             currentLine.remove();
             currentLine = startElement = startPort = null;
             document.removeEventListener('mousemove', dragTempLine);
@@ -1079,14 +1104,80 @@ window.initPlayground = function () {
         }
     
         if (isOutput(startPort) && isOutput(targetPort)) {
+            if (window.toast && window.toast.error) {
+                window.toast.error("You can't connect output to output");
+            } else {
+                alert("You can't connect output to output");
+            }
             currentLine.remove();
             currentLine = startElement = startPort = null;
             document.removeEventListener('mousemove', dragTempLine);
             document.removeEventListener('mouseup', finishLine);
             return;
         }
-    
-        // Проверяем, нет ли уже такого соединения
+
+        if (isOutput(startPort) && isOutput(targetPort) && startPort.parentElement.dataset.type === 'INPUT') {
+            if (window.toast && window.toast.error) {
+                window.toast.error("You can't connect output to input");
+            } else {
+                alert("You can't connect output to input");
+            }
+            currentLine.remove();
+            currentLine = startElement = startPort = null;
+            document.removeEventListener('mousemove', dragTempLine);
+            document.removeEventListener('mouseup', finishLine);
+            return;
+        }
+
+        if (isOutput(startPort) && isOutput(targetPort) && targetPort.parentElement.dataset.type === 'OUTPUT') {
+            if (window.toast && window.toast.error) {
+                window.toast.error("You can't connect input to output");
+            } else {
+                alert("You can't connect input to output");
+            }
+            currentLine.remove();
+            currentLine = startElement = startPort = null;
+            document.removeEventListener('mousemove', dragTempLine);
+            document.removeEventListener('mouseup', finishLine);
+            return;
+        }
+
+        if (
+            isInput(startPort) &&
+            startPort.parentElement.dataset.type === 'OUTPUT' &&
+            isOutput(targetPort) &&
+            targetPort.parentElement.dataset.type !== 'INPUT' && 
+            targetPort.parentElement.dataset.type !== 'OUTPUT'  
+        ) {
+            if (window.toast && window.toast.error) {
+                window.toast.error("You can't connect OUTPUT input to logic block output");
+            } else {
+                alert("You can't connect OUTPUT input to logic block output");
+            }
+            currentLine.remove();
+            currentLine = startElement = startPort = null;
+            document.removeEventListener('mousemove', dragTempLine);
+            document.removeEventListener('mouseup', finishLine);
+            return;
+        }
+
+        if (
+            isInput(startPort) &&
+            isOutput(targetPort) &&
+            targetPort.parentElement.dataset.type === 'INPUT'
+        ) {
+            if (window.toast && window.toast.error) {
+                window.toast.error("You can't connect logic block input to INPUT output");
+            } else {
+                alert("You can't connect logic block input to INPUT output");
+            }
+            currentLine.remove();
+            currentLine = startElement = startPort = null;
+            document.removeEventListener('mousemove', dragTempLine);
+            document.removeEventListener('mouseup', finishLine);
+            return;
+        }
+
         if (connections.some(c =>
             c.from.port === startPort && c.to.port === targetPort)) {
             currentLine.remove();
@@ -1096,7 +1187,6 @@ window.initPlayground = function () {
             return;
         }
     
-        // Помечаем входной порт как занятый
         targetPort.dataset.connected = 'true';
         const toElement = targetPort.parentElement;
     
