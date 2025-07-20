@@ -201,7 +201,7 @@ def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: 
             in_wire = gate[GATE_INPUTS][0][IO_GATE_WIRENO]
             for out_wire in gate[GATE_OUTPUTS]:
                 wireno = out_wire[IO_GATE_WIRENO]
-                out_file.write(f"w{wireno} = !w{in_wire};\n")
+                out_file.write(f"assign w{wireno} = !w{in_wire};\n")
         else:
             in_wire1, in_wire2 = gate[GATE_INPUTS][0][IO_GATE_WIRENO], gate[GATE_INPUTS][1][IO_GATE_WIRENO]
             expr_str = ''
