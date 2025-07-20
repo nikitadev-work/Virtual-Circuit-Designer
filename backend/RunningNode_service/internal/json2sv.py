@@ -84,7 +84,7 @@ def generate_wire_no(gates: list) -> int:
                 inputs[j][IO_GATE_WIRENO] = wire_cnt
                 in_gate = inputs[j][IO_GATE_NO]
                 for out_gate in gates[in_gate][GATE_OUTPUTS]:
-                    if out_gate[IO_GATE_NO] == i:
+                    if out_gate[IO_GATE_NO] == i and out_gate[IO_GATE_WIRENO] == -1:
                         out_gate[IO_GATE_WIRENO] = wire_cnt
                         break
                 else:
@@ -96,7 +96,7 @@ def generate_wire_no(gates: list) -> int:
                 outputs[j][IO_GATE_WIRENO] = wire_cnt
                 out_gate = outputs[j][IO_GATE_NO]
                 for in_gate in gates[out_gate][GATE_INPUTS]:
-                    if in_gate[IO_GATE_NO] == i:
+                    if in_gate[IO_GATE_NO] == i and in_gate[IO_GATE_WIRENO] == -1:
                         in_gate[IO_GATE_WIRENO] = wire_cnt
                         break
                 else:
@@ -104,6 +104,38 @@ def generate_wire_no(gates: list) -> int:
                     exit()
                 wire_cnt += 1
     return wire_cnt
+
+"""def generate_wires(gates: list) -> list[(int, int)]:
+    wires = []
+    for i in range(len(gates)):
+        inputs, outputs = gates[i][GATE_INPUTS], gates[i][GATE_OUTPUTS]
+        for j in range(len(inputs)):
+            if inputs[j][IO_GATE_WIRENO] == -1: # wire isn't created yet
+                wire_cnt = len(wires)
+                inputs[j][IO_GATE_WIRENO] = wire_cnt
+                in_gate = inputs[j][IO_GATE_NO]
+                for out_gate in gates[in_gate][GATE_OUTPUTS]:
+                    if out_gate[IO_GATE_NO] == i and out_gate[IO_GATE_WIRENO] == -1:
+                        out_gate[IO_GATE_WIRENO] = wire_cnt
+                        wires.append((in_gate, out_gate))
+                        break
+                else:
+                    print(f"Error: in the gate no. {i} there's an input no. {j}, buyt the gate no. {j} hasn't the gate no. {i} in its outputs")
+                    exit()
+        for j in range(len(outputs)):
+            if outputs[j][IO_GATE_WIRENO] == -1: # wire isn't created yet
+                wire_cnt = len(wires)
+                outputs[j][IO_GATE_WIRENO] = wire_cnt
+                out_gate = outputs[j][IO_GATE_NO]
+                for in_gate in gates[out_gate][GATE_INPUTS]:
+                    if in_gate[IO_GATE_NO] == i and in_gate[IO_GATE_WIRENO] == -1:
+                        in_gate[IO_GATE_WIRENO] = wire_cnt
+                        wires.append((in_gate, out_gate))
+                        break
+                else:
+                    print(f"Error: in the gate no. {i} there's an output gate no. {j}, but the gate no. {j} hasn't the gate no. {i} in its inputs")
+                    exit()
+    return wires"""
 
 
 def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: list[int], wire_cnt: int, out_file_name: str):
@@ -121,7 +153,7 @@ def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: 
     out_file.write(f"output {s_outputs};\n")
     wires_str = ', '.join(map(lambda x: 'w' + str(x), range(wire_cnt)))
     out_file.write(f"wire {wires_str};\n")
-    for i in range(len(gates)):
+    """for i in range(len(gates)):
         gate = gates[i]
         gtp = gate[GATE_TYPE]
         out_file.write('assign ')
@@ -154,9 +186,65 @@ def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: 
             else:
                 print(f"Error: incorrect gate type at the gate no. {i}: type = {gtp}")
                 exit()
-        out_file.write(";\n")
+        out_file.write(";\n")"""
+    for i in range(len(gates)):
+        gate = gates[i]
+        gtp = gate[GATE_TYPE]
+        if gtp == GT_INPUT:
+            for out_wire in gate[GATE_OUTPUTS]:
+                wireno = out_wire[IO_GATE_WIRENO]
+                out_file.write(f"assign w{wireno} = i{i};\n")
+        elif gtp == GT_OUTPUT:
+            wireno = gate[GATE_INPUTS][0][IO_GATE_WIRENO]
+            out_file.write(f"assign o{i} = w{wireno};\n")
+        elif gtp == GT_NOT:
+            in_wire = gate[GATE_INPUTS][0][IO_GATE_WIRENO]
+            for out_wire in gate[GATE_OUTPUTS]:
+                wireno = out_wire[IO_GATE_WIRENO]
+                out_file.write(f"w{wireno} = !w{in_wire};\n")
+        else:
+            in_wire1, in_wire2 = gate[GATE_INPUTS][0][IO_GATE_WIRENO], gate[GATE_INPUTS][1][IO_GATE_WIRENO]
+            expr_str = ''
+            if gtp == GT_AND:
+                expr_str = f"w{in_wire1} & w{in_wire2}"
+            elif gtp == GT_OR:
+                expr_str = f"w{in_wire1} | w{in_wire2}"
+            elif gtp == GT_XOR:
+                expr_str = f"w{in_wire1} ^ w{in_wire2}"
+            elif gtp == GT_NAND:
+                expr_str = f"!(w{in_wire1} & w{in_wire2})"
+            elif gtp == GT_NOR:
+                expr_str = f"!(w{in_wire1} | w{in_wire2})"
+            elif gtp == GT_XNOR:
+                expr_str = f"!(w{in_wire1} ^ w{in_wire2})"
+            else:
+                print(f"Error: incorrect gate type in the gate no. {i}: type = {gtp}")
+                exit()
+            for out_wire in gate[GATE_OUTPUTS]:
+                wireno = out_wire[IO_GATE_WIRENO]
+                out_file.write(f"assign w{wireno} = {expr_str};\n")
     out_file.write("endmodule\n")
     out_file.close()
+
+
+"""def write_verilog_scheme(gates: list, module_inputs: list[int], module_outputs: list[int], wires: list[(int, int)], out_filename: str):
+    out_file = None
+    try:
+        out_file = open(out_filename, 'w')
+    except OSError:
+        print(f"Error: failed to open the file \"{out_filename}\" for writing")
+        exit()
+    s_inputs = ', '.join(map(lambda x: 'i' + str(x), module_inputs))
+    s_outputs = ', '.join(map(lambda x: 'o' + str(x), module_outputs))
+    param_str = f"{s_inputs}{', ' if len(s_inputs) != 0 and len(s_outputs) != 0 else ''}{s_outputs}"
+    out_file.write(f"module main({param_str});\n")
+    out_file.write(f"input {s_inputs};\n")
+    out_file.write(f"output {s_outputs};\n")
+    wires_str = ', '.join(map(lambda x: 'w' + str(x), range(len(wires))))
+    out_file.write(f"wire {wires_str};\n")
+    for pair in wires:
+        in_gate, out_gate = pair[0], pair[1]"""
+
 
 
 def verify_inputs(inputs, module_inputs: list[int]):
