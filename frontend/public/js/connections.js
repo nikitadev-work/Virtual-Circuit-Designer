@@ -400,7 +400,7 @@ window.initPlayground = function () {
     async function sendCircuit() {
         const gates = exportSchemeAsList();
         if (!gates || gates.length === 0) {
-            alert("Схема пуста, сохранять нечего");
+            window.toast.error("Project is empty, you can not save them");
             return;
         }
 
@@ -452,10 +452,10 @@ window.initPlayground = function () {
                 console.log(`Черновик с id=${projectId} удалён из localStorage`);
             }
 
-            alert("Схема сохранена");
+            window.toast.success("Scheme saved");
         } catch (err) {
             console.error('Не удалось сохранить схему:', err);
-            alert('Произошла ошибка при сохранении схемы');
+            window.toast.error('An error occurred while saving the scheme');
         }
     }
 
@@ -506,7 +506,7 @@ window.initPlayground = function () {
             renderCircuit(circuit_description, circuit_inputs, circuit_coordinates);
         } catch (err) {
             console.error('Ошибка загрузки схемы:', err);
-            alert('Не удалось загрузить схему: ' + err.message);
+            window.toast.error('Failed to load the scheme: ' + err.message);
         }
     };
 
@@ -656,7 +656,7 @@ window.initPlayground = function () {
         }));
 
         if (!circuit_description.length) {
-            alert("Схема пуста, нечего симулировать");
+            window.toast.error("The project is empty, there is nothing to simulate");
             return;
         }
 
@@ -732,13 +732,13 @@ window.initPlayground = function () {
             });
             
             if (data.simulation_result.length !== outputs.length) {
-                alertMessage += `\n⚠️ Warning: Server returned ${data.simulation_result.length} values, but found ${outputs.length} OUTPUT elements`;
+                alertMessage += `\nWarning: Server returned ${data.simulation_result.length} values, but found ${outputs.length} OUTPUT elements`;
             }
             
-            alert(alertMessage);
+            window.toast.success(alertMessage);
         } catch (err) {
             console.error('Ошибка симуляции:', err);
-            alert('Произошла ошибка при симуляции схемы: ' + err.message);
+            window.toast.error('There is some error, when simulate the scheme: ' + err.message);
         }
     }
 
@@ -747,13 +747,6 @@ window.initPlayground = function () {
         saveBtn.addEventListener('click', sendCircuit);
     }
 
-    const exportBtn = document.getElementById('export-btn');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', () => {
-            const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
-            loadCircuit(id).then();
-        });
-    }
     
     const playBtn = document.getElementById('play-btn');
     if (playBtn) {
@@ -1632,4 +1625,9 @@ window.initPlayground = function () {
     }
 
     tryCenterCanvas();
+    const id = window.savedCircuitId ?? localStorage.getItem('savedCircuitId');
+    if (id) {
+        loadCircuit(id).then();
+    }
+
 };

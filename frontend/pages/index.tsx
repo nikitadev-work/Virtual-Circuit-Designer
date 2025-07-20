@@ -58,37 +58,6 @@ export default function MainPage() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <section className="relative z-10 py-20 bg-white flex flex-col items-center w-full">
-        <h2 className="text-3xl md:text-4xl font-extrabold mb-10 text-[#0099FF] [font-family:'Nunito',_sans-serif]">Why Choose Visual Circuit Designer?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full px-4">
-          {/* Feature Card 1 */}
-          <div className="feature-card animate-fadeInUp">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#0099FF] bg-opacity-10 mb-4">
-              <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" stroke="#0099FF" strokeWidth="3"/><path d="M10 16l4 4 8-8" stroke="#0099FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[#222]">Intuitive Interface</h3>
-            <p className="text-[#555]">Design logic circuits visually with drag-and-drop simplicity. No steep learning curve.</p>
-          </div>
-          {/* Feature Card 2 */}
-          <div className="feature-card animate-fadeInUp delay-100">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#0099FF] bg-opacity-10 mb-4">
-              <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20" rx="5" stroke="#0099FF" strokeWidth="3"/><path d="M10 16h12" stroke="#0099FF" strokeWidth="3" strokeLinecap="round"/></svg>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[#222]">Real-Time Simulation</h3>
-            <p className="text-[#555]">Instantly see how your circuits behave, with live feedback and error checking.</p>
-          </div>
-          {/* Feature Card 3 */}
-          <div className="feature-card animate-fadeInUp delay-200">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#0099FF] bg-opacity-10 mb-4">
-              <svg width="32" height="32" fill="none" viewBox="0 0 32 32"><path d="M16 6v20M6 16h20" stroke="#0099FF" strokeWidth="3" strokeLinecap="round"/><circle cx="16" cy="16" r="14" stroke="#0099FF" strokeWidth="3"/></svg>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-[#222]">Export & Share</h3>
-            <p className="text-[#555]">Save, export, and share your designs easily. Collaborate with your team in the cloud.</p>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
       <section className="relative z-10 py-20 bg-[#F7FBFF] flex flex-col items-center w-full">
         <h2 className="text-3xl md:text-4xl font-extrabold mb-10 text-[#0099FF] [font-family:'Nunito',_sans-serif]">How It Works</h2>
@@ -117,18 +86,6 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="relative z-10 py-16 bg-white flex flex-col items-center w-full">
-        <h2 className="text-2xl md:text-3xl font-extrabold mb-6 text-[#0099FF] [font-family:'Nunito',_sans-serif]">Ready to start designing?</h2>
-        <Link href="/login">
-          <div
-            className="bg-[#0099FF] hover:bg-[#007acc] transition-colors duration-200 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-lg cursor-pointer [font-family:'Nunito',_sans-serif] focus:outline-none focus:ring-2 focus:ring-[#0099FF] focus:ring-offset-2 animate-fadeInUp"
-            tabIndex={0}
-          >
-            Let’s design!
-          </div>
-        </Link>
-      </section>
 
       {/* Animations and custom styles */}
       <style jsx>{`
